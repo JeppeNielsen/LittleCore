@@ -8,7 +8,7 @@ workspace "LittleCore"
 include "../Libs/Build_sdl.lua"
 include "../Libs/Build_bgfx.lua"
 
-solution "TinyEngine"
+solution "LittleCore"
    configurations { "Release", "Debug" }
    if os.is64bit() and not os.istarget("windows") then
       platforms "x86_64"
