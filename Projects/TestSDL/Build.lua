@@ -41,8 +41,6 @@ solution "LittleCore"
       xcodebuildsettings {
          ["MACOSX_DEPLOYMENT_TARGET"] = "10.9",
          ["ALWAYS_SEARCH_USER_PATHS"] = "YES",
-         ["CLANG_ENABLE_OBJC_ARC"] = "YES",
-         ["CLANG_ENABLE_OBJC_WEAK"] = "YES",
       };
 
 project "TestSDL"
