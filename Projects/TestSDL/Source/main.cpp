@@ -14,27 +14,17 @@ inline bool sdlSetWindow(SDL_Window* _window)
     }
 
     bgfx::PlatformData pd;
-    /*
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-    pd.ndt = wmi.info.x11.display;
-    pd.nwh = (void*)(uintptr_t)wmi.info.x11.window;
-#elif BX_PLATFORM_OSX
-    pd.ndt = NULL;
+    pd.ndt = nullptr;
+
+#if BX_PLATFORM_OSX
     pd.nwh = wmi.info.cocoa.window;
 #elif BX_PLATFORM_WINDOWS
-    pd.ndt = NULL;
     pd.nwh = wmi.info.win.window;
-#elif BX_PLATFORM_STEAMLINK
-    pd.ndt = wmi.info.vivante.display;
-    pd.nwh = wmi.info.vivante.window;
-#endif // BX_PLATFORM_
-     */
+#endif
 
-    pd.ndt = NULL;
-    pd.nwh = wmi.info.cocoa.window;
-    pd.context = NULL;
-    pd.backBuffer = NULL;
-    pd.backBufferDS = NULL;
+    pd.context = nullptr;
+    pd.backBuffer = nullptr;
+    pd.backBufferDS = nullptr;
     bgfx::setPlatformData(pd);
 
     return true;
@@ -44,9 +34,9 @@ static int counter = 0;
 
 int Filter(void* userData, SDL_Event* event) {
 
-    //if (event->type != SDL_EVENT_WINDOW_RESIZED) {
-        //return 1;
-    //}
+    if (event->type != SDL_EVENT_WINDOW_RESIZED) {
+        return 1;
+    }
 
     int width;
     int height;
@@ -57,7 +47,7 @@ int Filter(void* userData, SDL_Event* event) {
     bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
     bgfx::touch(0);
     bgfx::dbgTextClear();
-    bgfx::dbgTextPrintf(0, 1, 0x4f, "Counter:%d", counter++);
+    bgfx::dbgTextPrintf(0, 1, 0x4f, "Counter:%d", counter);
     bgfx::frame();
 
     return 1;
@@ -66,8 +56,6 @@ int Filter(void* userData, SDL_Event* event) {
 int main() {
 
     SDL_Init(0);
-
-    SDL_Window* window2 = SDL_CreateWindow("bgfx", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1200, 600, SDL_WINDOW_RESIZABLE);
 
     SDL_Window* window = SDL_CreateWindow("bgfx", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE);
 
@@ -83,17 +71,15 @@ int main() {
     init.resolution.width = 800;
     init.resolution.height = 600;
     init.resolution.reset = BGFX_RESET_VSYNC;
-    init.platformData.ndt = NULL;
+    init.platformData.ndt = nullptr;
     init.platformData.nwh = wmi.info.cocoa.window;
-    init.platformData.context = NULL;
-    init.platformData.backBuffer = NULL;
-    init.platformData.backBufferDS = NULL;
+    init.platformData.context = nullptr;
+    init.platformData.backBuffer = nullptr;
+    init.platformData.backBufferDS = nullptr;
 
     bgfx::init(init);
     bgfx::setDebug(BGFX_DEBUG_TEXT);
-    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF /*purple*/, 1.f, 0);
-
-
+    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x6495ED, 1.f, 0);
 
     SDL_Event event;
     bool exit = false;
