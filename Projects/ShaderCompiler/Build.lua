@@ -5,6 +5,7 @@ location "BuildX"
 workspace "LittleCore"
    startproject "ShaderCompiler"
 
+include "../Libs/Build_shaderc.lua"
 include "../Libs/Build_bgfx.lua"
 
 solution "LittleCore"
@@ -61,8 +62,6 @@ project "ShaderCompiler"
    }
 
    links { 
-      "bgfx",
-      "bx",
       "shaderc",
    }
 

@@ -18,7 +18,6 @@ project "bgfx"
    language "C++"
    cppdialect "C++14"
    exceptionhandling "Off"
-   rtti "Off"
    defines "__STDC_FORMAT_MACROS"
 
    files
@@ -58,7 +57,6 @@ project "bimg"
    language "C++"
    cppdialect "C++14"
    exceptionhandling "Off"
-   rtti "Off"
    files
    {
       path.join(BIMG_DIR, "include/bimg/*.h"),
@@ -81,7 +79,6 @@ project "bx"
    language "C++"
    cppdialect "C++14"
    exceptionhandling "Off"
-   rtti "Off"
    defines "__STDC_FORMAT_MACROS"
    files
    {
@@ -105,39 +102,6 @@ project "bx"
       defines "BX_CONFIG_DEBUG=1"
    filter "action:vs*"
       defines "_CRT_SECURE_NO_WARNINGS"
-   setBxCompat()
-
-project "shaderc"
-   kind "StaticLib"
-   language "C++"
-   cppdialect "C++14"
-   exceptionhandling "Off"
-   rtti "Off"
-   defines "__STDC_FORMAT_MACROS"
-   files
-   {
-      path.join(BGFX_DIR, "tools/shaderc/*.h"),
-      path.join(BGFX_DIR, "tools/shaderc/*.cpp"),
-   }
-   includedirs
-   {
-      path.join(BX_DIR, "include"),
-      path.join(BGFX_DIR, "include"),
-      path.join(BGFX_DIR, "3rdparty/glsl-optimizer/src/glsl"),
-      path.join(BGFX_DIR, "3rdparty/glslang/glslang/Public"),
-      path.join(BGFX_DIR, "3rdparty/glslang"),
-      path.join(BGFX_DIR, "3rdparty/fcpp"),
-      path.join(BGFX_DIR, "3rdparty/spirv-tools/include"),
-      path.join(BGFX_DIR, "3rdparty/spirv-cross"),
-      path.join(BGFX_DIR, "3rdparty/webgpu/include"),
-   }
-   filter "configurations:Release"
-      defines "BX_CONFIG_DEBUG=0"
-   filter "configurations:Debug"
-      defines "BX_CONFIG_DEBUG=1"
-   filter "action:vs*"
       defines "_CRT_SECURE_NO_WARNINGS"
    setBxCompat()
-
-
       
