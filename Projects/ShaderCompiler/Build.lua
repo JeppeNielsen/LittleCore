@@ -1,6 +1,6 @@
 require "clion"
 
-location "BuildX"
+location "Build"
 
 workspace "LittleCore"
    startproject "ShaderCompiler"
