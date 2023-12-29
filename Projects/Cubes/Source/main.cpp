@@ -107,6 +107,12 @@ std::vector<uint8_t> readFile(const char* filename)
     return vec;
 }
 
+struct Mat {
+    float v[16];
+    
+    
+    operator float*() { return v; }
+};
 
 int main() {
 
@@ -154,8 +160,8 @@ int main() {
     );
 
 
-    auto vertexShader = readFile("vs_cubes.bin");
-    auto fragShader = readFile("fs_cubes.bin");
+    auto vertexShader = readFile("/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Metal/vs_cubes.bin");
+    auto fragShader = readFile("/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Metal/fs_cubes.bin");
 
 
     //std::ifstream infile("vs_cubes", std::ios_base::binary);
@@ -179,6 +185,8 @@ int main() {
 
     float time = 0;
 
+    float scale = 1.0f;
+
     while (!exit) {
 
         time += 1.0f/ 60.0f;
@@ -191,6 +199,12 @@ int main() {
                     break;
                 case SDL_EVENT_QUIT:
                     exit = true;
+                    break;
+
+                case SDL_EVENT_MOUSE_WHEEL:
+                    scale+=event.wheel.y * 0.1f;
+                    
+                    
                     break;
 
                 case SDL_EVENT_WINDOW_CLOSE_REQUESTED: {
@@ -210,9 +224,8 @@ int main() {
         bgfx::touch(0);
         bgfx::dbgTextClear();
 
-
-        const bx::Vec3 at  = { 0.0f, 0.0f,   0.0f };
-        const bx::Vec3 eye = { 0.0f, 0.0f, -35.0f };
+        const bx::Vec3 at  = { 30.0f, 30.0f,   0.0f };
+        const bx::Vec3 eye = { 30.0f, 30.0f, -75.0f };
 
         // Set view and projection matrix for view 0.
         {
@@ -222,7 +235,6 @@ int main() {
             float proj[16];
             bx::mtxProj(proj, 60.0f, float(width)/float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
             bgfx::setViewTransform(0, view, proj);
-
         }
 
         // This dummy draw call is here to make sure that view 0 is cleared
@@ -238,21 +250,30 @@ int main() {
                          | BGFX_STATE_DEPTH_TEST_LESS
                          | BGFX_STATE_CULL_CW
                          | BGFX_STATE_MSAA
+        | BGFX_STATE_BLEND_ALPHA
         ;
 
         // Submit 11x11 cubes.
-        for (uint32_t yy = 0; yy < 11; ++yy)
+        for (uint32_t yy = 0; yy < 150; ++yy)
         {
-            for (uint32_t xx = 0; xx < 11; ++xx)
+            for (uint32_t xx = 0; xx < 200; ++xx)
             {
+                Mat mat;
+                
                 float mtx[16];
-                bx::mtxRotateXY(mtx, time + xx*0.21f, time + yy*0.37f);
-                mtx[12] = -15.0f + float(xx)*3.0f;
-                mtx[13] = -15.0f + float(yy)*3.0f;
-                mtx[14] = 0.0f;
+                bx::mtxRotateXY(mat, time + xx*0.1f, time + yy*0.1f);
+                mat.v[12] = -15.0f + float(xx)*0.6f;
+                mat.v[13] = -15.0f + float(yy)*0.6f;
+                mat.v[14] = 0.0f;
+
+                float scMatrix[16];
+                bx::mtxScale(scMatrix, scale);
+
+                float res[16];
+                bx::mtxMul(res, scMatrix, mat);
 
                 // Set model matrix for rendering.
-                bgfx::setTransform(mtx);
+                bgfx::setTransform(res);
 
                 // Set vertex and index buffer.
                 bgfx::setVertexBuffer(0, vbh);
@@ -265,27 +286,6 @@ int main() {
                 bgfx::submit(0, program);
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         bgfx::frame();
