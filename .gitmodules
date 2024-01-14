@@ -16,3 +16,6 @@
 [submodule "External/entt"]
 	path = External/entt
 	url = https://github.com/skypjack/entt.git
+[submodule "External/segvcatch"]
+	path = External/segvcatch
+	url = https://github.com/Plaristote/segvcatch.git
