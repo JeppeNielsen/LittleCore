@@ -4,13 +4,14 @@
 
 #pragma once
 #include "ModuleDefinition.hpp"
+#include "../ScriptsInclude/EngineContextFactory.hpp"
 #include "../ScriptsInclude/IModuleState.hpp"
 
 struct ModuleStateFactory;
 
 class Module {
 public:
-    Module(ModuleDefinition& definition);
+    Module(EngineContext& engineContext, ModuleDefinition& definition);
 
     void Load();
     void Unload();
@@ -22,6 +23,7 @@ public:
 private:
     void* loadedLib = nullptr;
     ModuleDefinition& definition;
+    EngineContext& engineContext;
     typedef IModuleState* (*CreateModuleState)(ModuleStateFactory*);
     typedef void (*DeleteModuleState)(IModuleState*);
 

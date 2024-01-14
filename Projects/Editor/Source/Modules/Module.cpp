@@ -6,8 +6,7 @@
 #include "../ScriptsInclude/ModuleStateFactory.hpp"
 #include <dlfcn.h>
 
-Module::Module(ModuleDefinition &definition) : definition(definition) {
-
+Module::Module(EngineContext& engineContext, ModuleDefinition &definition) : engineContext(engineContext), definition(definition) {
 }
 
 void Module::Load() {
@@ -28,7 +27,7 @@ void Module::Load() {
     createModuleStateFunction = reinterpret_cast<CreateModuleState>(dlsym(loadedLib, "CreateModuleState"));
     deleteModuleStateFunction = reinterpret_cast<DeleteModuleState>(dlsym(loadedLib, "DeleteModuleState"));
 
-    ModuleStateFactory factory;
+    ModuleStateFactory factory(engineContext);
     state = createModuleStateFunction(&factory);
 }
 

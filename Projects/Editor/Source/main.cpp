@@ -13,48 +13,38 @@
 
 int main() {
 
+    EngineContextFactory engineContextFactory;
+    EngineContext engineContext = engineContextFactory.Create();
+
     ModuleSettings moduleSettings;
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/");
 
     moduleSettings.libraryFolder = "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Cache/";
 
-    ModuleDefinition consoleWindowDefinition(moduleSettings, "ConsoleWindow",
-                                             "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/Scripts/ConsoleWindow/ConsoleWindow.cpp");
+    ModuleDefinition consoleDefinition(moduleSettings, "Console",
+                                             "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/Scripts/ConsoleWindow/Console.cpp");
 
+    ModuleDefinition hierachyDefinition(moduleSettings, "Hierarchy",
+                                                 "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/Scripts/ConsoleWindow/Hierachy.cpp");
 
+    auto resultConsole = consoleDefinition.Build();
+    auto resultHierachy = hierachyDefinition.Build();
 
-    if (consoleWindowDefinition.LibraryExists()) {
-        std::cout << "Library exists \n";
-    } else {
-        std::cout << "Library does not exists \n";
+    Module console(engineContext, consoleDefinition);
+    Module hierachy(engineContext, hierachyDefinition);
+
+    console.Load();
+    hierachy.Load();
+
+    for (int i=0; i<10; i++) {
+        console.Update(0.01f);
+        console.Render();
+        hierachy.Update(0.1f);
+        hierachy.Render();
     }
 
-    auto result = consoleWindowDefinition.Build();
-
-    if (result.errors.empty()) {
-        std::cout << "Compilation succesful\n";
-    } else {
-        for (auto error: result.errors) {
-            std::cout << error << std::endl;
-        }
-    }
-
-    if (consoleWindowDefinition.LibraryExists()) {
-        std::cout << "Library exists \n";
-    } else {
-        std::cout << "Library does not exists \n";
-    }
-
-    Module consoleWindow(consoleWindowDefinition);
-
-    consoleWindow.Load();
-
-    for (int i=0; i<1000; i++) {
-        consoleWindow.Update(0.01f);
-        consoleWindow.Render();
-    }
-
-    consoleWindow.Unload();
+    console.Unload();
+    hierachy.Unload();
 
     return 0;
 }
