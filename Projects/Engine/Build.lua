@@ -3,7 +3,7 @@ require "clion"
 location "Build"
 
 workspace "LittleCore"
-   startproject "TestEntt"
+   startproject "Engine"
 
 include "../Libs/Build_sdl.lua"
 include "../Libs/Build_bgfx.lua"
@@ -48,10 +48,10 @@ project "Engine"
 
    kind "WindowedApp"
    language "C++"
-   cppdialect "C++17"
+   cppdialect "C++14"
 
    files { 
-      "Source/*.cpp",
+      "Source/**.cpp",
       "Source/**.hpp",
    }
 
@@ -60,6 +60,8 @@ project "Engine"
       "../../External/bgfx/include",
       "../../External/bx/include",
       "../../External/entt/single_include",
+      "../../External/glm",
+      "Source/**"
    }
 
    links { 
