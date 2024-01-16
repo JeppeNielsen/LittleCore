@@ -7,8 +7,7 @@
 #include <bx/math.h>
 #include <fstream>
 #include <vector>
-
-#include "LittleCore/Transform/LocalTransform.hpp"
+#include "LocalTransform.hpp"
 
 struct PosColorVertex
 {
@@ -117,7 +116,7 @@ struct Mat {
 
 int main() {
 
-    LittleCore::LocalTransform local_transform;
+    LittleCore::LocalTransform t;
 
 
     SDL_Init(0);

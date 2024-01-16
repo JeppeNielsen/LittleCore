@@ -12,10 +12,9 @@ namespace LittleCore {
         glm::quat rotation = quat(1.0f,0.0f,0.0f,0.0f);
         glm::vec3 scale = vec3(1.0f,1.0f,1.0f);
 
-        mat4 GetLocalToParent() const {
+        glm::mat4 GetLocalToParent() const {
             return glm::scale(glm::translate(mat4x4(1.0f), position), scale) * glm::toMat4(rotation);
         }
     };
-
 
 }

@@ -7,6 +7,7 @@ workspace "LittleCore"
 
 include "../Libs/Build_sdl.lua"
 include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_LittleCore.lua"
 
 solution "LittleCore"
    configurations { "Release", "Debug" }
@@ -48,27 +49,32 @@ project "Engine"
 
    kind "WindowedApp"
    language "C++"
-   cppdialect "C++14"
+   cppdialect "C++17"
 
    files { 
       "Source/**.cpp",
       "Source/**.hpp",
+      "../../External/googletest/googletest/src/gtest-all.cc"
    }
 
    includedirs {
+      "Source/**",
+      "../../Engine/LittleCore/**",
       "../../External/sdl/include",
       "../../External/bgfx/include",
       "../../External/bx/include",
       "../../External/entt/single_include",
       "../../External/glm",
-      "Source/**"
+      "../../External/googletest/googletest/include",
+      "../../External/googletest/googletest"
    }
 
    links { 
       "SDL", 
       "bgfx",
       "bimg",
-      "bx"
+      "bx",
+      "LittleCore"
    }
 
    filter "system:windows"
