@@ -11,12 +11,12 @@ HierarchySystem::HierarchySystem(entt::registry& registry) :
     observer{registry, entt::collector.update<Hierarchy>()} {
 }
 
-void HierarchySystem::Update() const {
+void HierarchySystem::Update() {
     for (auto entity : observer) {
-        const auto& hierarchy = registry.get<Hierarchy>(entity);
+        auto& hierarchy = registry.get<Hierarchy>(entity);
 
-        if (hierarchy.oldParent != entt::null) {
-            auto& oldParentHierarchy = registry.get<Hierarchy>(hierarchy.oldParent);
+        if (hierarchy.previousParent != entt::null) {
+            auto& oldParentHierarchy = registry.get<Hierarchy>(hierarchy.previousParent);
             auto& parentChildren = oldParentHierarchy.children;
             parentChildren.erase(std::find(parentChildren.begin(), parentChildren.end(), entity));
         }
@@ -25,7 +25,11 @@ void HierarchySystem::Update() const {
             auto& parentHierarchy = registry.get<Hierarchy>(hierarchy.parent);
             parentHierarchy.children.push_back(entity);
         }
+
+        hierarchy.previousParent = hierarchy.parent;
     }
+
+    observer.clear();
 }
 
 

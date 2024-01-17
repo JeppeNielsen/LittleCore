@@ -10,7 +10,7 @@ namespace LittleCore {
     class HierarchySystem {
     public:
         HierarchySystem(entt::registry& registry);
-        void Update() const;
+        void Update();
 
     private:
         entt::registry& registry;

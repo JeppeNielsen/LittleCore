@@ -9,7 +9,7 @@
 namespace LittleCore {
     struct Hierarchy {
         entt::entity parent = entt::null;
-        entt::entity oldParent = entt::null;
+        entt::entity previousParent = entt::null;
 
         using Children = std::vector<entt::entity>;
         Children children;
