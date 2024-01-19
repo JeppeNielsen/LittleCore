@@ -7,7 +7,7 @@
 
 namespace LittleCore {
     struct WorldTransform {
-        glm::mat4x4 World;
-        glm::mat4x4 WorldInverse;
+        glm::mat4x4 world;
+        glm::mat4x4 worldInverse;
     };
 }
