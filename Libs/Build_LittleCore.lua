@@ -18,6 +18,7 @@ project "LittleCore"
    }
 
    sysincludedirs {
+      "../Engine/**",
       "../External/sdl/include",
       "../External/bgfx/include",
       "../External/bx/include",
