@@ -75,4 +75,5 @@ void WorldTransformSystem::Update() {
         CalculateChildMatrices(registry, localTransformEntity, dirtyEntities);
     }
 
+    observer.clear();
 }

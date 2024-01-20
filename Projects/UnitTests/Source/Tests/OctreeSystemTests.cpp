@@ -1,8 +1,6 @@
 //
 // Created by Jeppe Nielsen on 20/01/2024.
 //
-#include <Hierarchy.hpp>
-
 #include "gtest/gtest.h"
 #include "OctreeSystem.hpp"
 #include "WorldBoundingBox.hpp"
@@ -18,6 +16,8 @@ namespace {
 
         auto& worldBoundingBox = registry.emplace<WorldBoundingBox>(entity);
         worldBoundingBox.bounds = {{0,0,0} , {1,1,1}};
+
+        registry.patch<WorldBoundingBox>(entity);
 
         octreeSystem.Update();
 
@@ -46,6 +46,8 @@ namespace {
 
         auto& worldBoundingBox = registry.emplace<WorldBoundingBox>(entity);
         worldBoundingBox.bounds = {{0,0,0} , {1,1,1}};
+
+        registry.patch<WorldBoundingBox>(entity);
 
         octreeSystem.Update();
 

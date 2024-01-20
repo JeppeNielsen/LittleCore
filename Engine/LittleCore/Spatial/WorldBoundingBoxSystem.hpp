@@ -7,23 +7,19 @@
 //
 
 #pragma once
-/*
-#include "ECS.hpp"
+
+#include <entt/entt.hpp>
 #include "WorldTransform.hpp"
 #include "LocalBoundingBox.hpp"
 #include "WorldBoundingBox.hpp"
 
-namespace Tiny {
-    struct WorldBoundingBoxSystem : Tiny::SystemChanged<const WorldTransform, const LocalBoundingBox, WorldBoundingBox> {
-        void Changed(const WorldTransform& worldTransform,
-                    const LocalBoundingBox& localBoundingBox,
-                     WorldBoundingBox& worldBoundingBox);
-        
-        void Update(const WorldTransform& worldTransform,
-                    const LocalBoundingBox& localBoundingBox,
-                    WorldBoundingBox& worldBoundingBox);
-        
-        constexpr int EnableConcurrency() { return 5000; }
+namespace LittleCore {
+    class WorldBoundingBoxSystem  {
+    public:
+        WorldBoundingBoxSystem(entt::registry& registry);
+        void Update();
+    private:
+        entt::registry& registry;
+        entt::observer observer;
     };
 }
-*/

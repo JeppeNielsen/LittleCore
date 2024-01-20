@@ -26,6 +26,7 @@ namespace LittleCore {
             for(auto entity : observer) {
                 UpdateEntity(entity);
             }
+            observer.clear();
         }
     
         void UpdateEntity(entt::entity entity) {
