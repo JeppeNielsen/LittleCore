@@ -59,7 +59,6 @@ namespace LittleCore {
         
         void Query(const Ray& ray, std::vector<entt::entity>& entities) const {
             octree.Get(ray, entities);
-            //octree.GetRecursive(gameObjects);
         }
         
         void Query(const BoundingBox& box, std::vector<entt::entity>& entities) const {
