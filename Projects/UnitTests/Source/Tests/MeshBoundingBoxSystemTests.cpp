@@ -28,5 +28,15 @@ namespace {
         meshBoundingBoxSystem.Update();
 
         EXPECT_EQ(localBoundingBox.bounds.center, vec3( 0.5f, 0.5f, 0 ));
+
+        mesh.vertices[2].position = {2,2,0};
+
+        registry.patch<Mesh>(entity);
+
+        meshBoundingBoxSystem.Update();
+
+        EXPECT_EQ(localBoundingBox.bounds.center, vec3( 1, 1, 0 ));
+
+
     }
 }
