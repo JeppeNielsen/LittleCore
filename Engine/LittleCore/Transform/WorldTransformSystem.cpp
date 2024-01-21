@@ -10,7 +10,7 @@ using namespace LittleCore;
 
 WorldTransformSystem::WorldTransformSystem(entt::registry& registry) :
 registry(registry),
-observer(registry, entt::collector.update<LocalTransform>().update<Hierarchy>().update<WorldTransform>()) {
+observer(registry, entt::collector.update<LocalTransform>().update<Hierarchy>().where<LocalTransform, Hierarchy, WorldTransform>()) {
 
 }
 

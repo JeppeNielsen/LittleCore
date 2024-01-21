@@ -19,7 +19,7 @@ namespace LittleCore {
         OctreeSystem(entt::registry& registry) : registry(registry) {
             octree.SetBoundingBox({{0,0,0}, {100000,100000,100000}});
             defaultNode.node = nullptr;
-            observer.connect(registry, entt::collector.group<WorldBoundingBox, T...>());
+            observer.connect(registry, entt::collector.update<WorldBoundingBox>().where<T...>());
         }
 
         void Update() {

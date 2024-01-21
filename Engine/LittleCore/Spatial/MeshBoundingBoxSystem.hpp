@@ -10,13 +10,17 @@
 #pragma once
 #include "Mesh.hpp"
 #include "LocalBoundingBox.hpp"
+#include <entt/entt.hpp>
 
 namespace LittleCore {
-    /*struct MeshBoundingBoxSystem : SystemChanged<const Mesh, LocalBoundingBox> {
-    
-        void Changed(const Mesh& mesh, LocalBoundingBox& localBoundingBox);
+    class MeshBoundingBoxSystem {
+    public:
+        MeshBoundingBoxSystem(entt::registry& registry);
+
+        void Update();
         
-        void Update(const Mesh& mesh, LocalBoundingBox& localBoundingBox);
+    private:
+        entt::registry& registry;
+        entt::observer observer;
     };
-     */
 }
