@@ -10,6 +10,7 @@
 #include "Mesh.hpp"
 #include "Renderable.hpp"
 #include "OctreeSystem.hpp"
+#include "Renderer.hpp"
 
 namespace LittleCore {
 
@@ -20,7 +21,7 @@ namespace LittleCore {
 
         RenderSystem(entt::registry &registry, RenderOctreeSystem& renderOctreeSystem);
 
-        void Render(const WorldTransform& cameraTransform, const Camera& camera);
+        void Render(const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer);
 
     private:
         entt::registry& registry;

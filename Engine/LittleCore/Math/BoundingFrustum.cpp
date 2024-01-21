@@ -85,8 +85,12 @@ BoundingFrustum::Intersection BoundingFrustum::Intersect(const BoundingBox& box)
 			vmin.z = maxs.z; 
 			vmax.z = mins.z;
 		}
-        if (planes[i].Distance(vmax)<0) return OUTSIDE;
-		if (planes[i].Distance(vmin)<=0) ret = INTERSECT;
+        if (planes[i].Distance(vmax)<0) {
+            return OUTSIDE;
+        }
+		if (planes[i].Distance(vmin)<=0) {
+            ret = INTERSECT;
+        }
 	} 
 	return ret;
 } 

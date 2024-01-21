@@ -9,22 +9,26 @@
 
 
 LittleCore::RenderSystem::RenderSystem(entt::registry &registry, LittleCore::RenderOctreeSystem &renderOctreeSystem) :
-        registry(registry),
-        renderOctreeSystem(renderOctreeSystem)
+registry(registry),
+renderOctreeSystem(renderOctreeSystem)
 {
 
 }
 
-void LittleCore::RenderSystem::Render(const LittleCore::WorldTransform &cameraTransform, const LittleCore::Camera& camera) {
 
+void LittleCore::RenderSystem::Render(const LittleCore::WorldTransform &cameraTransform, const LittleCore::Camera& camera, Renderer* renderer) {
 
-    const mat4x4 viewProjection = camera.GetProjection() * cameraTransform.worldInverse;
+    const mat4x4 viewProjection = camera.GetProjection() * cameraTransform.world;
     BoundingFrustum frustum;
     frustum.SetFromViewProjection(viewProjection);
 
     std::vector<entt::entity> entities;
     renderOctreeSystem.Query(frustum, entities);
 
-
+    for(auto entity : entities) {
+        const WorldTransform& worldTransform = registry.get<WorldTransform>(entity);
+        const Mesh& mesh = registry.get<Mesh>(entity);
+        renderer->Render(mesh, worldTransform.world);
+    }
 
 }

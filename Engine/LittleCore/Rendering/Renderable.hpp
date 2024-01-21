@@ -7,7 +7,7 @@ namespace LittleCore {
 
     struct Renderable {
 
-
+        int mask;
 
     };
 
