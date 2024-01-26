@@ -10,7 +10,9 @@ namespace LittleCore {
     struct Renderer {
 
         virtual ~Renderer() {};
+        virtual void BeginRender() = 0;
         virtual void Render(const Mesh& mesh, const glm::mat4x4& world) = 0;
+        virtual void EndRender() = 0;
 
     };
 

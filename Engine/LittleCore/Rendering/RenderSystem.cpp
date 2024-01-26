@@ -18,6 +18,8 @@ renderOctreeSystem(renderOctreeSystem)
 
 void LittleCore::RenderSystem::Render(const LittleCore::WorldTransform &cameraTransform, const LittleCore::Camera& camera, Renderer* renderer) {
 
+    renderer->BeginRender();
+
     const mat4x4 viewProjection = camera.GetProjection() * cameraTransform.world;
     BoundingFrustum frustum;
     frustum.SetFromViewProjection(viewProjection);
@@ -30,5 +32,7 @@ void LittleCore::RenderSystem::Render(const LittleCore::WorldTransform &cameraTr
         const Mesh& mesh = registry.get<Mesh>(entity);
         renderer->Render(mesh, worldTransform.world);
     }
+
+    renderer->EndRender();
 
 }

@@ -10,16 +10,17 @@
 namespace LittleCore {
     struct Vertex {
         glm::vec3 position;
-        uint8_t color;
+        uint32_t color;
         glm::vec2 uv;
 
         static bgfx::VertexLayout CreateVertexLayout() {
-            bgfx::VertexLayout ms_layout;
-            ms_layout.begin()
+            bgfx::VertexLayout layout;
+            layout.begin()
             .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
             .add(bgfx::Attrib::Color0,   4, bgfx::AttribType::Uint8, true)
+            .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
             .end();
-            return ms_layout;
+            return layout;
         };
     };
 }
