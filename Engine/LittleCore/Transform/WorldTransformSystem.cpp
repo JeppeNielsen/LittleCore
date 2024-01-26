@@ -5,12 +5,16 @@
 #include "WorldTransformSystem.hpp"
 
 #include <Hierarchy.hpp>
+#include <iostream>
 
 using namespace LittleCore;
 
 WorldTransformSystem::WorldTransformSystem(entt::registry& registry) :
 registry(registry),
-observer(registry, entt::collector.update<LocalTransform>().update<Hierarchy>().where<LocalTransform, Hierarchy, WorldTransform>()) {
+observer(registry, entt::collector
+        .update<LocalTransform>().where<Hierarchy, WorldTransform>()
+        .update<Hierarchy>().where<LocalTransform, WorldTransform>()
+                .group<Hierarchy, LocalTransform, WorldTransform>()) {
 
 }
 

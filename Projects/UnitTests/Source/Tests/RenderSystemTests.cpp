@@ -42,8 +42,14 @@ namespace {
 
         struct TestRenderer : public Renderer {
             int renderCount = 0;
+            void BeginRender() {
+
+            }
             void Render(const Mesh& mesh, const mat4x4& world) override {
                 renderCount++;
+            }
+            void EndRender() {
+
             }
         };
 

@@ -8,7 +8,7 @@ using namespace LittleCore;
 
 HierarchySystem::HierarchySystem(entt::registry& registry) :
     registry(registry),
-    observer(registry, entt::collector.update<Hierarchy>()) {
+    observer(registry, entt::collector.update<Hierarchy>().group<Hierarchy>()) {
 }
 
 void HierarchySystem::Update() {

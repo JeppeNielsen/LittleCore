@@ -12,9 +12,10 @@ using namespace LittleCore;
 
 WorldBoundingBoxSystem::WorldBoundingBoxSystem(entt::registry &registry) :
     registry(registry),
-    observer(registry, entt::collector.update<WorldTransform>().update<LocalBoundingBox>().where<LocalBoundingBox, WorldTransform, WorldBoundingBox>())
-
-{ }
+    observer(registry, entt::collector.update<WorldTransform>().where<LocalBoundingBox, WorldBoundingBox>()
+                                         .update<LocalBoundingBox>().where<WorldTransform, WorldBoundingBox>()
+                                         .group<LocalBoundingBox, WorldTransform, WorldBoundingBox>())
+                                        { }
 
 void WorldBoundingBoxSystem::Update() {
 
