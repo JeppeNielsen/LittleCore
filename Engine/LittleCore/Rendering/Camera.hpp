@@ -10,6 +10,7 @@
 #include "Math.hpp"
 #include "Ray.hpp"
 #include "WorldTransform.hpp"
+#include "Rect.hpp"
 
 namespace LittleCore {
     struct Camera {
@@ -19,7 +20,12 @@ namespace LittleCore {
         
         float near;
         float far;
-        
+
+        Rect viewRect = {{0,0},{1,1}};
+
+        bool clearBackground = true;
+        uint32_t clearColor = 0x6495EDFF;
+
         mat4x4 GetProjection(float aspect) const;
      
         Ray GetRay(const WorldTransform &transform,

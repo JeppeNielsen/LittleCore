@@ -26,7 +26,7 @@ void CalculateParentMatrices(entt::registry& registry, entt::entity entity, std:
 
     auto& hierarchy = registry.get<Hierarchy>(entity);
     auto& localTransform = registry.get<LocalTransform>(entity);
-    auto& worldTransform = registry.get<WorldTransform>(entity);
+    auto& worldTransform = registry.patch<WorldTransform>(entity);
 
     if (!registry.valid(hierarchy.parent)) {
         worldTransform.world = localTransform.GetLocalToParent();
@@ -42,7 +42,7 @@ void CalculateChildMatrices(entt::registry& registry, entt::entity entity, std::
 
     auto& hierarchy = registry.get<Hierarchy>(entity);
     auto& localTransform = registry.get<LocalTransform>(entity);
-    auto& worldTransform = registry.get<WorldTransform>(entity);
+    auto& worldTransform = registry.patch<WorldTransform>(entity);
 
     if (!registry.valid(hierarchy.parent)) {
         worldTransform.world = localTransform.GetLocalToParent();

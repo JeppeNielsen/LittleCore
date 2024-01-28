@@ -6,6 +6,7 @@
 #include "Math.hpp"
 #include <iostream>
 #include <bx/math.h>
+#include "Math.hpp"
 
 using namespace LittleCore;
 
@@ -19,12 +20,26 @@ BGFXRenderer::BGFXRenderer() {
     );
 }
 
-void BGFXRenderer::BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection) {
+void BGFXRenderer::BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection, const Camera& camera) {
 
     numMeshes = 0;
     numBatches = 0;
     bgfx::setViewTransform(viewId, &view[0][0], &projection[0][0]);
+
+    const auto& viewRect = camera.viewRect;
+
+    uint16_t x = (uint16_t) screenSize.x * viewRect.min.x;
+    uint16_t y = (uint16_t) screenSize.y * viewRect.min.y;
+
+    uint16_t width = (uint16_t) screenSize.x * (viewRect.max.x - viewRect.min.x);
+    uint16_t height = (uint16_t) screenSize.y * (viewRect.max.y - viewRect.min.y);
+
+    bgfx::setViewRect(viewId, x, y, width, height);
+    if (camera.clearBackground) {
+        bgfx::setViewClear(viewId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, camera.clearColor, 1.0f, 0);
+    }
 }
+
 void BGFXRenderer::EndRender(bgfx::ViewId viewId) {
 
 

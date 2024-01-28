@@ -8,41 +8,47 @@
 #include "Renderable.hpp"
 #include <algorithm>
 
-LittleCore::RenderSystem::RenderSystem(entt::registry &registry, LittleCore::RenderOctreeSystem &renderOctreeSystem) :
+using namespace LittleCore;
+
+RenderSystem::RenderSystem(entt::registry &registry, RenderOctreeSystem &renderOctreeSystem) :
 registry(registry),
-renderOctreeSystem(renderOctreeSystem)
-{
+renderOctreeSystem(renderOctreeSystem) {
 
 }
 
-void LittleCore::RenderSystem::Render(bgfx::ViewId viewId, const LittleCore::WorldTransform &cameraTransform,
-                                      const LittleCore::Camera &camera, LittleCore::Renderer *renderer) {
+void RenderSystem::Render(Renderer* renderer) {
+    auto view = registry.view<WorldTransform, Camera>();
 
-    const mat4x4  projection = camera.GetProjection(1.0f);
+    for(auto entity : view) {
+        auto& worldTransform = registry.get<WorldTransform>(entity);
+        auto& camera = registry.get<Camera>(entity);
 
-    const mat4x4 viewProjection = projection * cameraTransform.world;
+        Render((bgfx::ViewId )entity, worldTransform, camera, renderer);
+    }
+}
+
+void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTransform,
+                                      const Camera &camera, Renderer* renderer) {
+
+    float width = renderer->screenSize.x * (camera.viewRect.max.x - camera.viewRect.min.x);
+    float height = renderer->screenSize.y * (camera.viewRect.max.y - camera.viewRect.min.y);
+
+    const mat4x4  projection = camera.GetProjection(width / height);
+
+    const mat4x4 viewProjection = camera.GetProjection(1.0f) * cameraTransform.worldInverse;
     BoundingFrustum frustum;
     frustum.SetFromViewProjection(viewProjection);
 
-    renderer->BeginRender(viewId, cameraTransform.worldInverse, projection);
-
-
+    renderer->BeginRender(viewId, cameraTransform.worldInverse, projection, camera);
 
     std::vector<entt::entity> entities;
-    //renderOctreeSystem.Query(frustum, entities);
-
-    auto view = registry.view<WorldTransform, Mesh, Renderable>();
-    for(auto e : view) {
-        entities.push_back(e);
-    }
-
+    renderOctreeSystem.Query(frustum, entities);
 
     std::sort(entities.begin(), entities.end(), [this] (entt::entity entityA, entt::entity entityB) {
         return registry.get<Renderable>(entityA).shaderProgram.idx==registry.get<Renderable>(entityB).shaderProgram.idx;
     });
 
     bgfx::ProgramHandle currentShaderProgram = BGFX_INVALID_HANDLE;
-
 
     for(auto entity : entities) {
         const Renderable& renderable = registry.get<Renderable>(entity);

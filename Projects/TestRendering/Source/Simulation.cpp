@@ -27,9 +27,6 @@ void Simulation::Update() {
     renderOctreeSystem.Update();
 }
 
-void Simulation::Render(bgfx::ViewId viewId, BGFXRenderer& bgfxRenderer) {
-    auto view = registry.view<WorldTransform, Camera>();
-    view.each([this, viewId, &bgfxRenderer](const WorldTransform& worldTransform, const Camera& camera){
-        renderSystem.Render(viewId, worldTransform, camera, &bgfxRenderer);
-    });
+void Simulation::Render(BGFXRenderer& bgfxRenderer) {
+    renderSystem.Render(&bgfxRenderer);
 }

@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Renderer.hpp"
+#include "Camera.hpp"
 
 namespace LittleCore {
     class BGFXRenderer : public Renderer {
@@ -19,11 +20,10 @@ namespace LittleCore {
         int currentVertex = 0;
         int currentTriangle = 0;
 
-
     public:
-        BGFXRenderer();
 
-        virtual void BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection) override;
+        BGFXRenderer();
+        virtual void BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection, const Camera& camera) override;
         virtual void EndRender(bgfx::ViewId viewId) override;
 
         virtual void BeginBatch(bgfx::ViewId viewId) override;

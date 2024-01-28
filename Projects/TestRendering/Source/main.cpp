@@ -234,15 +234,35 @@ int main() {
 
     BGFXRenderer bgfxRenderer;
 
-    auto cameraObject = registry.create();
-    registry.emplace<LocalTransform>(cameraObject).position = {0,0,-10};
-    registry.emplace<WorldTransform>(cameraObject);
-    registry.emplace<Hierarchy>(cameraObject);
+    {
+        auto cameraObject = registry.create();
+        registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -10};
+        registry.emplace<WorldTransform>(cameraObject);
+        registry.emplace<Hierarchy>(cameraObject);
 
-    auto& camera = registry.emplace<Camera>(cameraObject);
-    camera.fieldOfView = 60.0f;
-    camera.near = 1;
-    camera.far = 20;
+        auto &camera = registry.emplace<Camera>(cameraObject);
+        camera.fieldOfView = 60.0f;
+        camera.near = 1;
+        camera.far = 20;
+        camera.viewRect = {{0,0},{0.5f,1.0f}};
+    }
+
+
+    entt::entity cameraEntity;
+    {
+        auto cameraObject = registry.create();
+        registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -10};
+        registry.emplace<WorldTransform>(cameraObject);
+        registry.emplace<Hierarchy>(cameraObject);
+
+        auto &camera = registry.emplace<Camera>(cameraObject);
+        camera.fieldOfView = 60.0f;
+        camera.near = 1;
+        camera.far = 20;
+        camera.viewRect = {{0.5f,0},{1.0f,1.0f}};
+
+        cameraEntity = cameraObject;
+    }
 
     auto quad1 = CreateQuad(registry, {0,0,0});
     registry.get<Renderable>(quad1).shaderProgram = program;
@@ -250,7 +270,7 @@ int main() {
     auto quad2 = CreateQuad(registry, {3,0,0}, quad1);
     registry.get<Renderable>(quad2).shaderProgram = program;
 
-    auto quad3 = CreateQuad(registry, {0,0,20}, quad2);
+    auto quad3 = CreateQuad(registry, {0,2,0}, quad2);
     registry.get<Renderable>(quad3).shaderProgram = program;
 
 
@@ -282,109 +302,21 @@ int main() {
         int width;
         int height;
         SDL_GetWindowSizeInPixels(window, &width, &height);
+        bgfxRenderer.screenSize = {width, height};
 
         bgfx::reset((uint32_t)width, (uint32_t)height, BGFX_RESET_VSYNC);
 
-        bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
-        bgfx::touch(0);
-        bgfx::dbgTextClear();
-        bgfx::dbgTextPrintf(0,0,0, "egriuhgeiurhg");
+        registry.patch<LocalTransform>(quad2).position = {0,4 + sinf(time)*4,0};
+        registry.patch<LocalTransform>(quad1).position = {6 + sinf(time)*6,0,0};
+        registry.patch<LocalTransform>(quad1).rotation =  glm::quat({0,0,scale});
 
-        /*
-        const bx::Vec3 at  = { 0.0f, 0.0f,   0.0f };
-        const bx::Vec3 eye = { 0.0f, 0.0f, -10.0f };
+        registry.patch<LocalTransform>(cameraEntity).rotation = glm::quat ({0,0,time});
 
-        // Set view and projection matrix for view 0.
-        {
-            float view[16];
-            bx::mtxLookAt(view, eye, at);
-
-            float proj[16];
-            bx::mtxProj(proj, 60.0f, float(width)/float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-            bgfx::setViewTransform(0, view, proj);
-        }
-         */
-
-        // This dummy draw call is here to make sure that view 0 is cleared
-        // if no other draw calls are submitted to view 0.
-        bgfx::touch(0);
-
-        Mat mat;
-
-        //registry.patch<LocalTransform>(quad1).rotation = glm::quat({0,0,time});
-
-        //registry.patch<LocalTransform>(quad2).position = {sinf(time)*6,0,0};
-        registry.patch<LocalTransform>(quad1).position = {3 + sinf(time)*3,0,0};
-
-        float mtx[16];
-        bx::mtxRotateXY(mat, 0, 0);
-        mat.v[12] = 0;
-        mat.v[13] = 0;
-        mat.v[14] = 0.0f;
-
-        float scMatrix[16];
-        bx::mtxScale(scMatrix, 1.0f);
-
-        float res[16];
-        bx::mtxMul(res, scMatrix, mat);
-
-        // Set model matrix for rendering.
-        bgfx::setTransform(res);
 
         simulation.Update();
-        simulation.Render(0, bgfxRenderer);
+        simulation.Render(bgfxRenderer);
 
         std::cout << "Num meshes :"<<bgfxRenderer.numMeshes<<", num batches:"<< bgfxRenderer.numBatches << "\n";
-
-        //bgfx::submit(0, program);
-
-        uint64_t state = 0
-                         | BGFX_STATE_WRITE_R
-                         | BGFX_STATE_WRITE_G
-                         | BGFX_STATE_WRITE_B
-                         | BGFX_STATE_WRITE_A
-                         | BGFX_STATE_WRITE_Z
-                         | BGFX_STATE_DEPTH_TEST_LESS
-                         | BGFX_STATE_CULL_CW
-                         | BGFX_STATE_MSAA
-                         | BGFX_STATE_BLEND_ALPHA
-        ;
-
-        /*
-        // Submit 11x11 cubes.
-        for (uint32_t yy = 0; yy < 1; ++yy)
-        {
-            for (uint32_t xx = 0; xx < 1; ++xx)
-            {
-                Mat mat;
-
-                float mtx[16];
-                bx::mtxRotateXY(mat, time + xx*0.1f, time + yy*0.1f);
-                mat.v[12] = float(xx)*0.6f;
-                mat.v[13] = float(yy)*0.6f;
-                mat.v[14] = 0.0f;
-
-                float scMatrix[16];
-                bx::mtxScale(scMatrix, scale);
-
-                float res[16];
-                bx::mtxMul(res, scMatrix, mat);
-
-                // Set model matrix for rendering.
-                bgfx::setTransform(res);
-
-                // Set vertex and index buffer.
-                bgfx::setVertexBuffer(0, vbh);
-                bgfx::setIndexBuffer(ibh);
-
-                // Set render states.
-                bgfx::setState(state);
-
-                // Submit primitive for rendering to view 0.
-                bgfx::submit(0, program);
-            }
-        }
-        */
 
         bgfx::frame();
     }
