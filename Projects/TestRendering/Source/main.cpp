@@ -214,6 +214,8 @@ int main() {
 
     auto program = bgfx::createProgram(vsShader, fsShader, true);
 
+    auto program2 = bgfx::createProgram(vsShader, fsShader, true);
+
     //auto m_program = loadProgram("vs_cubes", "fs_cubes");
 
     SDL_Event event;
@@ -238,15 +240,18 @@ int main() {
     registry.emplace<Hierarchy>(cameraObject);
 
     auto& camera = registry.emplace<Camera>(cameraObject);
-    camera.ViewSize = {10,10};
-    camera.Near = 1;
-    camera.Far = 20;
+    camera.fieldOfView = 60.0f;
+    camera.near = 1;
+    camera.far = 20;
 
     auto quad1 = CreateQuad(registry, {0,0,0});
+    registry.get<Renderable>(quad1).shaderProgram = program;
 
     auto quad2 = CreateQuad(registry, {3,0,0}, quad1);
+    registry.get<Renderable>(quad2).shaderProgram = program;
 
-    auto quad3 = CreateQuad(registry, {3,3,0}, quad2);
+    auto quad3 = CreateQuad(registry, {0,0,20}, quad2);
+    registry.get<Renderable>(quad3).shaderProgram = program;
 
 
     while (!exit) {
@@ -265,8 +270,6 @@ int main() {
 
                 case SDL_EVENT_MOUSE_WHEEL:
                     scale+=event.wheel.y * 0.1f;
-                    
-                    
                     break;
 
                 case SDL_EVENT_WINDOW_CLOSE_REQUESTED: {
@@ -287,6 +290,7 @@ int main() {
         bgfx::dbgTextClear();
         bgfx::dbgTextPrintf(0,0,0, "egriuhgeiurhg");
 
+        /*
         const bx::Vec3 at  = { 0.0f, 0.0f,   0.0f };
         const bx::Vec3 eye = { 0.0f, 0.0f, -10.0f };
 
@@ -299,6 +303,7 @@ int main() {
             bx::mtxProj(proj, 60.0f, float(width)/float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
             bgfx::setViewTransform(0, view, proj);
         }
+         */
 
         // This dummy draw call is here to make sure that view 0 is cleared
         // if no other draw calls are submitted to view 0.
@@ -306,10 +311,10 @@ int main() {
 
         Mat mat;
 
-        registry.patch<LocalTransform>(quad1).rotation = glm::quat({0,0,time});
+        //registry.patch<LocalTransform>(quad1).rotation = glm::quat({0,0,time});
 
-        registry.patch<LocalTransform>(quad2).position = {sinf(time)*6,0,0};
-
+        //registry.patch<LocalTransform>(quad2).position = {sinf(time)*6,0,0};
+        registry.patch<LocalTransform>(quad1).position = {3 + sinf(time)*3,0,0};
 
         float mtx[16];
         bx::mtxRotateXY(mat, 0, 0);
@@ -327,11 +332,11 @@ int main() {
         bgfx::setTransform(res);
 
         simulation.Update();
-        simulation.Render(bgfxRenderer);
+        simulation.Render(0, bgfxRenderer);
 
-        std::cout << "Num rendered :"<<bgfxRenderer.count<< "\n";
+        std::cout << "Num meshes :"<<bgfxRenderer.numMeshes<<", num batches:"<< bgfxRenderer.numBatches << "\n";
 
-        bgfx::submit(0, program);
+        //bgfx::submit(0, program);
 
         uint64_t state = 0
                          | BGFX_STATE_WRITE_R

@@ -13,12 +13,14 @@
 
 namespace LittleCore {
     struct Camera {
-        glm::vec2 ViewSize;
+
+        float orthoSize;
+        float fieldOfView;
         
-        float Near;
-        float Far;
+        float near;
+        float far;
         
-        mat4x4 GetProjection() const;
+        mat4x4 GetProjection(float aspect) const;
      
         Ray GetRay(const WorldTransform &transform,
                    const ivec2& screenSize,

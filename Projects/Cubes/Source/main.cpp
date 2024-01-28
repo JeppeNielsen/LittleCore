@@ -222,10 +222,10 @@ int main() {
 
         bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
         bgfx::touch(0);
-        bgfx::dbgTextClear();
+        //bgfx::dbgTextClear();
 
-        const bx::Vec3 at  = { 30.0f, 30.0f,   0.0f };
-        const bx::Vec3 eye = { 30.0f, 30.0f, -75.0f };
+        const bx::Vec3 at  = { 0.0f, 0.0f,   0.0f };
+        const bx::Vec3 eye = { 0.0f, 0.0f, -10.0f };
 
         // Set view and projection matrix for view 0.
         {
@@ -254,16 +254,16 @@ int main() {
         ;
 
         // Submit 11x11 cubes.
-        for (uint32_t yy = 0; yy < 150; ++yy)
+        for (uint32_t yy = 0; yy < 1; ++yy)
         {
-            for (uint32_t xx = 0; xx < 200; ++xx)
+            for (uint32_t xx = 0; xx < 1; ++xx)
             {
                 Mat mat;
                 
                 float mtx[16];
                 bx::mtxRotateXY(mat, time + xx*0.1f, time + yy*0.1f);
-                mat.v[12] = -15.0f + float(xx)*0.6f;
-                mat.v[13] = -15.0f + float(yy)*0.6f;
+                mat.v[12] = float(xx)*0.6f;
+                mat.v[13] = float(yy)*0.6f;
                 mat.v[14] = 0.0f;
 
                 float scMatrix[16];

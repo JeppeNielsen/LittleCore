@@ -18,7 +18,7 @@ namespace LittleCore {
 
         void Update();
 
-        void Render(BGFXRenderer& bgfxRenderer);
+        void Render(bgfx::ViewId viewId, BGFXRenderer &bgfxRenderer);
     private:
         entt::registry& registry;
         HierarchySystem hierarchySystem;
@@ -27,6 +27,5 @@ namespace LittleCore {
         WorldTransformSystem worldTransformSystem;
         RenderOctreeSystem renderOctreeSystem;
         RenderSystem renderSystem;
-
     };
 }

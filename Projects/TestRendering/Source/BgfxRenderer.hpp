@@ -23,14 +23,15 @@ namespace LittleCore {
     public:
         BGFXRenderer();
 
-        virtual void BeginRender() override;
+        virtual void BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection) override;
+        virtual void EndRender(bgfx::ViewId viewId) override;
 
-        virtual void Render(const LittleCore::Mesh &mesh, const glm::mat4x4 &world) override;
+        virtual void BeginBatch(bgfx::ViewId viewId) override;
+        virtual void RenderMesh(const Mesh& mesh, const glm::mat4x4& world) override;
+        virtual void EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram) override;
 
-        virtual void EndRender() override;
-
-        int count = 0;
-
+        int numMeshes;
+        int numBatches;
     };
 
 }

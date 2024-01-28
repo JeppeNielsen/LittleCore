@@ -5,6 +5,7 @@
 #include "BgfxRenderer.hpp"
 #include "Math.hpp"
 #include <iostream>
+#include <bx/math.h>
 
 using namespace LittleCore;
 
@@ -18,14 +19,26 @@ BGFXRenderer::BGFXRenderer() {
     );
 }
 
-void BGFXRenderer::BeginRender() {
-    currentVertex = 0;
-    currentTriangle = 0;
-    count = 0;
+void BGFXRenderer::BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection) {
+
+    numMeshes = 0;
+    numBatches = 0;
+    bgfx::setViewTransform(viewId, &view[0][0], &projection[0][0]);
+}
+void BGFXRenderer::EndRender(bgfx::ViewId viewId) {
+
+
+
 }
 
-void BGFXRenderer::Render(const LittleCore::Mesh &mesh, const glm::mat4x4 &world) {
+void BGFXRenderer::BeginBatch(bgfx::ViewId viewId) {
 
+    currentVertex = 0;
+    currentTriangle = 0;
+
+}
+
+void BGFXRenderer::RenderMesh(const Mesh& mesh, const glm::mat4x4& world) {
     int baseTriangleIndex = currentVertex;
     for (int i = 0; i < mesh.vertices.size(); ++i) {
         const auto &source = mesh.vertices[i];
@@ -35,7 +48,7 @@ void BGFXRenderer::Render(const LittleCore::Mesh &mesh, const glm::mat4x4 &world
         dest.position = world * pos4d;
 
         dest.color = source.color;
-        //dest.uv = source.uv;
+        dest.uv = source.uv;
 
         ++currentVertex;
     }
@@ -45,10 +58,13 @@ void BGFXRenderer::Render(const LittleCore::Mesh &mesh, const glm::mat4x4 &world
         ++currentTriangle;
     }
 
-    count++;
-}
+    numMeshes++;
 
-void BGFXRenderer::EndRender() {
+}
+void BGFXRenderer::EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram) {
+    if (currentVertex == 0 || currentTriangle==0) {
+        return;
+    }
 
     uint64_t state = 0
                      | BGFX_STATE_WRITE_R
@@ -59,8 +75,8 @@ void BGFXRenderer::EndRender() {
                      | BGFX_STATE_DEPTH_TEST_LESS
                      | BGFX_STATE_CULL_CW
                      | BGFX_STATE_MSAA
-                     //| BGFX_STATE_BLEND_ALPHA
-                     ;
+    //| BGFX_STATE_BLEND_ALPHA
+    ;
 
 
     bgfx::update(vertexBuffer,0,bgfx::makeRef(vertices, currentVertex * sizeof (Vertex)));
@@ -71,4 +87,8 @@ void BGFXRenderer::EndRender() {
 
     // Set render states.
     bgfx::setState(state);
+
+    bgfx::submit(viewId, shaderProgram);
+
+    numBatches++;
 }
