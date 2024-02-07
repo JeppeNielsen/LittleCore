@@ -35,7 +35,7 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
 
     const mat4x4  projection = camera.GetProjection(width / height);
 
-    const mat4x4 viewProjection = camera.GetProjection(1.0f) * cameraTransform.worldInverse;
+    const mat4x4 viewProjection = projection * cameraTransform.worldInverse;
     BoundingFrustum frustum;
     frustum.SetFromViewProjection(viewProjection);
 

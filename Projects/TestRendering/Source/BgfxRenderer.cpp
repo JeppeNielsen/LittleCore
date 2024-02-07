@@ -11,13 +11,15 @@
 using namespace LittleCore;
 
 BGFXRenderer::BGFXRenderer() {
-    vertexBuffer = bgfx::createDynamicVertexBuffer(bgfx::makeRef(vertices, sizeof(vertices)),
+    vertexBuffer = bgfx::createDynamicVertexBuffer(sizeof(vertices),
                                             LittleCore::Vertex::CreateVertexLayout());
 
-    indexBuffer = bgfx::createDynamicIndexBuffer(
-            // Static data can be passed with bgfx::makeRef
-            bgfx::makeRef(indices, sizeof(indices))
-    );
+    indexBuffer = bgfx::createDynamicIndexBuffer(sizeof(indices), BGFX_BUFFER_NONE);
+}
+
+BGFXRenderer::~BGFXRenderer() {
+    bgfx::destroy(indexBuffer);
+    bgfx::destroy(vertexBuffer);
 }
 
 void BGFXRenderer::BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection, const Camera& camera) {
@@ -54,6 +56,7 @@ void BGFXRenderer::BeginBatch(bgfx::ViewId viewId) {
 }
 
 void BGFXRenderer::RenderMesh(const Mesh& mesh, const glm::mat4x4& world) {
+
     int baseTriangleIndex = currentVertex;
     for (int i = 0; i < mesh.vertices.size(); ++i) {
         const auto &source = mesh.vertices[i];
@@ -74,8 +77,8 @@ void BGFXRenderer::RenderMesh(const Mesh& mesh, const glm::mat4x4& world) {
     }
 
     numMeshes++;
-
 }
+
 void BGFXRenderer::EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram) {
     if (currentVertex == 0 || currentTriangle==0) {
         return;
@@ -93,7 +96,6 @@ void BGFXRenderer::EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgr
     //| BGFX_STATE_BLEND_ALPHA
     ;
 
-
     bgfx::update(vertexBuffer,0,bgfx::makeRef(vertices, currentVertex * sizeof (Vertex)));
     bgfx::update(indexBuffer,0,bgfx::makeRef(indices, currentTriangle* sizeof (uint16_t)));
 
@@ -107,3 +109,4 @@ void BGFXRenderer::EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgr
 
     numBatches++;
 }
+

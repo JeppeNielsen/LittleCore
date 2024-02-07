@@ -23,6 +23,7 @@ namespace LittleCore {
     public:
 
         BGFXRenderer();
+        ~BGFXRenderer();
         virtual void BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection, const Camera& camera) override;
         virtual void EndRender(bgfx::ViewId viewId) override;
 
