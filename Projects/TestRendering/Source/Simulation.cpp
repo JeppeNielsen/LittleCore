@@ -13,8 +13,8 @@ Simulation::Simulation(entt::registry &registry) :
     worldBoundingBoxSystem(registry),
     worldTransformSystem(registry),
     renderOctreeSystem(registry),
-    renderSystem(registry, renderOctreeSystem)
-
+    renderSystem(registry, renderOctreeSystem),
+    inputSystem(registry)
 {
 
 }
@@ -29,4 +29,8 @@ void Simulation::Update() {
 
 void Simulation::Render(BGFXRenderer& bgfxRenderer) {
     renderSystem.Render(&bgfxRenderer);
+}
+
+InputSystem &Simulation::Input() {
+    return inputSystem;
 }

@@ -10,60 +10,7 @@
 #include "RenderSystem.hpp"
 #include "Vertex.hpp"
 #include "Simulation.hpp"
-
-struct PosColorVertex
-{
-    /*float m_x;
-    float m_y;
-    float m_z;
-     */
-    glm::vec3 pos;
-
-    uint32_t m_abgr;
-
-    static void init() {
-        ms_layout
-                .begin()
-                .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-                .add(bgfx::Attrib::Color0,   4, bgfx::AttribType::Uint8, true)
-                .end();
-    };
-
-    static bgfx::VertexLayout ms_layout;
-};
-
-bgfx::VertexLayout PosColorVertex::ms_layout;
-
-static PosColorVertex s_cubeVertices[] =
-        {
-                {{-1.0f,  1.0f,  1.0f}, 0xff000000 },
-                {{ 1.0f,  1.0f,  1.0f}, 0xff0000ff },
-                {{-1.0f, -1.0f,  1.0f}, 0xff00ff00 },
-                {{1.0f, -1.0f,  1.0f}, 0xff00ffff },
-                {{-1.0f,  1.0f, -1.0f}, 0xffff0000 },
-                { {1.0f,  1.0f, -1.0f}, 0xffff00ff },
-                {{-1.0f, -1.0f, -1.0f}, 0xffffff00 },
-                { {1.0f, -1.0f, -1.0f}, 0xffffffff },
-        };
-
-static const uint16_t s_cubeTriList[] =
-        {
-                0, 1, 2, // 0
-                1, 3, 2,
-                4, 6, 5, // 2
-                5, 6, 7,
-                0, 2, 4, // 4
-                4, 2, 6,
-                1, 5, 3, // 6
-                5, 7, 3,
-                0, 4, 1, // 8
-                4, 5, 1,
-                2, 3, 6, // 10
-                6, 3, 7,
-        };
-
-
-
+#include "Input.hpp"
 
 int Filter(void* userData, SDL_Event* event) {
 
@@ -112,13 +59,6 @@ std::vector<uint8_t> readFile(const char* filename)
     return vec;
 }
 
-struct Mat {
-    float v[16];
-    
-    
-    operator float*() { return v; }
-};
-
 using namespace LittleCore;
 
 entt::entity CreateQuad(entt::registry& registry, glm::vec3 position, entt::entity parent = entt::null) {
@@ -148,10 +88,22 @@ entt::entity CreateQuad(entt::registry& registry, glm::vec3 position, entt::enti
     return quad;
 }
 
+struct MovementKey {
+    InputKey key;
+    vec3 direction;
+    bool isActive;
+};
+
+struct Movable {
+    std::vector<MovementKey> keys;
+};
+
+
 
 int main() {
 
 
+    Input a;
 
 
     SDL_Init(0);
@@ -180,27 +132,8 @@ int main() {
     bgfx::setDebug(BGFX_DEBUG_TEXT);
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x6495ED, 1.f, 0);
 
-
-
-    PosColorVertex::init();
-
-    // Create static vertex buffer.
-    auto vbh = bgfx::createVertexBuffer(
-            // Static data can be passed with bgfx::makeRef
-            bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices) )
-            , PosColorVertex::ms_layout
-    );
-
-    // Create static index buffer for triangle list rendering.
-    auto ibh = bgfx::createIndexBuffer(
-            // Static data can be passed with bgfx::makeRef
-            bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList) )
-    );
-
-
     auto vertexShader = readFile("/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Metal/vs_cubes.bin");
     auto fragShader = readFile("/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Metal/fs_cubes.bin");
-
 
     //std::ifstream infile("vs_cubes", std::ios_base::binary);
     //std::vector<uint8_t> buffer( std::istreambuf_iterator<uint8_t>(infile),
@@ -224,7 +157,6 @@ int main() {
     SDL_SetEventFilter(&Filter, window);
 
     {
-
         float time = 0;
 
         float scale = 1.0f;
@@ -242,6 +174,28 @@ int main() {
             registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -10};
             registry.emplace<WorldTransform>(cameraObject);
             registry.emplace<Hierarchy>(cameraObject);
+            auto& moveable = registry.emplace<Movable>(cameraObject);
+            moveable.keys.push_back({
+                InputKey::A,
+                {-1,0,0}
+            });
+
+            moveable.keys.push_back({
+                    InputKey::D,
+                    {1,0,0}
+            });
+
+            moveable.keys.push_back({
+                                            InputKey::W,
+                                            {0,0,1}
+                                    });
+
+            moveable.keys.push_back({
+                                            InputKey::S,
+                                            {0,0,-1}
+                                    });
+
+            registry.emplace<Input>(cameraObject);
 
             auto &camera = registry.emplace<Camera>(cameraObject);
             camera.fieldOfView = 60.0f;
@@ -278,12 +232,15 @@ int main() {
         auto quad3 = CreateQuad(registry, {0, 2, 0}, quad2);
         registry.get<Renderable>(quad3).shaderProgram = program;
 
-
         while (!exit) {
 
             time += (1.0f / 60.0f) * 0.2f;
 
+            simulation.Input().BeginEvents();
+
             while (SDL_PollEvent(&event)) {
+
+                simulation.Input().HandleEvent(&event);
 
                 switch (event.type) {
                     case SDL_EVENT_KEY_DOWN:
@@ -304,6 +261,8 @@ int main() {
                 }
             }
 
+            simulation.Input().EndEvents();
+
             int width;
             int height;
             SDL_GetWindowSizeInPixels(window, &width, &height);
@@ -315,11 +274,35 @@ int main() {
             //registry.patch<LocalTransform>(quad1).position = {6 + sinf(time)*6,0,0};
             //registry.patch<LocalTransform>(quad1).rotation =  glm::quat({0,0,scale});
 
-            registry.patch<LocalTransform>(cameraEntity).rotation = glm::quat({0, 0, time});
+            //registry.patch<LocalTransform>(cameraEntity).rotation = glm::quat({0, 0, time});
             registry.patch<Camera>(cameraEntity).fieldOfView = 10 + scale;
 
 
             simulation.Update();
+
+            for(auto e : registry.view<Input, Movable, LocalTransform>()) {
+                auto& input = registry.get<Input>(e);
+                auto& movable = registry.get<Movable>(e);
+
+                for(auto& movementKey : movable.keys){
+
+                    if (input.IsKeyDown(movementKey.key)) {
+                        movementKey.isActive = true;
+                    }
+
+                    if (input.IsKeyUp(movementKey.key)) {
+                        movementKey.isActive = false;
+                    }
+
+                    if (movementKey.isActive) {
+                        auto& transform = registry.patch<LocalTransform>(e);
+                        transform.position += movementKey.direction * 0.02f;
+                    }
+
+                }
+
+            }
+
             simulation.Render(bgfxRenderer);
 
             std::cout << "Num meshes :"<<bgfxRenderer.numMeshes<<", num batches:"<< bgfxRenderer.numBatches << "\n";
