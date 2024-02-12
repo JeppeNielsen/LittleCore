@@ -3,8 +3,37 @@
 #include "shaderc.h"
 #include <vector>
 #include <string>
+#include "ShaderParser.hpp"
+#include "FileReader.hpp"
+
+using namespace LittleCore;
 
 int main() {
+
+    std::string shaderSource = FileReader::ReadAllText("/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Source/TestShader.shader");
+
+
+    ShaderParser parser;
+
+    auto result = parser.TryParse(shaderSource);
+
+    if (!result.succes) {
+        std::cout << "Parsing not correct!";
+    } else {
+
+        std::cout << "Varyings:\n";
+        std::cout << result.varyings << std::endl;
+
+        std::cout << "Vertex:\n";
+        std::cout << result.vertex << std::endl;
+
+        std::cout << "Fragment:\n";
+        std::cout << result.fragment << std::endl;
+    }
+
+    return 0;
+
+
 
    // bgfx::Options options;
 
