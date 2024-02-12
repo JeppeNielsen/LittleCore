@@ -102,10 +102,6 @@ struct Movable {
 
 int main() {
 
-
-    Input a;
-
-
     SDL_Init(0);
 
     SDL_Window* window = SDL_CreateWindow("bgfx", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE);
@@ -132,12 +128,8 @@ int main() {
     bgfx::setDebug(BGFX_DEBUG_TEXT);
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x6495ED, 1.f, 0);
 
-    auto vertexShader = readFile("/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Metal/vs_cubes.bin");
-    auto fragShader = readFile("/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Metal/fs_cubes.bin");
-
-    //std::ifstream infile("vs_cubes", std::ios_base::binary);
-    //std::vector<uint8_t> buffer( std::istreambuf_iterator<uint8_t>(infile),
-    //                         std::istreambuf_iterator<uint8_t>() );
+    auto vertexShader = readFile("/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/vs_cubes.bin");
+    auto fragShader = readFile("/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/fs_cubes.bin");
 
     const bgfx::Memory* vsSource = bgfx::makeRef(&vertexShader[0], vertexShader.size());
     bgfx::ShaderHandle vsShader = bgfx::createShader(vsSource);
@@ -146,10 +138,6 @@ int main() {
     bgfx::ShaderHandle fsShader = bgfx::createShader(fsSource);
 
     auto program = bgfx::createProgram(vsShader, fsShader, true);
-
-    auto program2 = bgfx::createProgram(vsShader, fsShader, true);
-
-    //auto m_program = loadProgram("vs_cubes", "fs_cubes");
 
     SDL_Event event;
     bool exit = false;
