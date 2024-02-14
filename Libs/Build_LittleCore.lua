@@ -4,12 +4,12 @@ project "LittleCore"
    targetdir "../bin/%{cfg.buildcfg}"
    
    files { 
-      "../Engine/**.hpp", 
-      "../Engine/**.cpp",
+      "../Engine/LittleCore/**.hpp", 
+      "../Engine/LittleCore/**.cpp",
    }
 
    includedirs {
-      "../Engine/**",
+      "../Engine/LittleCore/**",
       "../External/sdl/include",
       "../External/bgfx/include",
       "../External/bx/include",
@@ -18,7 +18,7 @@ project "LittleCore"
    }
 
    sysincludedirs {
-      "../Engine/**",
+      "../Engine/LittleCore/**",
       "../External/sdl/include",
       "../External/bgfx/include",
       "../External/bx/include",

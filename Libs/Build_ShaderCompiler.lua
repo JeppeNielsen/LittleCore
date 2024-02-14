@@ -3,6 +3,9 @@
 -- License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
 --
 
+
+include "Build_bgfx.lua"
+
 local BGFX_DIR = "../External/bgfx"
 local BX_DIR = "../External/bx"
 local BIMG_DIR = "../External/bimg"
@@ -674,3 +677,37 @@ project "shaderc"
 		links {
 			"pthread",
 		}
+
+project "ShaderCompiler"
+   kind "StaticLib"
+   language "C++"
+   cppdialect "C++14"
+   
+   files { 
+      "../Engine/ShaderCompiler/**.hpp", 
+      "../Engine/ShaderCompiler/**.cpp",
+      "../Engine/LittleCore/Files/FileHelper.hpp",
+      "../Engine/LittleCore/Files/FileHelper.cpp"
+   }
+
+   includedirs {
+      "../Engine/ShaderCompiler",
+      "../External/bgfx/include",
+      "../External/bgfx/tools/shaderc",
+      "../External/bx/include",
+      "../Engine/LittleCore/Files"
+   }
+  
+   links { 
+        "fcpp",
+		"glslang",
+		"glsl-optimizer",
+		"spirv-opt",
+		"spirv-cross",
+		"bimg",
+		"bx",
+		"shaderc"
+   }
+
+
+		

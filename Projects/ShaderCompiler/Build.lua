@@ -3,10 +3,9 @@ require "clion"
 location "Build"
 
 workspace "LittleCore"
-   startproject "ShaderCompiler"
+   startproject "TestShaderCompiler"
 
-include "../Libs/Build_shaderc.lua"
-include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_ShaderCompiler.lua"
 
 solution "LittleCore"
    configurations { "Release", "Debug" }
@@ -43,12 +42,12 @@ solution "LittleCore"
          ["ALWAYS_SEARCH_USER_PATHS"] = "YES",
       };
 
-project "ShaderCompiler"
+project "TestShaderCompiler"
    location("Build")
 
    kind "WindowedApp"
    language "C++"
-   cppdialect "C++14"
+   cppdialect "C++17"
 
    files { 
       "Source/*.cpp",
@@ -56,13 +55,11 @@ project "ShaderCompiler"
    }
 
    includedirs {
-      "../../External/bgfx/include",
-      "../../External/bgfx/tools/shaderc",
-      "../../External/bx/include",
+      "../../Engine/ShaderCompiler",
    }
 
    links { 
-      "shaderc",
+      "ShaderCompiler",
    }
 
    filter "system:windows"
@@ -80,5 +77,3 @@ project "ShaderCompiler"
          "Metal.framework",
          "OpenGL.framework"
       }
-
-   setBxCompat()

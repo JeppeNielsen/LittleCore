@@ -1,84 +1,31 @@
 
 #include <iostream>
-#include "shaderc.h"
-#include <vector>
-#include <string>
-#include "ShaderParser.hpp"
-#include "FileReader.hpp"
+#include "ShaderCompiler.hpp"
+#include "ShaderCompilerSettings.hpp"
 
 using namespace LittleCore;
 
 int main() {
 
-    std::string shaderSource = FileReader::ReadAllText("/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Source/TestShader.shader");
+    ShaderCompilerSettings settings;
+    settings.platform = ShaderPlatform::OSX;
+    settings.shaderInputPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/TestShader.shader";
+    settings.includePath = "/Users/jeppe/Jeppes/LittleCore/External/bgfx/src/";
 
+    settings.varyingsWorkingPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/Temp/varyings.temp";
+    settings.vertexWorkingPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/Temp/vertex.temp";
+    settings.fragmentWorkingPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/Temp/fragment.temp";
 
-    ShaderParser parser;
+    settings.vertexOutputPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/TestShader.vertex";
+    settings.fragmentOutputPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/TestShader.fragment";
 
-    auto result = parser.TryParse(shaderSource);
+    ShaderCompiler compiler;
 
-    if (!result.succes) {
-        std::cout << "Parsing not correct!";
+    if (compiler.Compile(settings)) {
+        std::cout << "Compilation success!\n";
     } else {
-
-        std::cout << "Varyings:\n";
-        std::cout << result.varyings << std::endl;
-
-        std::cout << "Vertex:\n";
-        std::cout << result.vertex << std::endl;
-
-        std::cout << "Fragment:\n";
-        std::cout << result.fragment << std::endl;
+        std::cout << "Compilation failed\n";
     }
-
-    return 0;
-
-
-
-   // bgfx::Options options;
-
-    {
-        const char *args[14];
-
-        args[0] = "-f";
-        args[1] = "/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/fs_cubes.sc";
-        args[2] = "-o";
-        args[3] = "/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/fs_cubes.bin";
-        args[4] = "--platform";
-        args[5] = "osx";
-        args[6] = "-p";
-        args[7] = "metal";
-        args[8] = "--type";
-        args[9] = "fragment";
-        args[10] = "-i";
-        args[11] = "/Users/jeppe/Jeppes/LittleCore/External/bgfx/src/";
-        args[12] = "--varyingdef";
-        args[13] = "/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/varying.def.sc";
-
-        bgfx::compileShader(14, args);
-    }
-
-    {
-        const char *args[14];
-
-        args[0] = "-f";
-        args[1] = "/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/vs_cubes.sc";
-        args[2] = "-o";
-        args[3] = "/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/vs_cubes.bin";
-        args[4] = "--platform";
-        args[5] = "osx";
-        args[6] = "-p";
-        args[7] = "metal";
-        args[8] = "--type";
-        args[9] = "vertex";
-        args[10] = "-i";
-        args[11] = "/Users/jeppe/Jeppes/LittleCore/External/bgfx/src/";
-        args[12] = "--varyingdef";
-        args[13] = "/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/varying.def.sc";
-        bgfx::compileShader(14, args);
-    }
-
-    //bgfx::compileMetalShader(options, 0, "code", nullptr);
 
     return 0;
 }
