@@ -78,8 +78,8 @@ struct TextureLoaderFactory : IResourceLoaderFactory<Texture> {
 int main() {
 
     ResourceManager<Mesh, Texture> resourceManager;
-    resourceManager.SetLoaderFactory<Mesh>(std::make_unique<MeshLoaderFactory>());
-    resourceManager.SetLoaderFactory<Texture>(std::make_unique<TextureLoaderFactory>(123));
+    resourceManager.SetLoaderFactory<Mesh, MeshLoaderFactory>();
+    resourceManager.SetLoaderFactory<Texture, TextureLoaderFactory>(123);
 
     entt::registry reg;
     auto ent1 = reg.create();

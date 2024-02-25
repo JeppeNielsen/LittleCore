@@ -17,9 +17,9 @@ namespace LittleCore {
             return std::get<ResourceLoaderManager<TResource>>(managers).Create(id);
         }
 
-        template<typename TResource>
-        void SetLoaderFactory(std::unique_ptr<IResourceLoaderFactory<TResource>>&& loaderFactory) {
-            std::get<ResourceLoaderManager<TResource>>(managers).SetFactory(std::move(loaderFactory));
+        template<typename TResource, typename TLoader, typename ...TArgs>
+        void SetLoaderFactory(TArgs&&... args) {
+            std::get<ResourceLoaderManager<TResource>>(managers).SetFactory(std::make_unique<TLoader>(std::forward<TArgs>(args)...));
         }
 
     };
