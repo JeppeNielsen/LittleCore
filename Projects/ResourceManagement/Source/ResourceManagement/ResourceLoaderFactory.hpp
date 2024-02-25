@@ -9,6 +9,7 @@
 namespace LittleCore {
     template<typename T>
     struct IResourceLoaderFactory {
+        using Type = T;
         virtual ~IResourceLoaderFactory() = default;
         virtual std::unique_ptr<IResourceLoader<T>> Create() = 0;
     };
