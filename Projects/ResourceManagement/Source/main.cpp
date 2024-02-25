@@ -1,9 +1,9 @@
 #include <entt/entt.hpp>
 #include <iostream>
+#include "ResourceManagement/ResourceComponent.hpp"
+#include "ResourceManagement/ResourceLoaderManager.hpp"
 
-#include <chrono>
-#include <ctime>
-#include <cmath>
+using namespace LittleCore;
 
 struct Transform {
     float x;
@@ -15,184 +15,42 @@ struct Mesh {
     int vertices;
 };
 
-template<typename T>
-struct IResourceLoader {
-
-    virtual ~IResourceLoader() {}
-
-    virtual void Load(T& resource) = 0;
-    virtual void Unload(T& unload) = 0;
-    virtual bool IsLoaded() = 0;
-
-};
-
-template<typename T>
-struct IResourceLoaderFactory {
-    virtual ~IResourceLoaderFactory() {}
-    virtual IResourceLoader<T>* Create() = 0;
-};
-
-
-template<typename T>
-struct ResourceStorage {
-    using ResourceLoader = IResourceLoader<T>;
-
-    ResourceLoader* loader;
-
-    T resource;
-
-    ResourceStorage(ResourceLoader* loader) : loader(loader) {
-        std::cout << "Resource created \n";
-    }
-
-    ~ResourceStorage()  {
-        std::cout << "Resource freed \n";
-    }
-
-    ResourceStorage(ResourceStorage&&) = delete;
-    ResourceStorage(const ResourceStorage&) = delete;
-    ResourceStorage& operator=(const ResourceStorage&) = delete;
-    ResourceStorage& operator=(ResourceStorage&&) = delete;
-
-    int referenceCount = 0;
-
-    void IncrementReference() {
-        ++referenceCount;
-
-        if (referenceCount == 1) {
-            //loader->Load(resource);
-        }
-
-        std::cout << "IncrementReference, ReferenceCount: " << referenceCount << "\n";
-    }
-
-    void DecrementReference() {
-        --referenceCount;
-
-        if (referenceCount == 0) {
-            //loader->Unload(resource);
-        }
-
-        std::cout << "DecrementReference, ReferenceCount: " << referenceCount << "\n";
-    }
-
-    T* GetResource() {
-        return &resource;
-    }
-
-    void Update() {
-
-    }
-
-    bool IsLoaded() {
-        return loader->IsLoaded();
-    }
-};
-
-template<typename T>
-struct ResourceHandle {
-    ResourceStorage<T>* storage;
-
-    ResourceHandle() : storage(nullptr){
-    }
-
-    ResourceHandle(ResourceStorage<T>* storage) {
-        this->storage = storage;
-        this->storage->IncrementReference();
-    }
-
-    ResourceHandle(ResourceHandle&& other) = delete;
-
-    ResourceHandle(const ResourceHandle& other) {
-        storage = other.storage;
-        if (storage) {
-            storage->IncrementReference();
-        }
-    }
-
-    ResourceHandle& operator= (const ResourceHandle& other) {
-        storage = other.storage;
-        if (storage != nullptr) {
-            storage->IncrementReference();
-        }
-        return *this;
-    }
-
-    ResourceHandle& operator= (ResourceHandle&& other) {
-        storage = other.storage;
-        if (storage) {
-            storage->IncrementReference();
-        }
-        return *this;
-    }
-
-    ~ResourceHandle() {
-        if (storage) {
-            storage->DecrementReference();
-        }
-    }
-
-    bool IsLoaded() const {
-        return storage->IsLoaded();
-    }
-
-    T* operator -> () const {
-        return storage ? storage->GetResource() : nullptr;
-    }
-
-    operator bool() const {
-        return operator->() != nullptr;
-    }
-
-};
-
-template<typename T>
-struct ResourceLoaderManager {
-    std::map<std::string, ResourceStorage<T>> storages;
-
-    ResourceHandle<T> Create(const std::string& id) {
-        ResourceStorage<T>* storage;
-        auto it = storages.find(id);
-        if (it == storages.end()) {
-            it = storages.emplace(id, nullptr).first;
-        }
-        storage = &it->second;
-        return ResourceHandle<T>(storage);
-    }
-
-
-};
-
-
-
-
-
-template <typename T>
-struct ResourceComponent {
-    ResourceHandle<T> handle;
-
-    T* operator -> () const {
-        return handle ? handle.operator->() : (T*)this;
-    }
-};
-
 struct Texture : ResourceComponent<Texture> {
     std::vector<uint32_t> colors;
 };
 
-/*
-void TestResource(const TextureComponent& textureComponent) {
-    if (textureComponent.texture) {
-        std::cout << "Texture is something"<< std::endl;
-    } else {
-        std::cout << "Texture is null"<< std::endl;
+struct TextureLoader : IResourceLoader<Texture> {
+
+    void Load(Texture& resource) override {
+        resource.colors.resize(10);
     }
-}
- */
+
+    void Unload(Texture& resource) override {
+        resource.colors.clear();
+    }
+
+    bool IsLoaded() override {
+        return true;
+    }
+
+};
+
+struct TextureLoaderFactory : IResourceLoaderFactory<Texture> {
+
+    int numberOfBatches = 0;
+
+    explicit TextureLoaderFactory(int numberOfBatches) :
+    numberOfBatches(numberOfBatches) {}
+
+    virtual std::unique_ptr<IResourceLoader<Texture>> Create() override {
+        return std::make_unique<TextureLoader>();
+    }
+
+};
 
 int main() {
 
-    ResourceLoaderManager<Texture> textureResources;
+    ResourceLoaderManager<Texture> textureResources(std::make_unique<TextureLoaderFactory>(123));
 
     entt::registry reg;
     auto ent1 = reg.create();
