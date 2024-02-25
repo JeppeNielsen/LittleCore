@@ -14,7 +14,9 @@ namespace LittleCore {
         std::map<std::string, ResourceStorage<T>> storages;
         std::unique_ptr<IResourceLoaderFactory<T>> loaderFactory;
 
-        ResourceLoaderManager(std::unique_ptr<IResourceLoaderFactory<T>>&& loaderFactory) : loaderFactory(std::move(loaderFactory)) {}
+        void SetFactory(std::unique_ptr<IResourceLoaderFactory<T>>&& loaderFactory) {
+            this->loaderFactory = std::move(loaderFactory);
+        }
 
         ResourceHandle<T> Create(const std::string& id) {
             ResourceStorage<T>* storage;
