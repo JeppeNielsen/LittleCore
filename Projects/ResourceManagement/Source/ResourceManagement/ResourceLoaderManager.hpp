@@ -9,23 +9,24 @@
 
 namespace LittleCore {
 
-    template<typename T>
+    template<typename TLoaderFactory>
     struct ResourceLoaderManager {
-        std::map<std::string, ResourceStorage<T>> storages;
-        std::unique_ptr<IResourceLoaderFactory<T>> loaderFactory;
+        using TResource = typename TLoaderFactory::LoaderType::Type;
+        std::map<std::string, ResourceStorage<TResource>> storages;
+        std::unique_ptr<TLoaderFactory> loaderFactory;
 
-        void SetFactory(std::unique_ptr<IResourceLoaderFactory<T>>&& loaderFactory) {
+        void SetFactory(std::unique_ptr<TLoaderFactory>&& loaderFactory) {
             this->loaderFactory = std::move(loaderFactory);
         }
 
-        ResourceHandle<T> Create(const std::string& id) {
-            ResourceStorage<T>* storage;
+        ResourceHandle<TResource> Create(const std::string& id) {
+            ResourceStorage<TResource>* storage;
             auto it = storages.find(id);
             if (it == storages.end()) {
                 it = storages.emplace(id, loaderFactory->Create()).first;
             }
             storage = &it->second;
-            return ResourceHandle<T>(storage);
+            return ResourceHandle<TResource>(storage);
         }
 
 

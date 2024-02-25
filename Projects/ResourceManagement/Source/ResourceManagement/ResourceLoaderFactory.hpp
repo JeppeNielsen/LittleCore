@@ -7,10 +7,17 @@
 #include "ResourceLoader.hpp"
 
 namespace LittleCore {
-    template<typename T>
+    template<typename TLoader>
     struct IResourceLoaderFactory {
-        using Type = T;
+        using LoaderType = TLoader;
+        using Loader = std::unique_ptr<TLoader>;
         virtual ~IResourceLoaderFactory() = default;
-        virtual std::unique_ptr<IResourceLoader<T>> Create() = 0;
+
+        template<typename ...Args>
+        Loader CreateLoader(Args&&...args) {
+            return std::make_unique<TLoader>(std::forward<Args>(args)...);
+        }
+
+        virtual Loader Create() = 0;
     };
 }

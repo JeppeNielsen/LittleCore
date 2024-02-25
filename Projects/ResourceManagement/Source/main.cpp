@@ -35,9 +35,9 @@ struct MeshLoader : IResourceLoader<Mesh> {
 
 };
 
-struct MeshLoaderFactory : IResourceLoaderFactory<Mesh> {
-    std::unique_ptr<IResourceLoader<Mesh>> Create() override {
-        return std::make_unique<MeshLoader>();
+struct MeshLoaderFactory : IResourceLoaderFactory<MeshLoader> {
+    Loader Create() override {
+        return CreateLoader();
     }
 };
 
@@ -62,24 +62,24 @@ struct TextureLoader : IResourceLoader<Texture> {
 
 };
 
-struct TextureLoaderFactory : IResourceLoaderFactory<Texture> {
+struct TextureLoaderFactory : IResourceLoaderFactory<TextureLoader> {
 
     int numberOfBatches = 0;
 
     explicit TextureLoaderFactory(int numberOfBatches) :
     numberOfBatches(numberOfBatches) {}
 
-    std::unique_ptr<IResourceLoader<Texture>> Create() override {
-        return std::make_unique<TextureLoader>(numberOfBatches);
+    Loader Create() override {
+        return CreateLoader(numberOfBatches);
     }
 
 };
 
 int main() {
 
-    ResourceManager<Mesh, Texture> resourceManager;
-    resourceManager.SetLoaderFactory<MeshLoaderFactory>();
-    resourceManager.SetLoaderFactory<TextureLoaderFactory>(123);
+    ResourceManager<MeshLoaderFactory, TextureLoaderFactory> resourceManager;
+    resourceManager.CreateLoaderFactory<MeshLoaderFactory>();
+    resourceManager.CreateLoaderFactory<TextureLoaderFactory>(123);
 
     entt::registry reg;
     auto ent1 = reg.create();
