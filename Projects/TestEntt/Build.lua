@@ -43,7 +43,7 @@ solution "LittleCore"
          ["ALWAYS_SEARCH_USER_PATHS"] = "YES",
       };
 
-project "Engine"
+project "TestEntt"
    location("Build")
 
    kind "WindowedApp"
