@@ -51,11 +51,11 @@ namespace LittleCore {
         }
 
         bool IsLoaded() const {
-            return storage->IsLoaded();
+            return storage ? storage->IsLoaded() : false;
         }
 
         T* operator -> () const {
-            return storage ? storage->GetResource() : nullptr;
+            return storage && storage->IsLoaded() ? storage->GetResource() : nullptr;
         }
 
         operator bool() const {
