@@ -42,13 +42,24 @@ namespace {
 
         struct TestRenderer : public Renderer {
             int renderCount = 0;
-            void BeginRender() {
+
+            void BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection, const Camera& camera) override {
 
             }
-            void Render(const Mesh& mesh, const mat4x4& world) override {
+
+            void EndRender(bgfx::ViewId viewId) override {
+
+            }
+
+            void BeginBatch(bgfx::ViewId viewId) override {
+
+            }
+
+            void RenderMesh(const Mesh& mesh, const glm::mat4x4& world) override {
                 renderCount++;
             }
-            void EndRender() {
+
+            void EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram) override {
 
             }
         };
@@ -59,18 +70,18 @@ namespace {
         cameraTransform.world = glm::translate(glm::identity<mat4x4>(), {0,0,-10});
         cameraTransform.worldInverse = glm::inverse(cameraTransform.world);
         Camera camera;
-        camera.Near = 1;
-        camera.Far = 200;
-        camera.ViewSize = {10,10};
+        camera.near = 1;
+        camera.far = 200;
+        camera.viewRect = {{-10,-10},{10,10}};
 
-        const mat4x4 viewProjection = camera.GetProjection() * cameraTransform.world;
+        const mat4x4 viewProjection = camera.GetProjection(1.0f) * cameraTransform.worldInverse;
         BoundingFrustum frustum;
         frustum.SetFromViewProjection(viewProjection);
 
         EXPECT_TRUE(frustum.Intersect(worldBoundingBox.bounds)!=LittleCore::BoundingFrustum::OUTSIDE);
 
         renderOctreeSystem.Update();
-        renderSystem.Render(cameraTransform, camera, &testRenderer);
+        renderSystem.Render(0, cameraTransform, camera, &testRenderer);
 
         EXPECT_EQ(1, testRenderer.renderCount);
     }
