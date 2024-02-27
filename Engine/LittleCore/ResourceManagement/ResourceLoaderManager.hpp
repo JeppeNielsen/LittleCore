@@ -20,6 +20,7 @@ namespace LittleCore {
         }
 
         ResourceHandle<TResource> Create(const std::string& id) {
+            assert(loaderFactory!= nullptr);
             ResourceStorage<TResource>* storage;
             auto it = storages.find(id);
             if (it == storages.end()) {

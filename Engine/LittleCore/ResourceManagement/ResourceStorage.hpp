@@ -13,13 +13,9 @@ namespace LittleCore {
         ResourceLoader loader;
         T resource;
 
-        explicit ResourceStorage(ResourceLoader&& loader) : loader(std::move(loader)) {
-            std::cout << "Resource created \n";
-        }
+        explicit ResourceStorage(ResourceLoader&& loader) : loader(std::move(loader)) {}
 
-        ~ResourceStorage()  {
-            std::cout << "Resource freed \n";
-        }
+        ~ResourceStorage()  = default;
 
         ResourceStorage(ResourceStorage&&) = delete;
         ResourceStorage(const ResourceStorage&) = delete;
@@ -30,22 +26,16 @@ namespace LittleCore {
 
         void IncrementReference() {
             ++referenceCount;
-
             if (referenceCount == 1) {
                 loader->Load(resource);
             }
-
-            std::cout << "IncrementReference, ReferenceCount: " << referenceCount << "\n";
         }
 
         void DecrementReference() {
             --referenceCount;
-
             if (referenceCount == 0) {
                 loader->Unload(resource);
             }
-
-            std::cout << "DecrementReference, ReferenceCount: " << referenceCount << "\n";
         }
 
         T* GetResource() {
