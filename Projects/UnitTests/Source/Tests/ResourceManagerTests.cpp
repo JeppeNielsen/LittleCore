@@ -33,7 +33,7 @@ namespace {
 
     TEST(ResourceManagerTest, EmptyHandle) {
         ResourceHandle<int> handle;
-        ASSERT_FALSE(handle);
+        EXPECT_FALSE(handle);
     }
 
     TEST(ResourceManagerTest, ValidHandle) {
@@ -43,7 +43,7 @@ namespace {
 
         auto handle = resourceManager.Create<Mesh>("Cube.obj");
 
-        ASSERT_TRUE(handle);
+        EXPECT_TRUE(handle);
     }
 
     TEST(ResourceManagerTest, HandleCopyCtor) {
@@ -54,7 +54,7 @@ namespace {
         auto handle1 = resourceManager.Create<Mesh>("Cube.obj");
         auto handle2= handle1;
 
-        ASSERT_EQ(handle1.operator->(), handle2.operator->());
+        EXPECT_EQ(handle1.operator->(), handle2.operator->());
     }
 
     TEST(ResourceManagerTest, HandlePointerSame) {
@@ -65,7 +65,91 @@ namespace {
         auto handle1 = resourceManager.Create<Mesh>("Cube.obj");
         auto handle2 = resourceManager.Create<Mesh>("Cube.obj");
 
-        ASSERT_EQ(handle1.operator->(), handle2.operator->());
+        EXPECT_EQ(handle1.operator->(), handle2.operator->());
+    }
+
+    TEST(ResourceManagerTest, HandlePointerDifferent) {
+
+        ResourceManager<MeshLoaderFactory> resourceManager;
+        resourceManager.CreateLoaderFactory<MeshLoaderFactory>();
+
+        auto handle1 = resourceManager.Create<Mesh>("Cube.obj");
+        auto handle2 = resourceManager.Create<Mesh>("Cube2.obj");
+
+        EXPECT_NE(handle1.operator->(), handle2.operator->());
+    }
+
+    TEST(ResourceManagerTest, NoMoreReferencesCallRemove) {
+
+        struct DebugMeshLoader : IResourceLoader<Mesh> {
+
+            int* loadCounter;
+
+            explicit DebugMeshLoader(int *loadCounter) : loadCounter(loadCounter) {}
+
+            void Load(Mesh& resource) override {
+                (*loadCounter)++;
+            }
+            void Unload(Mesh& resource) override {
+                (*loadCounter)--;
+            }
+            virtual bool IsLoaded() override {
+                return true;
+            }
+        };
+
+        struct DebugMeshLoaderFactory : IResourceLoaderFactory<DebugMeshLoader> {
+            int* loadCounter;
+
+            explicit DebugMeshLoaderFactory(int *loadCounter) : loadCounter(loadCounter) {}
+
+            Loader Create() {
+                return CreateLoader(loadCounter);
+            }
+        };
+
+        int loadCounter = 0;
+
+        ResourceManager<DebugMeshLoaderFactory> resourceManager;
+        resourceManager.CreateLoaderFactory<DebugMeshLoaderFactory>(&loadCounter);
+
+        {
+            ResourceHandle<Mesh> topHandle;
+            {
+                auto handle1 = resourceManager.Create<Mesh>("Cube.obj");
+                EXPECT_EQ(loadCounter, 1);
+
+                topHandle = handle1;
+            }
+
+            EXPECT_EQ(loadCounter, 1);
+        }
+
+        EXPECT_EQ(loadCounter, 0);
+    }
+
+    TEST(ResourceManagerTest, NonLoadedResourceShouldReturnInvalidHandle) {
+
+        struct NotLoadedMeshLoader : IResourceLoader<Mesh> {
+            void Load(Mesh& resource) override {}
+            void Unload(Mesh& resource) override {}
+            virtual bool IsLoaded() override {
+                return false;
+            }
+        };
+
+        struct NotLoadedMeshLoaderFactory : IResourceLoaderFactory<NotLoadedMeshLoader> {
+            Loader Create() {
+                return CreateLoader();
+            }
+        };
+
+        ResourceManager<NotLoadedMeshLoaderFactory> resourceManager;
+        resourceManager.CreateLoaderFactory<NotLoadedMeshLoaderFactory>();
+
+        auto handle = resourceManager.Create<Mesh>("Cube.obj");
+
+        EXPECT_FALSE(handle);
     }
 
 
