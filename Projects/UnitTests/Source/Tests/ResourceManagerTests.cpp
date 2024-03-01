@@ -14,19 +14,17 @@ namespace {
 
     struct MeshLoader : IResourceLoader<Mesh> {
 
-        void Load(Mesh& resource) override {
+        void Load(Mesh& resource) override {}
 
-        }
-        void Unload(Mesh& resource) override {
+        void Unload(Mesh& resource) override {}
 
-        }
-        virtual bool IsLoaded() override {
+        bool IsLoaded() override {
             return true;
         }
     };
 
     struct MeshLoaderFactory : IResourceLoaderFactory<MeshLoader> {
-        Loader Create() {
+        Loader Create() override {
             return CreateLoader();
         }
     };
@@ -79,7 +77,7 @@ namespace {
         EXPECT_NE(handle1.operator->(), handle2.operator->());
     }
 
-    TEST(ResourceManagerTest, NoMoreReferencesCallRemove) {
+    TEST(ResourceManagerTest, NoMoreReferencesCallUnload) {
 
         struct DebugMeshLoader : IResourceLoader<Mesh> {
 
@@ -93,7 +91,7 @@ namespace {
             void Unload(Mesh& resource) override {
                 (*loadCounter)--;
             }
-            virtual bool IsLoaded() override {
+            bool IsLoaded() override {
                 return true;
             }
         };
@@ -103,7 +101,7 @@ namespace {
 
             explicit DebugMeshLoaderFactory(int *loadCounter) : loadCounter(loadCounter) {}
 
-            Loader Create() {
+            Loader Create() override {
                 return CreateLoader(loadCounter);
             }
         };
@@ -133,13 +131,13 @@ namespace {
         struct NotLoadedMeshLoader : IResourceLoader<Mesh> {
             void Load(Mesh& resource) override {}
             void Unload(Mesh& resource) override {}
-            virtual bool IsLoaded() override {
+            bool IsLoaded() override {
                 return false;
             }
         };
 
         struct NotLoadedMeshLoaderFactory : IResourceLoaderFactory<NotLoadedMeshLoader> {
-            Loader Create() {
+            Loader Create() override {
                 return CreateLoader();
             }
         };
@@ -151,6 +149,5 @@ namespace {
 
         EXPECT_FALSE(handle);
     }
-
 
 }
