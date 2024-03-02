@@ -7,7 +7,6 @@ workspace "LittleCore"
 
 include "../Libs/Build_sdl.lua"
 include "../Libs/Build_bgfx.lua"
-include "../Libs/Build_LittleCore.lua"
 
 solution "LittleCore"
    configurations { "Release", "Debug" }
@@ -52,6 +51,8 @@ project "UnitTests"
    cppdialect "C++17"
 
    files { 
+      "../../Engine/LittleCore/**.hpp", 
+      "../../Engine/LittleCore/**.cpp",
       "Source/**.cpp",
       "Source/**.hpp",
       "../../External/googletest/googletest/src/gtest-all.cc"
@@ -73,8 +74,7 @@ project "UnitTests"
       "SDL", 
       "bgfx",
       "bimg",
-      "bx",
-      "LittleCore"
+      "bx"
    }
 
    filter "system:windows"
