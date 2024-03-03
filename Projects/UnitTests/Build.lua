@@ -67,7 +67,8 @@ project "UnitTests"
       "../../External/entt/single_include",
       "../../External/glm",
       "../../External/googletest/googletest/include",
-      "../../External/googletest/googletest"
+      "../../External/googletest/googletest",
+      "../../External/stb/"
    }
 
    links { 

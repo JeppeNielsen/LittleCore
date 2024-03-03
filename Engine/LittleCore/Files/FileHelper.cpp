@@ -21,6 +21,12 @@ std::string LittleCore::FileHelper::ReadAllText(const std::string &path) {
     return string(bytes.data(), fileSize);
 }
 
+std::vector<unsigned char> LittleCore::FileHelper::ReadData(const string &path) {
+    std::ifstream input( path.c_str(), std::ios::binary );
+    std::vector<unsigned char> buffer(std::istreambuf_iterator<char>(input), {});
+    return buffer;
+}
+
 bool LittleCore::FileHelper::TryWriteAllText(const string &path, string &text) {
 
     ofstream file(path);
