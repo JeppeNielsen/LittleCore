@@ -13,7 +13,7 @@ namespace {
         int sizeX;
         int sizeY;
 
-        ImageLoader::TryLoadImage("/Users/jeppe/Jeppes/LittleCore/Projects/UnitTests/Assets/Circle.psd", [&](unsigned char* data, int width, int height) {
+        ImageLoader::TryLoadImage("../../../../Assets/Circle.psd", [&](unsigned char* data, int width, int height) {
             sizeX = width;
             sizeY = height;
         });
