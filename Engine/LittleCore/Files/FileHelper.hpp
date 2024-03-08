@@ -5,6 +5,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <functional>
 
 namespace LittleCore {
 
@@ -14,6 +15,8 @@ namespace LittleCore {
         static std::vector<unsigned char> ReadData(const std::string& path);
         static bool TryWriteAllText(const std::string& path, std::string& text);
         static bool TryDeleteFile(const std::string& path);
+        static bool FileExists(const std::string& path);
+        static void IterateFilesRecursively(const std::string& path, std::function<void(const std::string& path)>& func);
     };
 
 }

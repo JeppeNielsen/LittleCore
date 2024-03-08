@@ -5,31 +5,32 @@
 #include "FileHelper.hpp"
 #include <fstream>
 #include <vector>
+#include <filesystem>
 
-using namespace std;
+using namespace LittleCore;
 
 std::string LittleCore::FileHelper::ReadAllText(const std::string &path) {
 
-    ifstream ifs(path.c_str(), ios::in | ios::binary | ios::ate);
+    std::ifstream ifs(path.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 
-    ifstream::pos_type fileSize = ifs.tellg();
-    ifs.seekg(0, ios::beg);
+    std::ifstream::pos_type fileSize = ifs.tellg();
+    ifs.seekg(0, std::ios::beg);
 
-    vector<char> bytes(fileSize);
+    std::vector<char> bytes(fileSize);
     ifs.read(bytes.data(), fileSize);
 
-    return string(bytes.data(), fileSize);
+    return std::string(bytes.data(), fileSize);
 }
 
-std::vector<unsigned char> LittleCore::FileHelper::ReadData(const string &path) {
+std::vector<unsigned char> LittleCore::FileHelper::ReadData(const std::string &path) {
     std::ifstream input( path.c_str(), std::ios::binary );
     std::vector<unsigned char> buffer(std::istreambuf_iterator<char>(input), {});
     return buffer;
 }
 
-bool LittleCore::FileHelper::TryWriteAllText(const string &path, string &text) {
+bool FileHelper::TryWriteAllText(const std::string &path, std::string &text) {
 
-    ofstream file(path);
+    std::ofstream file(path);
 
     if (!file.is_open()) {
         return false;
@@ -41,6 +42,18 @@ bool LittleCore::FileHelper::TryWriteAllText(const string &path, string &text) {
     return true;
 }
 
-bool LittleCore::FileHelper::TryDeleteFile(const string &path) {
+bool FileHelper::TryDeleteFile(const std::string &path) {
     return std::remove(path.c_str())==0;
 }
+
+bool FileHelper::FileExists(const std::string &path) {
+    return std::filesystem::exists(path);
+}
+
+void FileHelper::IterateFilesRecursively(const std::string &path, std::function<void(const std::string &)>& func) {
+    for (auto const& dir_entry : std::filesystem::recursive_directory_iterator(path)) {
+        func(dir_entry.path());
+    }
+}
+
+
