@@ -50,7 +50,7 @@ bool FileHelper::FileExists(const std::string &path) {
     return std::filesystem::exists(path);
 }
 
-void FileHelper::IterateFilesRecursively(const std::string &path, std::function<void(const std::string &)>& func) {
+void FileHelper::IterateFilesRecursively(const std::string &path, const std::function<void(const std::string &)>& func) {
     for (auto const& dir_entry : std::filesystem::recursive_directory_iterator(path)) {
         func(dir_entry.path());
     }

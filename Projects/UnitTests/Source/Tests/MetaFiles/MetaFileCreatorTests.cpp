@@ -25,14 +25,17 @@ namespace {
 
         std::string path = "../../../../Assets/Circle.psd";
 
-        auto guid = metaFileCreator.CreateMetaFile(path);
+        std::string guid;
+        if (!metaFileCreator.TryGetMetaGuid(path, guid)) {
+            guid = metaFileCreator.CreateMetaFile(path);
+        }
 
         EXPECT_EQ(guid.size(), 32);
 
         std::string foundGuid;
-        bool succes = metaFileCreator.TryGetMetaGuid(path, foundGuid);
+        bool success = metaFileCreator.TryGetMetaGuid(path, foundGuid);
 
-        EXPECT_TRUE(succes);
+        EXPECT_TRUE(success);
         EXPECT_EQ(guid, foundGuid);
     }
 

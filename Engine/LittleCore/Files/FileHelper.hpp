@@ -16,7 +16,7 @@ namespace LittleCore {
         static bool TryWriteAllText(const std::string& path, std::string& text);
         static bool TryDeleteFile(const std::string& path);
         static bool FileExists(const std::string& path);
-        static void IterateFilesRecursively(const std::string& path, std::function<void(const std::string& path)>& func);
+        static void IterateFilesRecursively(const std::string& path, const std::function<void(const std::string& path)>& func);
     };
 
 }
