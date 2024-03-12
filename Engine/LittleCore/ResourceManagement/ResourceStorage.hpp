@@ -13,7 +13,7 @@ namespace LittleCore {
         ResourceLoader loader;
         T resource;
 
-        explicit ResourceStorage(ResourceLoader&& loader) : loader(std::move(loader)) {}
+        ResourceStorage(ResourceLoader& loader) : loader(std::move(loader)) { }
 
         ~ResourceStorage()  = default;
 

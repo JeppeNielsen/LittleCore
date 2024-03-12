@@ -6,7 +6,7 @@
 #include <bgfx/bgfx.h>
 
 namespace LittleCore {
-    struct Texture {
+    struct TextureResource {
         bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
     };
 }

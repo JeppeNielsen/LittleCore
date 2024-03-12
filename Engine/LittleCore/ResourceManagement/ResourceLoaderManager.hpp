@@ -5,6 +5,7 @@
 #pragma once
 #include "ResourceHandle.hpp"
 #include "ResourceLoaderFactory.hpp"
+#include "ResourcePathMapper.hpp"
 #include <memory>
 
 namespace LittleCore {
@@ -14,6 +15,7 @@ namespace LittleCore {
         using TResource = typename TLoaderFactory::LoaderType::Type;
         std::map<std::string, ResourceStorage<TResource>> storages;
         std::unique_ptr<TLoaderFactory> loaderFactory;
+        ResourcePathMapper* pathMapper;
 
         void SetFactory(std::unique_ptr<TLoaderFactory>&& loaderFactory) {
             this->loaderFactory = std::move(loaderFactory);
@@ -24,7 +26,9 @@ namespace LittleCore {
             ResourceStorage<TResource>* storage;
             auto it = storages.find(id);
             if (it == storages.end()) {
-                it = storages.emplace(id, loaderFactory->Create()).first;
+                std::unique_ptr<IResourceLoader<TResource>> loader = loaderFactory->Create();
+                loader->path = pathMapper->GetPath(id);
+                it = storages.emplace(id, loader).first;
             }
             storage = &it->second;
             return ResourceHandle<TResource>(storage);

@@ -36,7 +36,8 @@ namespace {
 
     TEST(ResourceManagerTest, ValidHandle) {
 
-        ResourceManager<MeshLoaderFactory> resourceManager;
+        ResourcePathMapper pathMapper;
+        ResourceManager<MeshLoaderFactory> resourceManager(pathMapper);
         resourceManager.CreateLoaderFactory<MeshLoaderFactory>();
 
         auto handle = resourceManager.Create<Mesh>("Cube.obj");
@@ -45,8 +46,8 @@ namespace {
     }
 
     TEST(ResourceManagerTest, HandleCopyCtor) {
-
-        ResourceManager<MeshLoaderFactory> resourceManager;
+        ResourcePathMapper pathMapper;
+        ResourceManager<MeshLoaderFactory> resourceManager(pathMapper);
         resourceManager.CreateLoaderFactory<MeshLoaderFactory>();
 
         auto handle1 = resourceManager.Create<Mesh>("Cube.obj");
@@ -57,7 +58,8 @@ namespace {
 
     TEST(ResourceManagerTest, HandlePointerSame) {
 
-        ResourceManager<MeshLoaderFactory> resourceManager;
+        ResourcePathMapper pathMapper;
+        ResourceManager<MeshLoaderFactory> resourceManager(pathMapper);
         resourceManager.CreateLoaderFactory<MeshLoaderFactory>();
 
         auto handle1 = resourceManager.Create<Mesh>("Cube.obj");
@@ -68,7 +70,8 @@ namespace {
 
     TEST(ResourceManagerTest, HandlePointerDifferent) {
 
-        ResourceManager<MeshLoaderFactory> resourceManager;
+        ResourcePathMapper pathMapper;
+        ResourceManager<MeshLoaderFactory> resourceManager(pathMapper);
         resourceManager.CreateLoaderFactory<MeshLoaderFactory>();
 
         auto handle1 = resourceManager.Create<Mesh>("Cube.obj");
@@ -108,7 +111,8 @@ namespace {
 
         int loadCounter = 0;
 
-        ResourceManager<DebugMeshLoaderFactory> resourceManager;
+        ResourcePathMapper pathMapper;
+        ResourceManager<DebugMeshLoaderFactory> resourceManager(pathMapper);
         resourceManager.CreateLoaderFactory<DebugMeshLoaderFactory>(&loadCounter);
 
         {
@@ -142,7 +146,8 @@ namespace {
             }
         };
 
-        ResourceManager<NotLoadedMeshLoaderFactory> resourceManager;
+        ResourcePathMapper pathMapper;
+        ResourceManager<NotLoadedMeshLoaderFactory> resourceManager(pathMapper);
         resourceManager.CreateLoaderFactory<NotLoadedMeshLoaderFactory>();
 
         auto handle = resourceManager.Create<Mesh>("Cube.obj");
