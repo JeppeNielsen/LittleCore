@@ -22,8 +22,11 @@ namespace {
         EXPECT_EQ(resourcePathMapper.GetGuid(expectedPath), expectedGuid);
         EXPECT_EQ(resourcePathMapper.GetPath(expectedGuid), expectedPath);
 
+        std::string expectedSubFolderGuid = "F4BEEC6D07BF4DEBA129269849153375";
+        std::string expectedSubfolderPath = "../../../../Assets/Prefabs/Cube.json";
+
+        EXPECT_EQ(resourcePathMapper.GetGuid(expectedSubfolderPath), expectedSubFolderGuid);
+        EXPECT_EQ(resourcePathMapper.GetPath(expectedSubFolderGuid), expectedSubfolderPath);
     }
-
-
 
 }
