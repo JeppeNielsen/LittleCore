@@ -15,6 +15,7 @@ project "LittleCore"
       "../External/bx/include",
       "../External/entt/single_include",
       "../External/glm",
+      "../External/stb"
    }
 
    sysincludedirs {
@@ -24,6 +25,7 @@ project "LittleCore"
       "../External/bx/include",
       "../External/entt/single_include",
       "../External/glm",
+      "../External/stb"
    }
   
    filter "configurations:Debug"

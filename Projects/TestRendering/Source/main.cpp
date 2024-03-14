@@ -11,6 +11,7 @@
 #include "Vertex.hpp"
 #include "Simulation.hpp"
 #include "Input.hpp"
+#include "ShaderCompiler.hpp"
 
 int Filter(void* userData, SDL_Event* event) {
 
@@ -80,7 +81,6 @@ entt::entity CreateQuad(entt::registry& registry, glm::vec3 position, entt::enti
     mesh.triangles.push_back(2);
     mesh.triangles.push_back(3);
 
-
     registry.emplace<Renderable>(quad);
     registry.emplace<LocalBoundingBox>(quad);
     registry.emplace<WorldBoundingBox>(quad);
@@ -98,9 +98,9 @@ struct Movable {
     std::vector<MovementKey> keys;
 };
 
-
-
 int main() {
+
+    ShaderCompiler shaderCompiler;
 
     SDL_Init(0);
 

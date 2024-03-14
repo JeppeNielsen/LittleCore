@@ -7,6 +7,7 @@ workspace "LittleCore"
 
 include "../Libs/Build_sdl.lua"
 include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_ShaderCompiler.lua"
 include "../Libs/Build_LittleCore.lua"
 
 solution "LittleCore"
@@ -63,7 +64,9 @@ project "TestRendering"
       "../../External/bgfx/include",
       "../../External/bx/include",
       "../../External/entt/single_include",
-      "../../External/glm"
+      "../../External/glm",
+      "../../External/stb",
+      "../../Engine/ShaderCompiler"
    }
 
    links { 
@@ -71,7 +74,8 @@ project "TestRendering"
       "bgfx",
       "bimg",
       "bx",
-      "LittleCore"
+      "LittleCore",
+      "ShaderCompiler"
    }
 
    filter "system:windows"

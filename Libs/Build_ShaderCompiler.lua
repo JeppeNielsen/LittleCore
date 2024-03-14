@@ -20,7 +20,7 @@ local SPIRV_TOOLS    = path.join(BGFX_DIR, "3rdparty/spirv-tools")
 project "spirv-opt"
 	kind "StaticLib"
 	language "C++"
-    cppdialect "C++14"
+    cppdialect "C++17"
 
 	includedirs {
 		SPIRV_TOOLS,
@@ -167,7 +167,7 @@ project "spirv-opt"
 project "spirv-cross"
 	kind "StaticLib"
 	language "C++"
-    cppdialect "C++14"
+    cppdialect "C++17"
 
 	defines {
 		"SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS",
@@ -220,7 +220,7 @@ project "spirv-cross"
 project "glslang"
 	kind "StaticLib"
 	language "C++"
-    cppdialect "C++14"
+    cppdialect "C++17"
 
 	defines {
 		"ENABLE_OPT=1", -- spirv-tools
@@ -319,7 +319,7 @@ project "glslang"
 project "glsl-optimizer"
 	kind "StaticLib"
 	language "C++"
-    cppdialect "C++14"
+    cppdialect "C++17"
 
 	includedirs {
 		path.join(GLSL_OPTIMIZER, "src"),
@@ -572,7 +572,7 @@ project "glsl-optimizer"
 project "fcpp"
 	kind "StaticLib"
 	language "C++"
-    cppdialect "C++14"
+    cppdialect "C++17"
 
 	defines { -- fcpp
 		"NINCLUDE=64",
@@ -614,7 +614,7 @@ project "fcpp"
 project "shaderc"
 	kind "StaticLib"
 	language "C++"
-    cppdialect "C++14"
+    cppdialect "C++17"
 
 	includedirs {
 		path.join(BIMG_DIR, "include"),
@@ -681,7 +681,7 @@ project "shaderc"
 project "ShaderCompiler"
    kind "StaticLib"
    language "C++"
-   cppdialect "C++14"
+   cppdialect "C++17"
    
    files { 
       "../Engine/ShaderCompiler/**.hpp", 
