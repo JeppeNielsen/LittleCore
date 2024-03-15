@@ -22,11 +22,39 @@ std::string LittleCore::FileHelper::ReadAllText(const std::string &path) {
     return std::string(bytes.data(), fileSize);
 }
 
-std::vector<unsigned char> LittleCore::FileHelper::ReadData(const std::string &path) {
+std::vector<uint8_t> LittleCore::FileHelper::ReadData(const std::string &path) {
     std::ifstream input( path.c_str(), std::ios::binary );
-    std::vector<unsigned char> buffer(std::istreambuf_iterator<char>(input), {});
+    std::vector<uint8_t> buffer(std::istreambuf_iterator<char>(input), {});
     return buffer;
 }
+/*
+std::vector<uint8_t> readFile(const char* filename)
+{
+    // open the file:
+    std::ifstream file(filename, std::ios::binary);
+
+    // Stop eating new lines in binary mode!!!
+    file.unsetf(std::ios::skipws);
+
+    // get its size:
+    std::streampos fileSize;
+
+    file.seekg(0, std::ios::end);
+    fileSize = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    // reserve capacity
+    std::vector<uint8_t> vec;
+    vec.reserve(fileSize);
+
+    // read the data:
+    vec.insert(vec.begin(),
+               std::istream_iterator<uint8_t>(file),
+               std::istream_iterator<uint8_t>());
+
+    return vec;
+}
+*/
 
 bool FileHelper::TryWriteAllText(const std::string &path, std::string &text) {
 

@@ -11,7 +11,11 @@
 #include "Vertex.hpp"
 #include "Simulation.hpp"
 #include "Input.hpp"
-#include "ShaderCompiler.hpp"
+#include "ResourceManager.hpp"
+#include "TextureResourceLoaderFactory.hpp"
+#include "ShaderResourceLoaderFactory.hpp"
+
+using namespace LittleCore;
 
 int Filter(void* userData, SDL_Event* event) {
 
@@ -32,35 +36,6 @@ int Filter(void* userData, SDL_Event* event) {
 
     return 1;
 }
-
-std::vector<uint8_t> readFile(const char* filename)
-{
-    // open the file:
-    std::ifstream file(filename, std::ios::binary);
-
-    // Stop eating new lines in binary mode!!!
-    file.unsetf(std::ios::skipws);
-
-    // get its size:
-    std::streampos fileSize;
-
-    file.seekg(0, std::ios::end);
-    fileSize = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    // reserve capacity
-    std::vector<uint8_t> vec;
-    vec.reserve(fileSize);
-
-    // read the data:
-    vec.insert(vec.begin(),
-               std::istream_iterator<uint8_t>(file),
-               std::istream_iterator<uint8_t>());
-
-    return vec;
-}
-
-using namespace LittleCore;
 
 entt::entity CreateQuad(entt::registry& registry, glm::vec3 position, entt::entity parent = entt::null) {
 
@@ -100,8 +75,6 @@ struct Movable {
 
 int main() {
 
-    ShaderCompiler shaderCompiler;
-
     SDL_Init(0);
 
     SDL_Window* window = SDL_CreateWindow("bgfx", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE);
@@ -128,27 +101,28 @@ int main() {
     bgfx::setDebug(BGFX_DEBUG_TEXT);
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x6495ED, 1.f, 0);
 
-    auto vertexShader = readFile("/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/vs_cubes.bin");
-    auto fragShader = readFile("/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/fs_cubes.bin");
-
-    const bgfx::Memory* vsSource = bgfx::makeRef(&vertexShader[0], vertexShader.size());
-    bgfx::ShaderHandle vsShader = bgfx::createShader(vsSource);
-
-    const bgfx::Memory* fsSource = bgfx::makeRef(&fragShader[0], fragShader.size());
-    bgfx::ShaderHandle fsShader = bgfx::createShader(fsSource);
-
-    auto program = bgfx::createProgram(vsShader, fsShader, true);
-
     SDL_Event event;
     bool exit = false;
 
     SDL_SetEventFilter(&Filter, window);
 
+    ResourcePathMapper resourcePathMapper;
+    resourcePathMapper.RefreshFromRootPath("../../../../Assets/");
+
+    ResourceManager<
+    TextureResourceLoaderFactory,
+            ShaderResourceLoaderFactory
+    > resourceManager(resourcePathMapper);
+    resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
+    resourceManager.CreateLoaderFactory<ShaderResourceLoaderFactory>();
+
     {
+        ResourceHandle<TextureResource> textureHandle = resourceManager.Create<TextureResource>("B62D424BF40F46359248CDE498930422");
+        ResourceHandle<ShaderResource> shader = resourceManager.Create<ShaderResource>("4EBD82BDCBCA4F78B597C8B2DF9A08F7");
+
         float time = 0;
 
         float scale = 1.0f;
-
 
         entt::registry registry;
 
@@ -212,13 +186,13 @@ int main() {
         }*/
 
         auto quad1 = CreateQuad(registry, {0, 0, 0});
-        registry.get<Renderable>(quad1).shaderProgram = program;
+        registry.get<Renderable>(quad1).shader = shader;
 
         auto quad2 = CreateQuad(registry, {3, 0, 0}, quad1);
-        registry.get<Renderable>(quad2).shaderProgram = program;
+        registry.get<Renderable>(quad2).shader = shader;
 
         auto quad3 = CreateQuad(registry, {0, 2, 0}, quad2);
-        registry.get<Renderable>(quad3).shaderProgram = program;
+        registry.get<Renderable>(quad3).shader = shader;
 
         while (!exit) {
 
@@ -299,8 +273,6 @@ int main() {
         }
 
     }
-
-    bgfx::destroy(program);
 
     bgfx::shutdown();
 

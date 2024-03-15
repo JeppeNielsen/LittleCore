@@ -2,13 +2,14 @@
 // Created by Jeppe Nielsen on 21/01/2024.
 //
 #pragma once
-#include <bgfx/bgfx.h>
+#include "ResourceHandle.hpp"
+#include "ShaderResource.hpp"
 
 namespace LittleCore {
 
     struct Renderable {
 
-        bgfx::ProgramHandle shaderProgram;
+        ResourceHandle<ShaderResource> shader;
         int mask;
 
     };

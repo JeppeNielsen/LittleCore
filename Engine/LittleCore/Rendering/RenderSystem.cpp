@@ -45,7 +45,7 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
     renderOctreeSystem.Query(frustum, entities);
 
     std::sort(entities.begin(), entities.end(), [this] (entt::entity entityA, entt::entity entityB) {
-        return registry.get<Renderable>(entityA).shaderProgram.idx==registry.get<Renderable>(entityB).shaderProgram.idx;
+        return registry.get<Renderable>(entityA).shader==registry.get<Renderable>(entityB).shader;
     });
 
     bgfx::ProgramHandle currentShaderProgram = BGFX_INVALID_HANDLE;
@@ -53,13 +53,13 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
     for(auto entity : entities) {
         const Renderable& renderable = registry.get<Renderable>(entity);
 
-        if (currentShaderProgram.idx != renderable.shaderProgram.idx) {
+        if (currentShaderProgram.idx != renderable.shader->handle.idx) {
 
             if (currentShaderProgram.idx != bgfx::kInvalidHandle) {
                 renderer->EndBatch(viewId, currentShaderProgram);
             }
 
-            currentShaderProgram = renderable.shaderProgram;
+            currentShaderProgram = renderable.shader->handle;
             renderer->BeginBatch(viewId);
         }
 
