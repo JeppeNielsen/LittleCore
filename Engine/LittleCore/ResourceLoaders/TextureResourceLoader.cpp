@@ -11,8 +11,8 @@ using namespace bgfx;
 void TextureResourceLoader::Load(TextureResource &resource) {
 
     ImageLoader::TryLoadImage(path, [&resource](unsigned char * data, int width, int height) {
-        //const bgfx::Memory* mem_image = bgfx::makeRef(data, sizeof(unsigned char)*width*height);
-        resource.handle = bgfx::createTexture2D(width, height, false, 0, TextureFormat::RGBA8, BGFX_TEXTURE_NONE|BGFX_SAMPLER_POINT);
+        const bgfx::Memory* mem_image = bgfx::makeRef(data, sizeof(unsigned char)*width*height*4);
+        resource.handle = bgfx::createTexture2D(width, height, false, 0, TextureFormat::RGBA8, BGFX_TEXTURE_NONE|BGFX_SAMPLER_MAG_POINT, mem_image);
     });
 
 }

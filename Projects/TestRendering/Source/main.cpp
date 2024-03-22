@@ -116,9 +116,16 @@ int main() {
     resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
     resourceManager.CreateLoaderFactory<ShaderResourceLoaderFactory>();
 
+
+    auto colorTexture  = bgfx::createUniform("colorTexture",  bgfx::UniformType::Sampler);
+
+
+
     {
         ResourceHandle<TextureResource> textureHandle = resourceManager.Create<TextureResource>("B62D424BF40F46359248CDE498930422");
         ResourceHandle<ShaderResource> shader = resourceManager.Create<ShaderResource>("4EBD82BDCBCA4F78B597C8B2DF9A08F7");
+
+
 
         float time = 0;
 
@@ -265,6 +272,7 @@ int main() {
 
             }
 
+            bgfx::setTexture(0, colorTexture, textureHandle->handle);
             simulation.Render(bgfxRenderer);
 
             std::cout << "Num meshes :"<<bgfxRenderer.numMeshes<<", num batches:"<< bgfxRenderer.numBatches << "\n";
@@ -274,6 +282,7 @@ int main() {
 
     }
 
+    bgfx::destroy(colorTexture);
     bgfx::shutdown();
 
     return 0;
