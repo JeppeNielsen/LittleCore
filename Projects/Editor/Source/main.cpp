@@ -19,13 +19,17 @@ int main() {
     ModuleSettings moduleSettings;
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/");
 
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Scripts/Files/Vector2.cpp");
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Scripts/Files");
+
+
     moduleSettings.libraryFolder = "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Cache/";
 
     ModuleDefinition consoleDefinition(moduleSettings, "Console",
-                                             "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/Scripts/ConsoleWindow/Console.cpp");
+                                             "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Scripts/ConsoleWindow/Console.cpp");
 
     ModuleDefinition hierachyDefinition(moduleSettings, "Hierarchy",
-                                                 "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/Scripts/ConsoleWindow/Hierachy.cpp");
+                                                 "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Scripts/ConsoleWindow/Hierachy.cpp");
 
     auto resultConsole = consoleDefinition.Build();
     auto resultHierachy = hierachyDefinition.Build();

@@ -51,7 +51,7 @@ project "TestSDL"
    cppdialect "C++17"
 
    files { 
-      "Source/*.cpp",
+      "Source/**.cpp",
       "Source/**.hpp",
    }
 

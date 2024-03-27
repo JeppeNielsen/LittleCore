@@ -20,9 +20,9 @@ ModuleCompilerResult ModuleCompiler::Compile(const ModuleCompilerContext &contex
     }
 
     if (!context.hppFiles.empty()) {
-        clang += "-I";
+        clang += " ";
         for (auto hppFile: context.hppFiles) {
-            clang += hppFile + " ";
+            clang += "-I" + hppFile + " ";
         }
     }
 
