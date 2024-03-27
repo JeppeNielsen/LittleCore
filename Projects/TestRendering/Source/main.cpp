@@ -44,10 +44,10 @@ entt::entity CreateQuad(entt::registry& registry, glm::vec3 position, entt::enti
     registry.emplace<WorldTransform>(quad);
     registry.emplace<Hierarchy>(quad).parent = parent;
     auto& mesh = registry.emplace<Mesh>(quad);
-    mesh.vertices.push_back({{-1,-1,0}, 0x00FF0000 });
-    mesh.vertices.push_back({{1,-1,0}, 0xff000000 });
-    mesh.vertices.push_back({{1,1,0}, 0xff000000});
-    mesh.vertices.push_back({{-1,1,0}, 0xff000000});
+    mesh.vertices.push_back({{-1,-1,0}, 0x00FF0000 , {0,0}});
+    mesh.vertices.push_back({{1,-1,0}, 0xff000000 , {0,1} });
+    mesh.vertices.push_back({{1,1,0}, 0xff000000, {1,1}});
+    mesh.vertices.push_back({{-1,1,0}, 0xff000000,{1,0}});
     mesh.triangles.push_back(0);
     mesh.triangles.push_back(1);
     mesh.triangles.push_back(2);
