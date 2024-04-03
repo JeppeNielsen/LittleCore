@@ -1,6 +1,3 @@
-[submodule "External/sdl"]
-	path = External/sdl
-	url = https://github.com/JeppeNielsen/SDL.git
 [submodule "External/googletest"]
 	path = External/googletest
 	url = https://github.com/google/googletest.git
