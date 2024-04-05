@@ -1,6 +1,5 @@
 
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_syswm.h>
 #include <iostream>
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
@@ -8,16 +7,12 @@
 
 inline bool sdlSetWindow(SDL_Window* _window)
 {
-    SDL_SysWMinfo wmi;
-    if (!SDL_GetWindowWMInfo(_window, &wmi, SDL_COMPILEDVERSION)) {
-        return false;
-    }
 
     bgfx::PlatformData pd;
     pd.ndt = nullptr;
 
 #if BX_PLATFORM_OSX
-    pd.nwh = wmi.info.cocoa.window;
+    pd.nwh = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
 #elif BX_PLATFORM_WINDOWS
     pd.nwh = wmi.info.win.window;
 #endif
@@ -57,12 +52,7 @@ int main() {
 
     SDL_Init(0);
 
-    SDL_Window* window = SDL_CreateWindow("bgfx", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE);
-
-    SDL_SysWMinfo wmi;
-    if (!SDL_GetWindowWMInfo(window, &wmi, SDL_COMPILEDVERSION)) {
-        return 0;
-    }
+    SDL_Window* window = SDL_CreateWindow("bgfx", 800, 600, SDL_WINDOW_RESIZABLE);
 
     bgfx::renderFrame();
 
@@ -72,7 +62,7 @@ int main() {
     init.resolution.height = 600;
     init.resolution.reset = BGFX_RESET_VSYNC;
     init.platformData.ndt = nullptr;
-    init.platformData.nwh = wmi.info.cocoa.window;
+    init.platformData.nwh = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
     init.platformData.context = nullptr;
     init.platformData.backBuffer = nullptr;
     init.platformData.backBufferDS = nullptr;
