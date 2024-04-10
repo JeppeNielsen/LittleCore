@@ -1,6 +1,5 @@
 
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_syswm.h>
 #include <iostream>
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
@@ -77,12 +76,7 @@ int main() {
 
     SDL_Init(0);
 
-    SDL_Window* window = SDL_CreateWindow("bgfx", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE);
-
-    SDL_SysWMinfo wmi;
-    if (!SDL_GetWindowWMInfo(window, &wmi, SDL_COMPILEDVERSION)) {
-        return 0;
-    }
+    SDL_Window* window = SDL_CreateWindow("bgfx", 800, 600, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
     bgfx::renderFrame();
 
@@ -92,7 +86,7 @@ int main() {
     init.resolution.height = 600;
     init.resolution.reset = BGFX_RESET_VSYNC;
     init.platformData.ndt = nullptr;
-    init.platformData.nwh = wmi.info.cocoa.window;
+    init.platformData.nwh = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
     init.platformData.context = nullptr;
     init.platformData.backBuffer = nullptr;
     init.platformData.backBufferDS = nullptr;
@@ -243,7 +237,7 @@ int main() {
             //registry.patch<LocalTransform>(quad1).position = {6 + sinf(time)*6,0,0};
             //registry.patch<LocalTransform>(quad1).rotation =  glm::quat({0,0,scale});
 
-            //registry.patch<LocalTransform>(cameraEntity).rotation = glm::quat({0, 0, time});
+            registry.patch<LocalTransform>(cameraEntity).rotation = glm::quat({0, 0, time});
             registry.patch<Camera>(cameraEntity).fieldOfView = 10 + scale;
 
 
@@ -266,6 +260,7 @@ int main() {
                     if (movementKey.isActive) {
                         auto& transform = registry.patch<LocalTransform>(e);
                         transform.position += movementKey.direction * 0.02f;
+
                     }
 
                 }
