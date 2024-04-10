@@ -645,7 +645,8 @@ project "shaderc"
 		"spirv-opt",
 		"spirv-cross",
 		"bimg",
-		"bx"
+		"bx",
+		"bgfx"
 	}
 
 	files {
