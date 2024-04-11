@@ -113,7 +113,7 @@ void OnGUI() {
     //dockspace();
 
 
-    ImGui::DockSpaceOverViewport(NULL, ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGui::DockSpaceOverViewport();
 
     ImGui::Begin("My test window");
 
@@ -173,7 +173,11 @@ int main() {
 
     SDL_Init(0);
 
+
+
     window = SDL_CreateWindow("bgfx", width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+
+    SDL_StartTextInput();
 
     bgfx::renderFrame();
 
@@ -205,6 +209,9 @@ int main() {
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
     io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
+    io.WantCaptureMouse = true;
+    io.WantCaptureKeyboard = true;
+    io.WantTextInput = true;
 
     static ImFontConfig config;
     config.OversampleH = 3;
@@ -242,7 +249,9 @@ int main() {
 
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            ImGui_ImplSDL3_ProcessEvent(&event);
+            if (ImGui_ImplSDL3_ProcessEvent(&event)) {
+                continue;
+            }
             const bool is_main_window = event.window.windowID == SDL_GetWindowID(window);
 
             if (event.type == SDL_EVENT_QUIT)
