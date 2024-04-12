@@ -4,20 +4,16 @@ local SDL_DIR = "../External/sdl"
 project "SDL"
    kind "StaticLib"
    language "C"
-   
-   defines {
-		"SDL_VIDEO_OPENGL_EGL=0",
-		"SDL_VIDEO_OPENGL_CGL=0",
-		"SDL_RENDER_DISABLED=1",
-		"SDL_JOYSTICK_DISABLED=1",
-		"SDL_HAPTIC_DISABLED=1",
-		"SDL_SENSOR_DISABLED=1",
-		"SDL_VIDEO_OPENGL=0",
-		"SDL_VIDEO_OPENGL_ES2=0",
-		"SDL_VIDEO_VULKAN=0"
-   }
 
    buildoptions { "-x objective-c -fobjc-arc" }
+
+   defines {
+      "SDL_RENDER_DISABLED=1",
+      "SDL_JOYSTICK_DISABLED=1",
+      "SDL_HAPTIC_DISABLED=1",
+      "SDL_SENSOR_DISABLED=1",
+      "SDL_CAMERA_DISABLED=1"
+   }
 
    includedirs {
       path.join(SDL_DIR,"include"),
@@ -29,10 +25,12 @@ project "SDL"
    filter "system:linux"
       links { "dl", "GL", "pthread", "X11" }
    filter "system:macosx"
+      platforms { "x86", "x86_64" }
  		xcodebuildsettings {
  		   ["CLANG_ENABLE_OBJC_ARC"] = "YES",
  		   ["CLANG_ENABLE_OBJC_WEAK"] = "YES",
  		   ["ALWAYS_SEARCH_USER_PATHS"] = "YES",
+         ["ALWAYS_SEARCH_USER_PATHS"] = "YES",
       }
       files {
          path.join(SDL_DIR,"include/*.h"),
@@ -121,6 +119,9 @@ project "SDL"
          path.join(SDL_DIR,"src/video/dummy/*.c"),
          path.join(SDL_DIR,"src/video/yuv2rgb/*.h"),
          path.join(SDL_DIR,"src/video/yuv2rgb/*.c"),
+         path.join(SDL_DIR,"src/time/SDL_time.c"),
+         path.join(SDL_DIR,"src/time/SDL_time_c.h"),
+         path.join(SDL_DIR,"src/time/unix/SDL_systime.c")
       }
 
       removefiles { 
@@ -129,5 +130,5 @@ project "SDL"
          path.join(SDL_DIR,"src/video/cocoa/SDL_cocoaopengles.h"),
          path.join(SDL_DIR,"src/video/cocoa/SDL_cocoaopengles.m"),
          path.join(SDL_DIR,"src/video/cocoa/SDL_cocoavulkan.h"),
-         path.join(SDL_DIR,"src/video/cocoa/SDL_cocoavulkan.m"),
+         path.join(SDL_DIR,"src/video/cocoa/SDL_cocoavulkan.m")
       }
