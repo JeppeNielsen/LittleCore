@@ -8,6 +8,9 @@
 
 class EngineContextFactory {
 public:
-    EngineContext Create();
+    EngineContextFactory(ImGuiContext* imGuiContext);
 
+    EngineContext Create();
+private:
+    ImGuiContext* imGuiContext;
 };

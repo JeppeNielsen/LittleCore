@@ -4,14 +4,16 @@
 
 #include "EngineContextFactory.hpp"
 #include <iostream>
+#include "../Windows/WindowFactory.hpp"
 
 EngineContext EngineContextFactory::Create() {
 
     EngineContext context;
-    context.CreateWindow = [] () {
-        std::cout << "created window \n";
-        return new IWindow();
-    };
+    context.imGuiContext = imGuiContext;
 
     return context;
+}
+
+EngineContextFactory::EngineContextFactory(ImGuiContext *imGuiContext) : imGuiContext(imGuiContext) {
+
 }

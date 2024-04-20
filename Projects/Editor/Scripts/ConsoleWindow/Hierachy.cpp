@@ -3,15 +3,13 @@
 #include <vector>
 #include "ModuleStateFactory.hpp"
 #include "Vector2.hpp"
+#include "imgui.h"
 
 struct HierarchyState : public IModuleState {
 
     float time = 0;
 
     void Initialize(EngineContext& context) override {
-        auto window = context.CreateWindow();
-
-        std::cout << "Hierarchy Window : "<< window << std::endl;
 
         std::vector<float> numbers = {1,2,3,4,5,6,7,8,9};
 
@@ -30,6 +28,10 @@ struct HierarchyState : public IModuleState {
 
     void Render() override {
         std::cout << "Time from hierarchy: "<<time<<"\n";
+    }
+
+    void OnGui(ImGuiContext* imGuiContext) override {
+
     }
 
 };

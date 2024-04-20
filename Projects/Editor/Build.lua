@@ -7,6 +7,8 @@ workspace "LittleCore"
 
 include "../Libs/Build_sdl.lua"
 include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_LittleCore.lua"
+include "../Libs/Build_ImGui.lua"
 
 solution "LittleCore"
    configurations { "Release", "Debug" }
@@ -43,7 +45,7 @@ solution "LittleCore"
          ["ALWAYS_SEARCH_USER_PATHS"] = "YES",
       };
 
-project "TestSDL"
+project "Editor"
    location("Build")
 
    kind "WindowedApp"
@@ -56,17 +58,23 @@ project "TestSDL"
    }
 
    includedirs {
-      "../../External/sdl/include",
-      "../../External/bgfx/include",
-      "../../External/bx/include",
-      "../../External/entt/single_include",
+        "../../Engine/LittleCore/**",
+        "../../Engine/ImGui",
+        "../../External/sdl/include",
+        "../../External/bgfx/include",
+        "../../External/bx/include",
+        "../../External/entt/single_include",
+        "../../External/glm",
+        "../../External/imgui"
    }
 
    links { 
       "SDL", 
       "bgfx",
       "bimg",
-      "bx"
+      "bx",
+      "LittleCore",
+      "ImGui"
    }
 
    filter "system:windows"

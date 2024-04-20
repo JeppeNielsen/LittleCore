@@ -5,6 +5,6 @@
 #pragma once
 
 class IWindow {
-
-
+public:
+    void* prt;
 };

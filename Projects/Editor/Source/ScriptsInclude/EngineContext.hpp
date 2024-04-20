@@ -4,10 +4,9 @@
 
 #pragma once
 #include <functional>
-#include "IWindow.hpp"
+#include "imgui.h"
 
 class EngineContext {
 public:
-    std::function<IWindow*()> CreateWindow;
-
+    ImGuiContext* imGuiContext;
 };

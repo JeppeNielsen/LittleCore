@@ -58,3 +58,10 @@ void Module::Render() {
     }
     state->Render();
 }
+
+void Module::OnGui(ImGuiContext *imGuiContext) {
+    if (!state) {
+        return;
+    }
+    state->InvokeOnGui(imGuiContext);
+}

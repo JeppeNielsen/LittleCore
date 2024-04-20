@@ -19,6 +19,7 @@ public:
 
     void Update(float dt);
     void Render();
+    void OnGui(ImGuiContext* imGuiContext);
 
 private:
     void* loadedLib = nullptr;
