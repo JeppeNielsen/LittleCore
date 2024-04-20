@@ -11,6 +11,8 @@ project "ImGui"
       "../Engine/ImGui/Backend/*.cpp",
       "../External/imgui/*.h",
       "../External/imgui/*.cpp",
+      "../External/imgui/misc/cpp/imgui_stdlib.h",
+      "../External/imgui/misc/cpp/imgui_stdlib.cpp",
       "../External/imgui/backends/imgui_impl_sdl3.h",
       "../External/imgui/backends/imgui_impl_sdl3.cpp"
    }
