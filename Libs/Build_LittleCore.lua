@@ -33,10 +33,10 @@ project "LittleCore"
    filter "configurations:Debug"
       defines { "DEBUG" }
       symbols "On"
-      cppdialect "C++17"
+      cppdialect "C++20"
 
    filter "configurations:Release"
       defines { "NDEBUG" }
       optimize "On"
-      cppdialect "C++17"
+      cppdialect "C++20"
 

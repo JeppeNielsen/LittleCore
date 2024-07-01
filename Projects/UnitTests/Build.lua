@@ -7,6 +7,7 @@ workspace "LittleCore"
 
 include "../Libs/Build_sdl.lua"
 include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_ShaderCompiler.lua"
 
 solution "LittleCore"
    configurations { "Release", "Debug" }
@@ -48,7 +49,7 @@ project "UnitTests"
 
    kind "ConsoleApp"
    language "C++"
-   cppdialect "C++17"
+   cppdialect "C++20"
 
    files { 
       "../../Engine/LittleCore/**.hpp", 
@@ -75,7 +76,8 @@ project "UnitTests"
       "SDL", 
       "bgfx",
       "bimg",
-      "bx"
+      "bx",
+      "ShaderCompiler"
    }
 
    filter "system:windows"
