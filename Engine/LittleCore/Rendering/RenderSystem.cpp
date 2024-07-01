@@ -53,7 +53,7 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
     for(auto entity : entities) {
         const Renderable& renderable = registry.get<Renderable>(entity);
 
-        if (currentShaderProgram.idx != renderable.shader->handle.idx) {
+        if (renderable.shader && currentShaderProgram.idx != renderable.shader->handle.idx) {
 
             if (currentShaderProgram.idx != bgfx::kInvalidHandle) {
                 renderer->EndBatch(viewId, currentShaderProgram);
