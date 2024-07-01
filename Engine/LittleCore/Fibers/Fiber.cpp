@@ -3,7 +3,8 @@
 //
 
 #include "Fiber.hpp"
-#include <iostream>
+
+using namespace LittleCore;
 
 bool Fiber::Step() {
     return promise->Step();
@@ -13,24 +14,17 @@ bool Fiber::IsTerminated() {
     return promise->IsTerminated();
 }
 
-Fiber::Fiber() {
-    std::cout << "Fiber ctor \n";
-}
+Fiber::Fiber() {}
 
 Fiber::Promise::Promise() : parent(nullptr), didCreate(false) {
     coroutine = CoroutineHandle::from_promise(*this);
-    std::cout << "Promise ctor, promise:"<<this<<"\n";
 }
 
-
-Fiber::Promise::~Promise() {
-    std::cout << "Promise dtor, promise:"<<this<<"\n";
-}
+Fiber::Promise::~Promise() {}
 
 Fiber Fiber::Promise::get_return_object() {
 
     Fiber fiber;
-    std::cout << "get_return_object:"<<this<<"\n";
     fiber.promise = this;
     stack.push_back(this);
 
@@ -49,11 +43,6 @@ void Fiber::Promise::return_void() noexcept {
     if (!root->stack.empty()) {
         root->stack.back()->coroutine.resume();
     }
-    /*if (parent != nullptr) {
-        auto root = FindRoot(this);
-        root->stack.pop_back();
-    }*/
-    //stepOneExtra = true;
 }
 
 std::experimental::suspend_always Fiber::Promise::yield_value(int val) {
@@ -61,14 +50,6 @@ std::experimental::suspend_always Fiber::Promise::yield_value(int val) {
 }
 
 std::experimental::suspend_always Fiber::Promise::yield_value(Fiber fiber) {
-/*
-    auto fromRoot = FindRoot(this);
-
-    if (!fromRoot->didCreate) {
-        return {};
-    }
-*/
-    std::cout << "yield_value, promise:"<<this<<"\n";
     fiber.promise->parent = this;
 
     auto root = FindRoot(fiber.promise);
