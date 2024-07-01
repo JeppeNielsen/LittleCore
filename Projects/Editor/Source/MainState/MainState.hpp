@@ -8,6 +8,8 @@
 #include "ImGuiController.hpp"
 #include "../Modules/ModuleDefinitionsManager.hpp"
 #include "../Modules/ModuleManager.hpp"
+#include <fstream>
+#include <ostream>
 
 namespace LittleCoreEngine {
     struct MainState : LittleCore::IState {
@@ -22,5 +24,9 @@ namespace LittleCoreEngine {
         ModuleSettings moduleSettings;
         ModuleDefinitionsManager moduleDefinitionsManager;
         ModuleManager moduleManager;
+
+        std::ifstream cin;
+        std::ofstream cout;
+        std::string errors;
     };
 }

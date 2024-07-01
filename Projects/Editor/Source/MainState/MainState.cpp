@@ -7,17 +7,31 @@
 #include <string>
 #include "misc/cpp/imgui_stdlib.h"
 #include <iostream>
+#include <fstream>
+
 
 using namespace LittleCoreEngine;
 
 static std::string text;
 static std::string text2;
 
-MainState::MainState() : moduleDefinitionsManager(moduleSettings), moduleManager(engineContext) {
+MainState::MainState() :
+moduleDefinitionsManager(moduleSettings),
+moduleManager(engineContext),
+cin("input.txt"),
+cout("output.txt")
+{
 
 }
 
 void MainState::Initialize() {
+
+    // optional performance optimizations
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(0);
+
+    std::cin.rdbuf(cin.rdbuf());
+    std::cout.rdbuf(cout.rdbuf());
 
 
 
@@ -58,10 +72,17 @@ void MainState::Initialize() {
         if (ImGui::Button("Recompile")) {
 
             moduleManager.GetModules()["Console"]->Unload();
-            consoleDefinition.Build();
+            auto result = consoleDefinition.Build();
+
+            if (!result.errors.empty()) {
+                errors = result.errors[1];
+            }
+
             moduleManager.GetModules()["Console"]->Load();
 
         }
+
+        ImGui::InputTextMultiline("Errors:", &errors);
 
         ImGui::End();
 
@@ -74,6 +95,7 @@ void MainState::Initialize() {
 
 void MainState::Update(float dt) {
     //std::cout << "Text: "<< text<< std::endl;
+    moduleManager.GetModules()["Console"]->Update(dt);
 }
 
 void MainState::Render() {

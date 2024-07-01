@@ -7,6 +7,7 @@
 #include <future>
 #include <iostream>
 #include <sstream>
+#include "../CommandRunner/CommandRunner.hpp"
 
 ModuleCompiler::ModuleCompiler(const std::string &clangPath) : clangPath(clangPath){
 
@@ -34,12 +35,18 @@ ModuleCompilerResult ModuleCompiler::Compile(const ModuleCompilerContext &contex
 
     std::stringstream ss;
 
-    int ret = std::system(clang.c_str());
+    CommandRunner commandRunner;
+
+    auto commandResult = commandRunner.Run(clang);
+
+    //int ret = std::system(clang.c_str());
     ModuleCompilerResult result;
 
-    if (ret != 0) {
+    if (commandResult.returnCode != 0) {
         result.errors.push_back("Compilation failed");
-        result.errors.push_back(ss.str());
+    } else {
+        result.errors.push_back("Compilation succeeded");
     }
+    result.errors.push_back(commandResult.result);
     return result;
 }
