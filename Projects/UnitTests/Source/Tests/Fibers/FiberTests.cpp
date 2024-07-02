@@ -9,62 +9,100 @@ using namespace LittleCore;
 
 namespace {
 
-    static int TestCounter = 0;
-
-    Fiber Function() {
-        TestCounter++;
-        co_yield 0;
-        TestCounter++;
-    }
-
-    Fiber ChildFunction() {
-        TestCounter++;
-        co_yield 0;
-        TestCounter++;
-    }
-
-    Fiber NestedFunction() {
-        TestCounter++;
-        co_yield ChildFunction();
-        TestCounter++;
-    }
-
-    Fiber FiveYields() {
-        for (int i = 0; i < 5; ++i) {
-            TestCounter++;
-            co_yield 0;
-        }
-    }
+    struct Counter {
+        int counter = 0;
+    };
 
     TEST(Fiber, StepTwice) {
 
-        TestCounter = 0;
+        struct StepTwice : Counter {
+            Fiber Test() {
+                counter++;
+                co_yield 0;
+                counter++;
+            }
+        };
 
-        auto fiber = Function();
+        StepTwice stepTwice;
+
+        auto fiber = stepTwice.Test();
         fiber.Step();
-        EXPECT_EQ(TestCounter, 1);
+        EXPECT_EQ(stepTwice.counter, 1);
         fiber.Step();
-        EXPECT_EQ(TestCounter, 2);
+        EXPECT_EQ(stepTwice.counter, 2);
     }
 
     TEST(Fiber, NestedCalls) {
 
-        TestCounter = 0;
+        struct NestedFunction : Counter {
 
-        auto fiber = NestedFunction();
+            Fiber Test() {
+                 counter++;
+                 co_yield Child();
+                 counter++;
+            }
+
+            Fiber Child() {
+                counter++;
+                co_yield 0;
+                counter++;
+            }
+
+        };
+
+        NestedFunction nestedFunction;
+        auto fiber = nestedFunction.Test();
         int numberOfSteps = 0;
         while(fiber.Step()) { numberOfSteps++; }
-        EXPECT_EQ(TestCounter, 4);
+        EXPECT_EQ(nestedFunction.counter, 4);
         EXPECT_EQ(numberOfSteps, 1);
     }
 
     TEST(Fiber, FiveYields) {
 
-        TestCounter = 0;
-        auto fiber = FiveYields();
+        struct FiveYields : Counter {
+            Fiber Test() {
+                for (int i = 0; i < 5; ++i) {
+                    counter++;
+                    co_yield 0;
+                }
+            }
+        };
+
+        FiveYields fiveYields;
+        auto fiber = fiveYields.Test();
         int numberOfSteps = 0;
         while(fiber.Step()) { numberOfSteps++; }
-        EXPECT_EQ(TestCounter, 5);
+        EXPECT_EQ(fiveYields.counter, 5);
         EXPECT_EQ(numberOfSteps, 5);
     }
+
+
+    TEST(Fiber, StepOnceWithChildFunction) {
+
+        struct Test : Counter {
+            Fiber Animate() {
+                counter++;
+                co_yield ChildAnimation(0.5f);
+                counter++;
+            }
+
+            Fiber ChildAnimation(float time) {
+                counter++;
+                co_yield 0;
+            }
+        };
+
+        Test test;
+        auto fiber = test.Animate();
+
+        int numSteps = 0;
+        while (fiber.Step()) {
+            numSteps++;
+        }
+
+        EXPECT_EQ(test.counter, 3);
+        EXPECT_EQ(numSteps, 1);
+    }
+
 }
