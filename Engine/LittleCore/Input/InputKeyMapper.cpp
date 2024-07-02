@@ -2,7 +2,7 @@
 // Created by Jeppe Nielsen on 09/02/2024.
 //
 
-#include "InputKeyMapper.h"
+#include "InputKeyMapper.hpp"
 
 using namespace LittleCore;
 
