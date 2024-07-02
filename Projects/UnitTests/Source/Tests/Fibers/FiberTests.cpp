@@ -105,4 +105,27 @@ namespace {
         EXPECT_EQ(numSteps, 1);
     }
 
+    TEST(Fiber, OutParameter) {
+
+        struct PowerOfTwoCalculator : Counter {
+
+            Fiber CalculatePowerOfTwo(int count, int& result) {
+
+                for (int i = 0; i < count; ++i) {
+                    result *= 2;
+                    co_yield 0;
+                }
+            }
+
+        };
+
+        int result = 1;
+        PowerOfTwoCalculator calculator;
+        auto fiber = calculator.CalculatePowerOfTwo(8, result);
+
+        while (fiber.Step());
+
+        EXPECT_EQ(result, 256);
+    }
+
 }
