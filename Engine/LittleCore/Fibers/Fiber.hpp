@@ -49,7 +49,6 @@ namespace LittleCore {
             CoroutineHandle coroutine;
             std::vector<Promise *> stack;
             Promise *parent;
-            bool didCreate;
         };
 
         Promise *promise = nullptr;

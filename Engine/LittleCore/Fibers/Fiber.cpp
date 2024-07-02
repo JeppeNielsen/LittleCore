@@ -16,7 +16,7 @@ bool Fiber::IsTerminated() {
 
 Fiber::Fiber() {}
 
-Fiber::Promise::Promise() : parent(nullptr), didCreate(false) {
+Fiber::Promise::Promise() : parent(nullptr) {
     coroutine = CoroutineHandle::from_promise(*this);
 }
 
@@ -28,7 +28,6 @@ Fiber Fiber::Promise::get_return_object() {
     fiber.promise = this;
     stack.push_back(this);
 
-    didCreate = true;
     return fiber;
 }
 
@@ -55,9 +54,6 @@ std::experimental::suspend_always Fiber::Promise::yield_value(Fiber fiber) {
     auto root = FindRoot(fiber.promise);
     root->stack.push_back(fiber.promise);
     root->stack.back()->coroutine.resume();
-
-    didCreate = false;
-
     return {};
 }
 
@@ -74,7 +70,6 @@ bool Fiber::Promise::Step() {
         return false;
     }
     Promise* p = stack.back();
-    didCreate = false;
     p->coroutine.resume();
     return !IsTerminated();
 }
