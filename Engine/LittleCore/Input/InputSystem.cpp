@@ -5,7 +5,7 @@
 #include "InputSystem.hpp"
 #include <SDL3/SDL.h>
 #include <iostream>
-#include "InputKeyMapper.h"
+#include "InputKeyMapper.hpp"
 
 using namespace LittleCore;
 
