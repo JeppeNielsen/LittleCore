@@ -1,14 +1,13 @@
 
 #include <iostream>
 #include <vector>
-#include "ModuleStateFactory.hpp"
+#include "ModuleFactory.hpp"
 #include "imgui.h"
 #include "imgui_stdlib.h"
 #include <sstream>
 #include <fstream>
 
-struct ConsoleState : public IModuleState {
-
+struct Console : public IModule {
 
     struct Entry {
         std::string name;
@@ -67,6 +66,14 @@ struct ConsoleState : public IModuleState {
             auto* ttt = t.c_str();
 
             ImGui::Text("%s", t.c_str());
+
+            for (int i = 0; i < 10; ++i) {
+                if (ImGui::Button(std::to_string(i).c_str())) {
+                    std::cout << "Button #"<<i<<" clicked \n";
+                    exit(0);
+                }
+            }
+
 
 
             ImGui::End();
@@ -170,16 +177,6 @@ struct ConsoleState : public IModuleState {
         file.open("test.txt");
         file << code;
     }
-
-
 };
 
-extern "C" {
-    IModuleState* CreateModuleState(ModuleStateFactory* factory) {
-        return factory->CreateState<ConsoleState>();
-    }
-
-    void DeleteModuleState(IModuleState* state) {
-        delete state;
-    }
-}
+CreateModule(Console);

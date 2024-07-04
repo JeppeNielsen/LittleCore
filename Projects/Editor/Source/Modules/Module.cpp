@@ -3,7 +3,7 @@
 //
 
 #include "Module.hpp"
-#include "../ScriptsInclude/ModuleStateFactory.hpp"
+#include "../ScriptsInclude/ModuleFactory.hpp"
 #include <dlfcn.h>
 
 Module::Module(EngineContext& engineContext, ModuleDefinition &definition) : engineContext(engineContext), definition(definition) {
@@ -24,21 +24,21 @@ void Module::Load() {
         return;
     }
 
-    createModuleStateFunction = reinterpret_cast<CreateModuleState>(dlsym(loadedLib, "CreateModuleState"));
-    deleteModuleStateFunction = reinterpret_cast<DeleteModuleState>(dlsym(loadedLib, "DeleteModuleState"));
+    createModuleFunction = reinterpret_cast<CreateModule>(dlsym(loadedLib, "CreateModule"));
+    deleteModuleFunction = reinterpret_cast<DeleteModule>(dlsym(loadedLib, "DeleteModule"));
 
-    ModuleStateFactory factory(engineContext);
-    state = createModuleStateFunction(&factory);
+    ModuleFactory factory(engineContext);
+    module = createModuleFunction(&factory);
 }
 
 void Module::Unload() {
     if (!IsLoaded()) {
         return;
     }
-    deleteModuleStateFunction(state);
+    deleteModuleFunction(module);
     dlclose(loadedLib);
     loadedLib = nullptr;
-    state = nullptr;
+    module = nullptr;
 }
 
 bool Module::IsLoaded() {
@@ -46,22 +46,22 @@ bool Module::IsLoaded() {
 }
 
 void Module::Update(float dt) {
-    if (!state) {
+    if (!module) {
         return;
     }
-    state->Update(dt);
+    module->Update(dt);
 }
 
 void Module::Render() {
-    if (!state) {
+    if (!module) {
         return;
     }
-    state->Render();
+    module->Render();
 }
 
 void Module::OnGui(ImGuiContext *imGuiContext) {
-    if (!state) {
+    if (!module) {
         return;
     }
-    state->InvokeOnGui(imGuiContext);
+    module->InvokeOnGui(imGuiContext);
 }

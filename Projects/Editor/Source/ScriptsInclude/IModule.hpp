@@ -6,8 +6,8 @@
 #include "EngineContext.hpp"
 #include "imgui.h"
 
-struct IModuleState {
-    virtual ~IModuleState() {}
+struct IModule {
+    virtual ~IModule() {}
     virtual void Initialize(EngineContext& engineContext) = 0;
     virtual void Update(float dt) = 0;
     virtual void Render() = 0;

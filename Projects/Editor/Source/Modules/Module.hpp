@@ -5,9 +5,9 @@
 #pragma once
 #include "ModuleDefinition.hpp"
 #include "../ScriptsInclude/EngineContextFactory.hpp"
-#include "../ScriptsInclude/IModuleState.hpp"
+#include "../ScriptsInclude/IModule.hpp"
 
-struct ModuleStateFactory;
+struct ModuleFactory;
 
 class Module {
 public:
@@ -25,10 +25,10 @@ private:
     void* loadedLib = nullptr;
     ModuleDefinition& definition;
     EngineContext& engineContext;
-    typedef IModuleState* (*CreateModuleState)(ModuleStateFactory*);
-    typedef void (*DeleteModuleState)(IModuleState*);
+    typedef IModule* (*CreateModule)(ModuleFactory*);
+    typedef void (*DeleteModule)(IModule*);
 
-    CreateModuleState createModuleStateFunction;
-    DeleteModuleState deleteModuleStateFunction;
-    IModuleState* state = nullptr;
+    CreateModule createModuleFunction;
+    DeleteModule deleteModuleFunction;
+    IModule* module = nullptr;
 };
