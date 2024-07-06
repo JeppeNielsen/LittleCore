@@ -8,9 +8,7 @@
 #include "misc/cpp/imgui_stdlib.h"
 #include <iostream>
 #include <fstream>
-
-
-using namespace LittleCoreEngine;
+#include "Timer.hpp"
 
 static std::string text;
 static std::string text2;
@@ -33,8 +31,6 @@ void MainState::Initialize() {
     std::cin.rdbuf(cin.rdbuf());
     std::cout.rdbuf(cout.rdbuf());
 
-
-
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/");
 
     moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Scripts/Files/Vector2.cpp");
@@ -55,7 +51,11 @@ void MainState::Initialize() {
 
     auto& consoleDefinition = moduleDefinitionsManager.CreateFromMainFile("Console", "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Scripts/ConsoleWindow/Console.cpp");
 
+    LittleCore::Timer timer;
+    timer.Start();
     consoleDefinition.Build();
+    float duration = timer.Stop();
+    std::cout << "Compilation took: " << std::to_string(duration) << "\n";
 
     moduleManager.AddModule("Console", consoleDefinition);
 

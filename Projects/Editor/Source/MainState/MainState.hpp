@@ -11,22 +11,21 @@
 #include <fstream>
 #include <ostream>
 
-namespace LittleCoreEngine {
-    struct MainState : LittleCore::IState {
-        MainState();
-        void Initialize() override;
-        void Update(float dt) override;
-        void Render() override;
-        void HandleEvent(void* event) override;
-        LittleCore::ImGuiController gui;
+struct MainState : LittleCore::IState {
+    MainState();
+    void Initialize() override;
+    void Update(float dt) override;
+    void Render() override;
+    void HandleEvent(void* event) override;
+    LittleCore::ImGuiController gui;
 
-        EngineContext engineContext;
-        ModuleSettings moduleSettings;
-        ModuleDefinitionsManager moduleDefinitionsManager;
-        ModuleManager moduleManager;
+    EngineContext engineContext;
+    ModuleSettings moduleSettings;
+    ModuleDefinitionsManager moduleDefinitionsManager;
+    ModuleManager moduleManager;
 
-        std::ifstream cin;
-        std::ofstream cout;
-        std::string errors;
-    };
-}
+    std::ifstream cin;
+    std::ofstream cout;
+    std::string errors;
+};
+

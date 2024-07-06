@@ -6,7 +6,6 @@
 #include "MainState/MainState.hpp"
 
 using namespace LittleCore;
-using namespace LittleCoreEngine;
 
 int main() {
     Engine e;
