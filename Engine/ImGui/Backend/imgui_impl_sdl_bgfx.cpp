@@ -212,7 +212,7 @@ void ImGui_Impl_sdl_bgfx_Resize(SDL_Window *window)
   }
   
     lastWindowWidth = drawable_width;
-    lastWindowWidth = drawable_height;
+    lastWindowHeight = drawable_height;
 }
 
 void ImGui_Impl_sdl_bgfx_Render(const bgfx::ViewId view_id, ImDrawData *draw_data, uint32_t clearColor)
