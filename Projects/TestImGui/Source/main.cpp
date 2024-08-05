@@ -34,7 +34,7 @@ struct ImguiTest : IState {
             OnGUI();
         });
 
-        gui.LoadFont("/Users/jeppe/Jeppes/LittleCore/Projects/TestImGui/Source/Fonts/LucidaG.ttf", 14);
+        gui.LoadFont("/Users/jeppe/Jeppes/LittleCore/Projects/TestImGui/Source/Fonts/LucidaG.ttf", 12);
    }
 
     void HandleEvent(void* event) override {
@@ -79,7 +79,7 @@ struct ImguiTest : IState {
 };
 
 int main() {
-    Engine e;
+    Engine e({"TestImGUI"});
     e.Start<ImguiTest>();
     return 0;
 }

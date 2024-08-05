@@ -8,7 +8,9 @@
 using namespace LittleCore;
 
 int main() {
-    Engine e;
+    Engine e({
+        "Little Core Editor"
+    });
     e.Start<MainState>();
     return 0;
 }

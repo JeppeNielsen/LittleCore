@@ -11,6 +11,9 @@
 
 using namespace LittleCore;
 
+Engine::Engine(EngineSettings settings) : settings(settings){
+
+}
 
 void Engine::MainLoop() {
 
@@ -19,7 +22,7 @@ void Engine::MainLoop() {
 
     SDL_Init(0);
 
-    auto window = SDL_CreateWindow("bgfx", width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    auto window = SDL_CreateWindow(settings.mainWindowTitle.c_str(), width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
     state->mainWindow = window;
 
@@ -74,3 +77,4 @@ void Engine::MainLoop() {
     bgfx::shutdown();
 
 }
+
