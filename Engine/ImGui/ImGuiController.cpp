@@ -52,6 +52,8 @@ void ImGuiController::HandleEvent(void *event) {
 
 void ImGuiController::Render() {
 
+    ImGui_Impl_sdl_bgfx_Resize((SDL_Window*)mainWindow);
+
     ImGui_ImplSDL3_NewFrame();
     ImGui_Impl_sdl_bgfx_NewFrame();
 
@@ -66,13 +68,6 @@ void ImGuiController::Render() {
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
 
-    int width;
-    int height;
-    SDL_GetWindowSizeInPixels((SDL_Window*)mainWindow, &width, &height);
-
-    bgfx::reset((uint32_t)width, (uint32_t)height, BGFX_RESET_VSYNC);
-
-    bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
     bgfx::touch(0);
 
     bgfx::frame();

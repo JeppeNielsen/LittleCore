@@ -30,6 +30,9 @@ static bgfx::VertexLayout vertex_layout;
 static std::vector<bgfx::ViewId> free_view_ids;
 static bgfx::ViewId sub_view_id = 200;
 static std::function<void()> renderFunction;
+static int lastWindowWidth = 0;
+static int lastWindowHeight = 0;
+
 
 static bgfx::ViewId allocate_view_id()
 {
@@ -198,6 +201,18 @@ void ImGui_Impl_sdl_bgfx_Resize(SDL_Window *window)
   ImGuiIO &io = ImGui::GetIO();
   io.DisplaySize = ImVec2((float)drawable_width, (float)drawable_height);
   bgfx::reset(drawable_width, drawable_height, BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4);
+
+  if (drawable_width!=lastWindowWidth ||
+      drawable_height!=lastWindowHeight) {
+
+      auto viewPorts = windowToViewports;
+      for(auto o : viewPorts) {
+          ImguiBgfxOnSetWindowSize(o.second, {0,0});
+      }
+  }
+  
+    lastWindowWidth = drawable_width;
+    lastWindowWidth = drawable_height;
 }
 
 void ImGui_Impl_sdl_bgfx_Render(const bgfx::ViewId view_id, ImDrawData *draw_data, uint32_t clearColor)
