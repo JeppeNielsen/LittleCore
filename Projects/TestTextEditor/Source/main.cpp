@@ -4,7 +4,7 @@
 #include "Engine.hpp"
 #include "ImGuiController.hpp"
 #include "imgui.h"
-#include "TextEditor.h"
+#include "TextEditor.hpp"
 #include "FileHelper.hpp"
 
 using namespace LittleCore;
