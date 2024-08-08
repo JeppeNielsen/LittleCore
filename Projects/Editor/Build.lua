@@ -41,7 +41,7 @@ solution "LittleCore"
       architecture "x86_64"
    filter "system:macosx"
       xcodebuildsettings {
-         ["MACOSX_DEPLOYMENT_TARGET"] = "10.9",
+         ["MACOSX_DEPLOYMENT_TARGET"] = "10.15",
          ["ALWAYS_SEARCH_USER_PATHS"] = "YES",
       };
 
