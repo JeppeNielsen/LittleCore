@@ -78,7 +78,7 @@ void ImGuiController::Destroy() {
     ImGui_Impl_sdl_bgfx_Shutdown();
 }
 
-void ImGuiController::LoadFont(const std::string &fontPath, float fontSize) {
+ImFont* ImGuiController::LoadFont(const std::string &fontPath, float fontSize) {
     ImGuiIO &io = ImGui::GetIO();
 
     static ImFontConfig config;
@@ -86,6 +86,6 @@ void ImGuiController::LoadFont(const std::string &fontPath, float fontSize) {
     //config.OversampleV = 3;
     config.RasterizerDensity = 2.0f;
 
-    io.Fonts->AddFontFromFileTTF(fontPath.c_str(), fontSize, &config);
+    return io.Fonts->AddFontFromFileTTF(fontPath.c_str(), fontSize, &config);
 }
 

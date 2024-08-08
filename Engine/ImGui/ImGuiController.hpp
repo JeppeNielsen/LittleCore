@@ -7,6 +7,8 @@
 #include <functional>
 #include <string>
 
+class ImFont;
+
 namespace LittleCore {
     class ImGuiController {
     public:
@@ -19,7 +21,7 @@ namespace LittleCore {
         void HandleEvent(void* event);
         void Render();
         void Destroy();
-        void LoadFont(const std::string& fontPath, float fontSize);
+        ImFont* LoadFont(const std::string& fontPath, float fontSize);
 
     private:
         void* mainWindow;
