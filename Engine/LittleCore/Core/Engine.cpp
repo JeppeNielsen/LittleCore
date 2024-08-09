@@ -15,7 +15,7 @@ Engine::Engine(EngineSettings settings) : settings(settings){
 
 }
 
-void Engine::MainLoop() {
+void Engine::MainLoop(const std::function<void()>& gfxInitialized) {
 
     const int width = 800;
     const int height = 600;
@@ -23,8 +23,6 @@ void Engine::MainLoop() {
     SDL_Init(0);
 
     auto window = SDL_CreateWindow(settings.mainWindowTitle.c_str(), width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
-
-    state->mainWindow = window;
 
     SDL_StartTextInput();
 
@@ -43,8 +41,11 @@ void Engine::MainLoop() {
 
     bgfx::init(init);
     bgfx::setDebug(BGFX_DEBUG_TEXT);
-    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0, 1.f, 0);
+    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x6495ED, 1.f, 0);
 
+    gfxInitialized();
+
+    state->mainWindow = window;
     state->Initialize();
 
     Timer timer;

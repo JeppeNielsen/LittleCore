@@ -5,6 +5,7 @@
 #include <memory>
 #include "EngineSettings.hpp"
 #include "IState.hpp"
+#include <functional>
 
 namespace LittleCore {
     class Engine {
@@ -12,13 +13,14 @@ namespace LittleCore {
         Engine(EngineSettings settings);
         template<typename T>
         void Start() {
-            state = std::make_unique<T>();
-            MainLoop();
+            MainLoop([this] (){
+                state = std::make_unique<T>();
+            });
         }
 
     private:
         EngineSettings settings;
         std::unique_ptr<IState> state;
-        void MainLoop();
+        void MainLoop(const std::function<void()>& gfxInitialized);
     };
 }
