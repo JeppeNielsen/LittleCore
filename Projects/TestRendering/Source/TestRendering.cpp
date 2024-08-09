@@ -4,6 +4,7 @@
 
 #include "TestRendering.hpp"
 #include <SDL3/SDL.h>
+#include "imgui.h"
 /*
 struct MovementKey {
     InputKey key;
@@ -43,6 +44,23 @@ entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, entt::e
 }
 
 void TestRendering::Initialize() {
+
+    imGuiController.Initialize(mainWindow, [this]() {
+        ImGui::DockSpaceOverViewport();
+
+        ImGui::Begin("Game");
+        ImTextureID textureId = (ImTextureID)(uintptr_t)renderTexture.idx;
+        ImGui::Image(textureId, ImVec2((float)renderTextureWidth, (float)renderTextureHeight));
+
+        ImGui::End();
+
+        ImGui::Begin("Scene");
+        ImTextureID textureId2 = (ImTextureID)(uintptr_t)renderTexture.idx;
+        ImGui::Image(textureId2, ImVec2((float)renderTextureWidth, (float)renderTextureHeight));
+
+        ImGui::End();
+    });
+
     resourcePathMapper.RefreshFromRootPath("../../../../Assets/");
     resources.CreateLoaderFactory<TextureResourceLoaderFactory>();
     resources.CreateLoaderFactory<ShaderResourceLoaderFactory>();
@@ -106,6 +124,15 @@ void TestRendering::Initialize() {
     SDL_GetWindowSizeInPixels((SDL_Window*)mainWindow, &width, &height);
     bgfxRenderer.screenSize = {width, height};
 
+
+    renderTexture = bgfx::createTexture2D(
+            renderTextureWidth, renderTextureHeight,
+            false, 1, bgfx::TextureFormat::RGBA8,
+            BGFX_TEXTURE_RT
+    );
+
+    framebuffer = bgfx::createFrameBuffer(1, &renderTexture, true);
+
 }
 
 void TestRendering::Update(float dt) {
@@ -122,13 +149,29 @@ void TestRendering::Update(float dt) {
 }
 
 void TestRendering::Render() {
+
+    bgfx::setViewFrameBuffer(0, framebuffer);
+    bgfx::setViewRect(0, 0, 0, renderTextureWidth, renderTextureHeight);
+    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
+
+    bgfx::touch(0);
+
     if (fmodf(time, 1.0f)<0.5f) {
         bgfx::setTexture(0, colorTexture, texture->handle);
     }
     simulation.Render(bgfxRenderer);
+    bgfx::frame();
+
+    bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
+
+    imGuiController.Render();
 
 }
 
 TestRendering::TestRendering() : simulation(registry), resources(resourcePathMapper) {
 
+}
+
+void TestRendering::HandleEvent(void *event) {
+    imGuiController.HandleEvent(event);
 }

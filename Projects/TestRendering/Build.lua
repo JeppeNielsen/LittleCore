@@ -9,6 +9,7 @@ include "../Libs/Build_sdl.lua"
 include "../Libs/Build_bgfx.lua"
 include "../Libs/Build_ShaderCompiler.lua"
 include "../Libs/Build_LittleCore.lua"
+include "../Libs/Build_ImGui.lua"
 
 solution "LittleCore"
    configurations { "Release", "Debug" }
@@ -66,7 +67,9 @@ project "TestRendering"
       "../../External/entt/single_include",
       "../../External/glm",
       "../../External/stb",
-      "../../Engine/ShaderCompiler"
+      "../../Engine/ShaderCompiler",
+      "../../Engine/ImGui",
+      "../../External/imgui"
    }
 
    links { 
@@ -75,7 +78,8 @@ project "TestRendering"
       "bimg",
       "bx",
       "LittleCore",
-      "ShaderCompiler"
+      "ShaderCompiler",
+      "ImGui"
    }
 
    filter "system:windows"
