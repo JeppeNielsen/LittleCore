@@ -72,7 +72,7 @@ struct Movable {
     std::vector<MovementKey> keys;
 };
 
-int main() {
+int main_old() {
 
     SDL_Init(0);
 
