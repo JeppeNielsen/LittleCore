@@ -7,6 +7,6 @@
 
 namespace LittleCore {
     struct ShaderResource {
-        bgfx::ProgramHandle handle;
+        bgfx::ProgramHandle handle = BGFX_INVALID_HANDLE;
     };
 }
