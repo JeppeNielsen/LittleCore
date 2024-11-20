@@ -8,7 +8,7 @@
 
 struct IModule {
     virtual ~IModule() {}
-    virtual void Initialize(EngineContext& engineContext) = 0;
+    virtual void Initialize(EngineContext& engineContext) { };
     virtual void Update(float dt) = 0;
     virtual void Render() = 0;
 
