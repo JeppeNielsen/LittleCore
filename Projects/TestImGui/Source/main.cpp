@@ -4,6 +4,7 @@
 #include "Engine.hpp"
 #include "ImGuiController.hpp"
 #include "imgui.h"
+#include "Vector2.hpp"
 
 using namespace LittleCore;
 
@@ -27,8 +28,14 @@ struct ImguiTest : IState {
     Color backgroundColor;
 
     bool showWindow = false;
+    
+    int value;
 
     void Initialize() override {
+        
+        Vector2 v {2,3};
+        
+        v.y = 45;
 
         gui.Initialize(mainWindow, [this]() {
             OnGUI();
@@ -58,9 +65,17 @@ struct ImguiTest : IState {
         ImGui::ColorEdit4("Color", &backgroundColor.r);
 
         ImGui::End();
+        
+        ImGui::Begin("Window 3");
 
+        ImGui::ColorEdit4("Color", &backgroundColor.r);
+
+        ImGui::End();
+		
         if (showWindow) {
             ImGui::Begin("Extra window");
+            
+            ImGui::DragInt("Test int", &value);
 
             ImGui::End();
         }
