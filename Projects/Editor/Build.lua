@@ -13,9 +13,9 @@ include "../Libs/Build_ImGui.lua"
 solution "LittleCore"
    configurations { "Release", "Debug" }
    if os.is64bit() and not os.istarget("windows") then
-      platforms "x86_64"
+      platforms "ARM64"
    else
-      platforms { "x86", "x86_64" }
+      platforms { "x86", "ARM64" }
    end
    filter "configurations:Release"
       defines
@@ -37,15 +37,15 @@ solution "LittleCore"
       symbols "On"
    filter "platforms:x86"
       architecture "x86"
-   filter "platforms:x86_64"
-      architecture "x86_64"
+   filter "platforms:ARM64"
+      architecture "ARM64"
    filter "system:macosx"
       xcodebuildsettings {
-         ["MACOSX_DEPLOYMENT_TARGET"] = "10.15",
+         ["MACOSX_DEPLOYMENT_TARGET"] = "11.0",
          ["ALWAYS_SEARCH_USER_PATHS"] = "YES",
       };
 
-project "Editor"
+project "LittleEditor"
    location("Build")
 
    kind "WindowedApp"
