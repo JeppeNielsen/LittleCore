@@ -28,7 +28,7 @@ ModuleCompilerResult ModuleCompiler::Compile(const ModuleCompilerContext &contex
     }
 
     clang += "-isysroot `xcrun -sdk macosx --show-sdk-path` ";
-    clang += "-std=c++11 -dynamiclib -Wno-return-type-c-linkage ";
+    clang += "-std=c++17 -dynamiclib -Wno-return-type-c-linkage ";
     clang += "-o " + context.outputPath + " ";
 
     std::cout << clang << std::endl;
