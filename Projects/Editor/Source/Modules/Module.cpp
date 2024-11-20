@@ -5,6 +5,7 @@
 #include "Module.hpp"
 #include "../ScriptsInclude/ModuleFactory.hpp"
 #include <dlfcn.h>
+#include <iostream>
 
 Module::Module(EngineContext& engineContext, ModuleDefinition &definition) : engineContext(engineContext), definition(definition) {
 }
@@ -17,10 +18,14 @@ void Module::Load() {
     if (!definition.LibraryExists()) {
         return;
     }
+    
+    std::string path = definition.LibraryPath();
 
-    loadedLib = dlopen(definition.LibraryPath().c_str(), RTLD_LAZY);
+    loadedLib = dlopen(path.c_str(), RTLD_LAZY);
 
     if (loadedLib == nullptr) {
+        std::string error = dlerror();
+        std::cout << "error from loaded lib: "<<error<<"\n";
         return;
     }
 
