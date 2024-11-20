@@ -25,7 +25,7 @@ project "SDL"
    filter "system:linux"
       links { "dl", "GL", "pthread", "X11" }
    filter "system:macosx"
-      platforms { "x86", "x86_64" }
+      platforms { "x86", "ARM64" }
  		xcodebuildsettings {
  		   ["CLANG_ENABLE_OBJC_ARC"] = "YES",
  		   ["CLANG_ENABLE_OBJC_WEAK"] = "YES",

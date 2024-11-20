@@ -27,7 +27,7 @@ project "ImGui"
       "../External/imgui/backends"
    }
 
-   sysincludedirs {
+   externalincludedirs {
       "../Engine/ImGui/**",
       "../External/sdl/include",
       "../External/bgfx/include",

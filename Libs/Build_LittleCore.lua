@@ -19,7 +19,7 @@ project "LittleCore"
       "../External/sdl/include"
    }
 
-   sysincludedirs {
+   externalincludedirs {
       "../Engine/LittleCore/**",
       "../External/sdl/include",
       "../External/bgfx/include",
