@@ -15,7 +15,7 @@ InputSystem::InputSystem(entt::registry &registry) : registry(registry){
 void InputSystem::BeginEvents() {
     currentInput = {};
     auto mouseButtonState = SDL_GetMouseState(&currentInput.touchPosition[0].position.x, &currentInput.touchPosition[0].position.y);
-    std::cout << "x : "<< currentInput.touchPosition[0].position.x << " y: "<< currentInput.touchPosition[0].position.y << std::endl;
+    //std::cout << "x : "<< currentInput.touchPosition[0].position.x << " y: "<< currentInput.touchPosition[0].position.y << std::endl;
 }
 
 void InputSystem::HandleEvent(void* eventPtr) {
@@ -34,7 +34,7 @@ void InputSystem::HandleEvent(void* eventPtr) {
 }
 
 void InputSystem::EndEvents() {
-    auto view = registry.view<Input>();
+    const auto& view = registry.view<Input>();
 
     for(auto& entity : view) {
         registry.patch<Input>(entity) = currentInput;
