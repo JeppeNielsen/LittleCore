@@ -41,7 +41,7 @@ solution "LittleCore"
       architecture "x86_64"
    filter "system:macosx"
       xcodebuildsettings {
-         ["MACOSX_DEPLOYMENT_TARGET"] = "10.9",
+         ["MACOSX_DEPLOYMENT_TARGET"] = "13.0",
          ["ALWAYS_SEARCH_USER_PATHS"] = "YES",
       };
 
@@ -66,8 +66,11 @@ project "TestTextEditor"
       "../../External/bx/include",
       "../../External/entt/single_include",
       "../../External/glm",
-      "../../External/imgui"
+      "../../External/imgui",
+      "../../../Scripting/clang/include"
    }
+
+   libdirs { "../../../Scripting/clang/lib" }
 
    links { 
       "SDL", 
@@ -77,6 +80,7 @@ project "TestTextEditor"
       "LittleCore",
       "ImGui"
    }
+
 
    filter "system:windows"
       links { "gdi32", "kernel32", "psapi" }
@@ -91,7 +95,8 @@ project "TestTextEditor"
          "CoreAudio.framework", 
          "AudioToolbox.framework",
          "Metal.framework",
-         "OpenGL.framework"
+         "OpenGL.framework",
+         "libclang.dylib"
       }
 
    setBxCompat()
