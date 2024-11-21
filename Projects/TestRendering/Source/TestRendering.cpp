@@ -5,6 +5,8 @@
 #include "TestRendering.hpp"
 #include <SDL3/SDL.h>
 #include "imgui.h"
+#include "Logic/Movable.hpp"
+
 /*
 struct MovementKey {
     InputKey key;
@@ -27,7 +29,7 @@ entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, entt::e
     mesh.vertices.push_back({{-1,-1,0}, 0x00FF0000 , {0,0}});
     mesh.vertices.push_back({{1,-1,0}, 0xff000000 , {0,1} });
     mesh.vertices.push_back({{1,1,0}, 0xff000000, {1,1}});
-    mesh.vertices.push_back({{-1,1,0}, 0xff000000,{1,0}});
+    mesh.vertices.push_back({{-1,1,0}, 0xffFF0000,{1,0}});
     mesh.triangles.push_back(0);
     mesh.triangles.push_back(1);
     mesh.triangles.push_back(2);
@@ -54,9 +56,13 @@ void TestRendering::Initialize() {
 
         ImGui::End();
 
-        ImGui::Begin("Scene");
+        ImGui::Begin("Scene 2");
         ImTextureID textureId2 = (ImTextureID)(uintptr_t)renderTexture.idx;
-        ImGui::Image(textureId2, ImVec2((float)renderTextureWidth, (float)renderTextureHeight));
+
+        for (int i = 0; i < 10; ++i) {
+            ImGui::Image(textureId2, ImVec2((float)256, (float)256));
+        }
+
 
         ImGui::End();
     });
@@ -71,7 +77,7 @@ void TestRendering::Initialize() {
         registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -10};
         registry.emplace<WorldTransform>(cameraObject);
         registry.emplace<Hierarchy>(cameraObject);
-        /*auto& moveable = registry.emplace<Movable>(cameraObject);
+        auto& moveable = registry.emplace<Movable>(cameraObject);
         moveable.keys.push_back({
                                         InputKey::A,
                                         {-1,0,0}
@@ -91,7 +97,7 @@ void TestRendering::Initialize() {
                                         InputKey::S,
                                         {0,0,-1}
                                 });
-                                */
+
 
         registry.emplace<Input>(cameraObject);
 
@@ -104,20 +110,43 @@ void TestRendering::Initialize() {
         cameraEntity = cameraObject;
     }
 
-
     shader = resources.Create<ShaderResource>("4EBD82BDCBCA4F78B597C8B2DF9A08F7");
     texture = resources.Create<TextureResource>("B62D424BF40F46359248CDE498930422");
 
     colorTexture  = bgfx::createUniform("colorTexture",  bgfx::UniformType::Sampler);
 
-    auto quad1 = CreateQuadNew(registry, {0, 0, 0});
+    quad1 = CreateQuadNew(registry, {0, 0, 0});
     registry.get<Renderable>(quad1).shader = shader;
 
-    auto quad2 = CreateQuadNew(registry, {3, 0, 0}, quad1);
+    quad2 = CreateQuadNew(registry, {3, 0, 0}, quad1);
     registry.get<Renderable>(quad2).shader = shader;
 
     auto quad3 = CreateQuadNew(registry, {0, 2, 0}, quad2);
     registry.get<Renderable>(quad3).shader = shader;
+
+
+    auto& quadMovable = registry.emplace<Movable>(quad1);
+    quadMovable.keys.push_back({
+                                    InputKey::F,
+                                    {-1,0,0}
+                            });
+
+    quadMovable.keys.push_back({
+                                    InputKey::H,
+                                    {1,0,0}
+                            });
+
+    quadMovable.keys.push_back({
+                                    InputKey::T,
+                                    {0,1,0}
+                            });
+
+    quadMovable.keys.push_back({
+                                    InputKey::G,
+                                    {0,-1,0}
+                            });
+    registry.emplace<Input>(quad1);
+
 
     int width;
     int height;
@@ -136,42 +165,42 @@ void TestRendering::Initialize() {
 }
 
 void TestRendering::Update(float dt) {
-    //registry.patch<LocalTransform>(quad2).position = {0, 4 + sinf(time) * 4, 0};
-    //registry.patch<LocalTransform>(quad1).position = {6 + sinf(time)*6,0,0};
-    //registry.patch<LocalTransform>(quad1).rotation =  glm::quat({0,0,scale});
+    registry.patch<LocalTransform>(quad2).position = {0, -1 + sinf(time*0.5f) *1, 0};
+    //registry.patch<LocalTransform>(quad1).position = {2 + sinf(time)*2,0,0};
 
     time += dt;
 
-    registry.patch<LocalTransform>(cameraEntity).rotation = glm::quat({0, 0, time});
-    registry.patch<Camera>(cameraEntity).fieldOfView = 20;
+    //registry.patch<LocalTransform>(cameraEntity).rotation = glm::quat({0, 0, time});
+    //registry.patch<Camera>(cameraEntity).fieldOfView = 40;
 
+    inputSystem.EndEvents();
     simulation.Update();
+    movableSystem.Step(registry);
+    inputSystem.BeginEvents();
 }
 
 void TestRendering::Render() {
 
     bgfx::setViewFrameBuffer(0, framebuffer);
-    bgfx::setViewRect(0, 0, 0, renderTextureWidth, renderTextureHeight);
+    //bgfx::setViewRect(0, 0, 0, renderTextureWidth, renderTextureHeight);
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
 
     bgfx::touch(0);
 
-    if (fmodf(time, 1.0f)<0.5f) {
-        bgfx::setTexture(0, colorTexture, texture->handle);
-    }
+    bgfx::setTexture(0, colorTexture, texture->handle);
     simulation.Render(bgfxRenderer);
     bgfx::frame();
 
     bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
 
     imGuiController.Render();
-
 }
 
-TestRendering::TestRendering() : simulation(registry), resources(resourcePathMapper) {
+TestRendering::TestRendering() : simulation(registry), resources(resourcePathMapper), inputSystem(registry) {
 
 }
 
 void TestRendering::HandleEvent(void *event) {
     imGuiController.HandleEvent(event);
+    inputSystem.HandleEvent(event);
 }

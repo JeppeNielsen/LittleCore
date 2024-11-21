@@ -12,6 +12,7 @@
 #include "TextureResourceLoaderFactory.hpp"
 #include "ShaderResourceLoaderFactory.hpp"
 #include "ImGuiController.hpp"
+#include "Logic/MovableSystem.hpp"
 
 using namespace LittleCore;
 
@@ -29,11 +30,15 @@ class TestRendering : public IState {
     bgfx::UniformHandle colorTexture;
     float time;
     ImGuiController imGuiController;
+    MovableSystem movableSystem;
+    InputSystem inputSystem;
 
-    const uint16_t renderTextureWidth = 512;
+    const uint16_t renderTextureWidth = 1024;
     const uint16_t renderTextureHeight = 512;
     bgfx::TextureHandle renderTexture;
     bgfx::FrameBufferHandle framebuffer;
+    entt::entity quad1;
+    entt::entity quad2;
 
 public:
     TestRendering();
