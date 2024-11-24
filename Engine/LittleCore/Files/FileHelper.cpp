@@ -84,4 +84,10 @@ void FileHelper::IterateFilesRecursively(const std::string &path, const std::fun
     }
 }
 
+std::string FileHelper::GetExtension(const std::string &path) {
+    return std::filesystem::path(path).extension().string();
+}
 
+std::string FileHelper::GetFilenameWithoutExtension(const std::string &path) {
+    return std::filesystem::path(path).filename();
+}
