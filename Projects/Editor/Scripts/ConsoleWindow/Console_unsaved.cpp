@@ -7,8 +7,6 @@
 #include <fstream>
 #include "Vector2.hpp"
 #include "InfoWindow.hpp"
-#include <vector>
-#include <entt/entt.hpp>
 
 struct Console : public IModule {
 
@@ -31,102 +29,23 @@ struct Console : public IModule {
 
     float timer = 0;
 
-    int frameCounter = 0;
-
     std::vector<Entry> entries;
 
     std::string code;
     float color[3] = { 0, 0, 0 };
 
-    std::vector<int> numbers;
-    int nextNumber;
 
-    entt::registry registry;
-
-    struct Position {
-        Vector2 position;
-    };
-
-    struct Velocity {
-        Vector2 velocity;
-    };
-
-    using entityList = std::vector<entt::entity>;
-
-    entityList entities;
-
-    void CreateEntity() {
-        auto entity = registry.create();
-        registry.emplace<Position>(entity).position = {2,2};
-        registry.emplace<Velocity>(entity).velocity = {10,10};
-        entities.push_back(entity);
-    }
 
     void OnGui() override {
 
+    	Entry test;
+        test.
+    	
+
         ImGui::Begin("Tester window");
 
-        if (ImGui::Button("Create entity")) {
-            CreateEntity();
-        }
-
-        entityList entitiesToDelete;
-        int index = 0;
-        for (auto e : entities) {
-            auto &pos = registry.get<Position>(e);
-
-            ImGui::PushID(index);
-            if (ImGui::Button("Delete")) {
-                entitiesToDelete.push_back(e);
-            }
-            ImGui::PopID();
-
-            ImGui::SameLine();
-            ImGui::LabelText("Position", std::to_string(pos.position.x).c_str());
-
-            ImGui::PushID(index);
-            auto& vel = registry.get<Velocity>(e);
-
-            ImGui::SameLine();
-            ImGui::InputFloat("Velocity", &vel.velocity.x);
-
-            registry.replace<Velocity>(e, vel);
-            ImGui::PopID();
-            index++;
-
-
-
-        }
-
-        for(auto e : entitiesToDelete) {
-            entities.erase(std::find(entities.begin(), entities.end(), e));
-            registry.destroy(e);
-        }
-
-
-        if (ImGui::Button("Add number")) {
-            numbers.push_back(nextNumber);
-        }
-
-        if (ImGui::Button("Clear list")) {
-            numbers.clear();
-        }
-
-        if (ImGui::Button("Add 10000")) {
-            for (int i = 0; i < 10000; ++i) {
-                numbers.push_back(numbers.size());
-            }
-        }
-
-        for(auto n : numbers) {
-            ImGui::LabelText(std::to_string(n).c_str(), "font");
-        }
-
-        ImGui::DragInt("Next number", &nextNumber);
-
-
-
         ImGui::End();
+
 
         ImGui::Begin("ConsoleWindow");
 
@@ -154,7 +73,8 @@ struct Console : public IModule {
         }
 
         if (showInfoWindow) {
-            ShowInfoWindow(currentFps, frameCounter);
+            ShowInfoWindow(currentFps);
+
 
             ImGui::Begin("Extra Window");
 
@@ -198,7 +118,7 @@ struct Console : public IModule {
 
             for (int i = 0; i < entries.size(); ++i) {
                 std::stringstream s;
-                s << "Entry, changed #" << (i + 1);
+                s << "Entry #" << (i + 1);
 
                 ImGui::InputText(s.str().c_str(), &entries[i].name);
                 ImGui::SameLine();
@@ -227,12 +147,7 @@ struct Console : public IModule {
 
     void Update(float dt) override {
 
-        const auto& view = registry.view<Position, Velocity>();
-
-        for(auto [entity, position, velocity] : view.each()) {
-            position.position.x += velocity.velocity.x;
-            position.position.y += velocity.velocity.x;
-        }
+        Vector2 vec {3,4};
 
         timer += dt;
 
@@ -242,8 +157,6 @@ struct Console : public IModule {
             timer = 0.0f;
         }
         numberOfFrames++;
-
-        frameCounter++;
 
         //std::cout << std::to_string(vec.Length());
     }

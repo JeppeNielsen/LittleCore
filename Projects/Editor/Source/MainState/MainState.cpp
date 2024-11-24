@@ -10,9 +10,6 @@
 #include <fstream>
 #include "Timer.hpp"
 
-static std::string text;
-static std::string text2;
-
 MainState::MainState() :
 moduleDefinitionsManager(moduleSettings),
 moduleManager(engineContext),
@@ -29,13 +26,9 @@ void MainState::Initialize() {
     std::cin.tie(0);
 
     std::cin.rdbuf(cin.rdbuf());
-    std::cout.rdbuf(cout.rdbuf());
+    //std::cout.rdbuf(cout.rdbuf());
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/");
-
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Scripts/Files/Vector2.cpp");
-    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Scripts/Files");
-
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/");
     moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/imgui.cpp");
@@ -53,44 +46,40 @@ void MainState::Initialize() {
 
     moduleSettings.libraryFolder = "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Cache/";
 
-    auto& consoleDefinition = moduleDefinitionsManager.CreateFromMainFile("Console", "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Scripts/ConsoleWindow/Console.cpp");
+    projectSettings.rootPath = "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/TestProject";
 
-    LittleCore::Timer timer;
-    timer.Start();
-    consoleDefinition.Build();
-    float duration = timer.Stop();
-    std::cout << "Compilation took: " << std::to_string(duration) << "\n";
+    projectSettings.ModifyModules(moduleSettings.context, moduleDefinitionsManager);
 
-    moduleManager.AddModule("Console", consoleDefinition);
+    //auto& consoleDefinition = moduleDefinitionsManager.CreateFromMainFile("Console", "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Scripts/ConsoleWindow/Console.cpp");
 
-    moduleManager.GetModules()["Console"]->Load();
+    for(auto& definition : moduleDefinitionsManager.Definitions()) {
+        moduleManager.AddModule(definition.first, *definition.second.get());
+    }
 
-    gui.Initialize(mainWindow, [this, &consoleDefinition]() {
+    gui.Initialize(mainWindow, [this]() {
         ImGui::DockSpaceOverViewport();
-        ImGui::Begin("Window");
+        ImGui::Begin("Compilation");
 
-        ImGui::InputText("Name", &text);
-        ImGui::SameLine(0,1);
-        ImGui::InputText("Email", &text2);
-
-        if (ImGui::Button("Recompile")) {
-
-            moduleManager.GetModules()["Console"]->Unload();
-            auto result = consoleDefinition.Build();
-
-            if (!result.errors.empty()) {
-                errors = result.errors[1];
+            if (ImGui::Button("Recompile")) {
+                Compile();
             }
-
-            moduleManager.GetModules()["Console"]->Load();
-
-        }
-
-        ImGui::InputTextMultiline("Errors:", &errors);
 
         ImGui::End();
 
-        moduleManager.GetModules()["Console"]->OnGui(engineContext.imGuiContext);
+        ImGui::Begin("Errors");
+            std::string errorReport;
+
+            for (auto error : errors) {
+                errorReport += error;
+            }
+
+            ImGui::InputTextMultiline("Errors:", &errorReport);
+        ImGui::End();
+
+
+        for(auto& module : moduleManager.GetModules()) {
+            module.second->OnGui(engineContext.imGuiContext);
+        }
     });
 
     gui.LoadFont("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Assets/Fonts/LucidaG.ttf", 14);
@@ -99,16 +88,48 @@ void MainState::Initialize() {
 
 void MainState::Update(float dt) {
     //std::cout << "Text: "<< text<< std::endl;
-    moduleManager.GetModules()["Console"]->Update(dt);
+    for(auto& module : moduleManager.GetModules()) {
+        module.second->Update(dt);
+    }
 }
 
 void MainState::Render() {
 
     ImGui::SetCurrentContext(engineContext.imGuiContext);
     gui.Render();
-    moduleManager.GetModules()["Console"]->Render();
+
+    for(auto& module : moduleManager.GetModules()) {
+        module.second->Render();
+    }
 }
 
 void MainState::HandleEvent(void *event) {
     gui.HandleEvent(event);
+}
+
+void MainState::Compile() {
+
+    for(auto& module : moduleManager.GetModules()) {
+        module.second->Unload();
+    }
+
+    errors.clear();
+
+    for(auto& definition : moduleDefinitionsManager.Definitions()) {
+        LittleCore::Timer timer;
+        timer.Start();
+        auto result = definition.second->Build();
+
+        float duration = timer.Stop();
+        std::cout << "Compilation took for module: "<<definition.first << ", took = " << std::to_string(duration) << "\n";
+
+        for(auto error : result.errors) {
+            errors.push_back(error);
+        }
+    }
+
+    for(auto& module : moduleManager.GetModules()) {
+        module.second->Load();
+    }
+
 }
