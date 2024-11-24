@@ -56,6 +56,10 @@ void MainState::Initialize() {
         moduleManager.AddModule(definition.first, *definition.second.get());
     }
 
+    for(auto& module : moduleManager.GetModules()) {
+        module.second->Load();
+    }
+
     gui.Initialize(mainWindow, [this]() {
         ImGui::DockSpaceOverViewport();
         ImGui::Begin("Compilation");
