@@ -11,12 +11,17 @@
 
 class ModuleDefinitionsManager {
 public:
+
+    using DefinitionsList =  std::map<std::string, std::unique_ptr<ModuleDefinition>>;
+
     ModuleDefinitionsManager(ModuleSettings& moduleSettings);
 
     ModuleDefinition& CreateFromMainFile(const std::string& id, const std::string& mainPath);
 
+    DefinitionsList& Definitions();
+
 private:
     ModuleSettings& moduleSettings;
-    std::map<std::string, std::unique_ptr<ModuleDefinition>> definitions;
+    DefinitionsList definitions;
 
 };

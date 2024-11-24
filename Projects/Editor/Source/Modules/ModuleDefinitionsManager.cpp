@@ -12,3 +12,7 @@ ModuleDefinition& ModuleDefinitionsManager::CreateFromMainFile(const std::string
     definitions.insert({id, std::make_unique<ModuleDefinition>(moduleSettings, id, mainPath)});
     return *definitions[id].get();
 }
+
+ModuleDefinitionsManager::DefinitionsList &ModuleDefinitionsManager::Definitions() {
+    return definitions;
+}
