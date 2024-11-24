@@ -1,4 +1,4 @@
-$input v_color0
+$input v_color0, vertexPosition
 
 /*
  * Copyright 2011-2023 Branimir Karadzic. All rights reserved.
@@ -9,5 +9,5 @@ $input v_color0
 
 void main()
 {
-	gl_FragColor = vec4(v_color0.r, 0,0,0);
+	gl_FragColor = vec4(v_color0.r + vertexPosition.y, v_color0.g, v_color0.b, 0);
 }

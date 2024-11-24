@@ -7,6 +7,8 @@ workspace "LittleCore"
 
 include "../Libs/Build_sdl.lua"
 include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_LittleCore.lua"
+include "../Libs/Build_ImGui.lua"
 
 solution "LittleCore"
    configurations { "Release", "Debug" }
@@ -56,16 +58,23 @@ project "Cubes"
    }
 
    includedirs {
+      "../../Engine/LittleCore/**",
+      "../../Engine/ImGui",
       "../../External/sdl/include",
       "../../External/bgfx/include",
       "../../External/bx/include",
+      "../../External/entt/single_include",
+      "../../External/glm",
+      "../../External/imgui"
    }
 
    links { 
-      "SDL", 
-      "bgfx",
-      "bimg",
-      "bx"
+        "SDL",
+        "bgfx",
+        "bimg",
+        "bx",
+        "LittleCore",
+        "ImGui"
    }
 
    filter "system:windows"
