@@ -21,6 +21,8 @@ cout("output.txt")
 
 void MainState::Initialize() {
 
+    engineContext.registryCollection = &registyCollection;
+
     // optional performance optimizations
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(0);
@@ -56,6 +58,8 @@ void MainState::Initialize() {
         moduleManager.AddModule(definition.first, *definition.second.get());
     }
 
+    //Compile();
+
     for(auto& module : moduleManager.GetModules()) {
         module.second->Load();
     }
@@ -88,6 +92,7 @@ void MainState::Initialize() {
 
     gui.LoadFont("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Assets/Fonts/LucidaG.ttf", 14);
     engineContext.imGuiContext = ImGui::GetCurrentContext();
+
 }
 
 void MainState::Update(float dt) {

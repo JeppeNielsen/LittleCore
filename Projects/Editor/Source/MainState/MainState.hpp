@@ -26,6 +26,7 @@ struct MainState : LittleCore::IState {
     ModuleDefinitionsManager moduleDefinitionsManager;
     ModuleManager moduleManager;
     ProjectSettings projectSettings;
+    RegistryCollection registyCollection;
 
     std::ifstream cin;
     std::ofstream cout;

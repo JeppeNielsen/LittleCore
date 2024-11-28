@@ -35,6 +35,10 @@ struct Console : public IModule {
         entities.push_back(entity);
     }
 
+    void Initialize(EngineContext& context) override {
+        context.registryCollection->registries.push_back(&registry);
+    }
+
     void OnGui() override {
 
         ImGui::Begin("Entity Window");

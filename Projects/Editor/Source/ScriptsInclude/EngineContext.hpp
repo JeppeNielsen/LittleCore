@@ -5,8 +5,10 @@
 #pragma once
 #include <functional>
 #include "imgui.h"
+#include "RegistryCollection.hpp"
 
 class EngineContext {
 public:
     ImGuiContext* imGuiContext;
+    RegistryCollection* registryCollection;
 };
