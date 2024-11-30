@@ -11,6 +11,8 @@
 #include "../Project/ProjectSettings.hpp"
 #include <fstream>
 #include <ostream>
+#include "TaskRunner.hpp"
+#include "Timer.hpp"
 
 struct MainState : LittleCore::IState {
     MainState();
@@ -27,6 +29,10 @@ struct MainState : LittleCore::IState {
     ModuleManager moduleManager;
     ProjectSettings projectSettings;
     RegistryCollection registyCollection;
+    LittleCore::TaskRunner taskRunner;
+    bool isCompiling = false;
+    std::vector<std::string> errorsFromCompilation;
+    LittleCore::Timer compilationTimer;
 
     std::ifstream cin;
     std::ofstream cout;

@@ -68,8 +68,14 @@ void MainState::Initialize() {
         ImGui::DockSpaceOverViewport();
         ImGui::Begin("Compilation");
 
-            if (ImGui::Button("Recompile")) {
-                Compile();
+
+            if (!isCompiling) {
+                if (ImGui::Button("Recompile")) {
+
+                    Compile();
+                }
+            } else {
+                ImGui::Text("Compiling...");
             }
 
         ImGui::End();
@@ -96,6 +102,8 @@ void MainState::Initialize() {
 }
 
 void MainState::Update(float dt) {
+    taskRunner.processTasks();
+
     //std::cout << "Text: "<< text<< std::endl;
     for(auto& module : moduleManager.GetModules()) {
         module.second->Update(dt);
@@ -118,27 +126,48 @@ void MainState::HandleEvent(void *event) {
 
 void MainState::Compile() {
 
-    for(auto& module : moduleManager.GetModules()) {
-        module.second->Unload();
-    }
+
 
     errors.clear();
 
-    for(auto& definition : moduleDefinitionsManager.Definitions()) {
-        LittleCore::Timer timer;
-        timer.Start();
-        auto result = definition.second->Build();
+    compilationTimer.Start();
+    isCompiling = true;
 
-        float duration = timer.Stop();
-        std::cout << "Compilation took for module: "<<definition.first << ", took = " << std::to_string(duration) << "\n";
+    taskRunner.runAsyncTask([this]{
 
-        for(auto error : result.errors) {
-            errors.push_back(error);
+       /* float expensive = 0;
+        for (int i = 0; i < 100000000; ++i) {
+            expensive += sin(i / cos(i));
         }
-    }
+        */
 
-    for(auto& module : moduleManager.GetModules()) {
-        module.second->Load();
-    }
+        for(auto& definition : moduleDefinitionsManager.Definitions()) {
+            auto result = definition.second->Build();
+
+            for(auto error : result.errors) {
+                errorsFromCompilation.push_back(error);
+            }
+        }
+    }, [this] {
+
+
+        float duration = compilationTimer.Stop();
+        std::cout << "Compilation took = " << std::to_string(duration) << "\n";
+        isCompiling = false;
+
+        errorsFromCompilation.push_back("Compilation took = " + std::to_string(duration) + "\n");
+        errors = errorsFromCompilation;
+        errorsFromCompilation.clear();
+
+
+        for(auto& module : moduleManager.GetModules()) {
+            module.second->Unload();
+        }
+        registyCollection.registries.clear();
+
+        for(auto& module : moduleManager.GetModules()) {
+            module.second->Load();
+        }
+    });
 
 }
