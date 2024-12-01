@@ -11,11 +11,16 @@
 #include "Timer.hpp"
 
 MainState::MainState() :
-moduleDefinitionsManager(moduleSettings),
-moduleManager(engineContext),
+project(engineContext),
 cin("input.txt"),
-cout("output.txt")
+cout("output.txt"),
+projectCompiler(project, *this),
+compilerWindow(projectCompiler)
 {
+
+}
+
+MainState::~MainState() {
 
 }
 
@@ -30,68 +35,14 @@ void MainState::Initialize() {
     std::cin.rdbuf(cin.rdbuf());
     //std::cout.rdbuf(cout.rdbuf());
 
-    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/");
-
-    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/imgui.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/imgui_demo.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/imgui_draw.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/imgui_tables.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/imgui_widgets.cpp");
-
-    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/misc/cpp/");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/misc/cpp/imgui_stdlib.cpp");
-
-    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/misc/cpp/");
-
-    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/entt/src/");
-
-    moduleSettings.libraryFolder = "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Cache/";
-
-    projectSettings.rootPath = "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/TestProject";
-
-    projectSettings.ModifyModules(moduleSettings.context, moduleDefinitionsManager);
-
-    //auto& consoleDefinition = moduleDefinitionsManager.CreateFromMainFile("Console", "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Scripts/ConsoleWindow/Console.cpp");
-
-    for(auto& definition : moduleDefinitionsManager.Definitions()) {
-        moduleManager.AddModule(definition.first, *definition.second.get());
-    }
-
-    //Compile();
-
-    for(auto& module : moduleManager.GetModules()) {
-        module.second->Load();
-    }
+    project.LoadProject("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/TestProject");
 
     gui.Initialize(mainWindow, [this]() {
         ImGui::DockSpaceOverViewport();
-        ImGui::Begin("Compilation");
 
+        compilerWindow.DrawGui();
 
-            if (!isCompiling) {
-                if (ImGui::Button("Recompile")) {
-
-                    Compile();
-                }
-            } else {
-                ImGui::Text("Compiling...");
-            }
-
-        ImGui::End();
-
-        ImGui::Begin("Errors");
-            std::string errorReport;
-
-            for (auto error : errors) {
-                errorReport += error;
-            }
-
-            ImGui::InputTextMultiline("Errors:", &errorReport);
-        ImGui::End();
-
-
-        for(auto& module : moduleManager.GetModules()) {
+        for(auto& module : project.moduleManager.GetModules()) {
             module.second->OnGui(engineContext.imGuiContext);
         }
     });
@@ -102,20 +53,18 @@ void MainState::Initialize() {
 }
 
 void MainState::Update(float dt) {
-    taskRunner.processTasks();
+    projectCompiler.Update();
 
-    //std::cout << "Text: "<< text<< std::endl;
-    for(auto& module : moduleManager.GetModules()) {
+    for(auto& module : project.moduleManager.GetModules()) {
         module.second->Update(dt);
     }
 }
 
 void MainState::Render() {
-
     ImGui::SetCurrentContext(engineContext.imGuiContext);
     gui.Render();
 
-    for(auto& module : moduleManager.GetModules()) {
+    for(auto& module : project.moduleManager.GetModules()) {
         module.second->Render();
     }
 }
@@ -124,50 +73,6 @@ void MainState::HandleEvent(void *event) {
     gui.HandleEvent(event);
 }
 
-void MainState::Compile() {
-
-
-
-    errors.clear();
-
-    compilationTimer.Start();
-    isCompiling = true;
-
-    taskRunner.runAsyncTask([this]{
-
-       /* float expensive = 0;
-        for (int i = 0; i < 100000000; ++i) {
-            expensive += sin(i / cos(i));
-        }
-        */
-
-        for(auto& definition : moduleDefinitionsManager.Definitions()) {
-            auto result = definition.second->Build();
-
-            for(auto error : result.errors) {
-                errorsFromCompilation.push_back(error);
-            }
-        }
-    }, [this] {
-
-
-        float duration = compilationTimer.Stop();
-        std::cout << "Compilation took = " << std::to_string(duration) << "\n";
-        isCompiling = false;
-
-        errorsFromCompilation.push_back("Compilation took = " + std::to_string(duration) + "\n");
-        errors = errorsFromCompilation;
-        errorsFromCompilation.clear();
-
-
-        for(auto& module : moduleManager.GetModules()) {
-            module.second->Unload();
-        }
-        registyCollection.registries.clear();
-
-        for(auto& module : moduleManager.GetModules()) {
-            module.second->Load();
-        }
-    });
-
+void MainState::CompilationFinished(CompilationResult &result) {
+    engineContext.registryCollection->registries.clear();
 }

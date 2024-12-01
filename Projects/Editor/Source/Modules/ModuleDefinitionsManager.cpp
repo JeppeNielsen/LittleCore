@@ -13,6 +13,6 @@ ModuleDefinition& ModuleDefinitionsManager::CreateFromMainFile(const std::string
     return *definitions[id].get();
 }
 
-ModuleDefinitionsManager::DefinitionsList &ModuleDefinitionsManager::Definitions() {
+const ModuleDefinitionsManager::DefinitionsList& ModuleDefinitionsManager::Definitions() const {
     return definitions;
 }

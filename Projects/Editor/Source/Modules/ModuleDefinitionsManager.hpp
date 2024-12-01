@@ -18,7 +18,7 @@ public:
 
     ModuleDefinition& CreateFromMainFile(const std::string& id, const std::string& mainPath);
 
-    DefinitionsList& Definitions();
+    const DefinitionsList& Definitions() const;
 
 private:
     ModuleSettings& moduleSettings;

@@ -4,7 +4,6 @@
 
 #include "EngineContextFactory.hpp"
 #include <iostream>
-#include "../Windows/WindowFactory.hpp"
 
 EngineContext EngineContextFactory::Create() {
 

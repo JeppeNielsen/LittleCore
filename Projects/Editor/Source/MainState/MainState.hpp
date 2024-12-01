@@ -4,38 +4,40 @@
 
 
 #pragma once
+#include <fstream>
+#include <ostream>
+
 #include "IState.hpp"
 #include "ImGuiController.hpp"
 #include "../Modules/ModuleDefinitionsManager.hpp"
 #include "../Modules/ModuleManager.hpp"
 #include "../Project/ProjectSettings.hpp"
-#include <fstream>
-#include <ostream>
+#include "../Project/Project.hpp"
+#include "../Compilation/ProjectCompiler.hpp"
 #include "TaskRunner.hpp"
 #include "Timer.hpp"
+#include "../Windows/CompilerWindow.hpp"
 
-struct MainState : LittleCore::IState {
+struct MainState : LittleCore::IState, public IProjectCompilerHandler {
     MainState();
+    ~MainState();
     void Initialize() override;
     void Update(float dt) override;
     void Render() override;
     void HandleEvent(void* event) override;
-    void Compile();
+    void CompilationFinished(CompilationResult& result) override;
+
     LittleCore::ImGuiController gui;
 
     EngineContext engineContext;
-    ModuleSettings moduleSettings;
-    ModuleDefinitionsManager moduleDefinitionsManager;
-    ModuleManager moduleManager;
-    ProjectSettings projectSettings;
+    Project project;
+    ProjectCompiler projectCompiler;
+
     RegistryCollection registyCollection;
-    LittleCore::TaskRunner taskRunner;
-    bool isCompiling = false;
-    std::vector<std::string> errorsFromCompilation;
-    LittleCore::Timer compilationTimer;
+    CompilerWindow compilerWindow;
 
     std::ifstream cin;
     std::ofstream cout;
-    std::vector<std::string> errors;
+
 };
 
