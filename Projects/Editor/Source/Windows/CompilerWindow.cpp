@@ -38,6 +38,6 @@ void CompilerWindow::DrawErrors() {
         errorReport += e + "\n";
     }
     ImGui::PushItemWidth(-1);
-    ImGui::InputTextMultiline("##", &errorReport);
+    ImGui::InputTextMultiline("##", &errorReport, ImVec2(-1, -1));
     ImGui::PopItemWidth();
 }
