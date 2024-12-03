@@ -6,10 +6,9 @@
 #include "misc/cpp/imgui_stdlib.h"
 #include "CompilerWindow.hpp"
 
-CompilerWindow::CompilerWindow(ProjectCompiler &compiler) : compiler(compiler){
+CompilerWindow::CompilerWindow(ProjectCompiler &compiler) : compiler(compiler) {
 
 }
-
 
 void CompilerWindow::DrawGui() {
     ImGui::Begin("Compilation", &open, ImGuiWindowFlags_HorizontalScrollbar);
@@ -22,10 +21,8 @@ void CompilerWindow::DrawGui() {
     }
 
     DrawErrors();
-
     ImGui::End();
 }
-
 
 void CompilerWindow::Compile() {
     compiler.Compile();
