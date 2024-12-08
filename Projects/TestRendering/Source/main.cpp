@@ -8,7 +8,7 @@
 #include <vector>
 #include "RenderSystem.hpp"
 #include "Vertex.hpp"
-#include "Simulation.hpp"
+#include "SimpleSimulation.hpp"
 #include "Input.hpp"
 #include "ResourceManager.hpp"
 #include "TextureResourceLoaderFactory.hpp"
@@ -127,7 +127,7 @@ int main_old() {
 
         entt::registry registry;
 
-        Simulation simulation(registry);
+        SimpleSimulation simulation(registry);
 
         BGFXRenderer bgfxRenderer;
 
@@ -199,8 +199,6 @@ int main_old() {
 
             time += (1.0f / 60.0f) * 0.2f;
 
-            simulation.Input().BeginEvents();
-
             while (SDL_PollEvent(&event)) {
 
                 simulation.Input().HandleEvent(&event);
@@ -223,8 +221,6 @@ int main_old() {
                     }
                 }
             }
-
-            simulation.Input().EndEvents();
 
             int width;
             int height;

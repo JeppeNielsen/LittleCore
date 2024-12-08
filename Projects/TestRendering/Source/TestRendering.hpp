@@ -6,13 +6,13 @@
 #pragma once
 #include "IState.hpp"
 #include <entt/entt.hpp>
-#include "Simulation.hpp"
+#include "SimpleSimulation.hpp"
 #include "ResourcePathMapper.hpp"
 #include "ResourceManager.hpp"
 #include "TextureResourceLoaderFactory.hpp"
 #include "ShaderResourceLoaderFactory.hpp"
 #include "ImGuiController.hpp"
-#include "Logic/MovableSystem.hpp"
+#include "MovableSystem.hpp"
 
 using namespace LittleCore;
 
@@ -21,7 +21,7 @@ using Resources = ResourceManager<TextureResourceLoaderFactory, ShaderResourceLo
 class TestRendering : public IState {
     ResourcePathMapper resourcePathMapper;
     entt::registry registry;
-    Simulation simulation;
+    SimpleSimulation simulation;
     BGFXRenderer bgfxRenderer;
     Resources resources;
     entt::entity cameraEntity;
@@ -31,7 +31,6 @@ class TestRendering : public IState {
     float time;
     ImGuiController imGuiController;
     MovableSystem movableSystem;
-    InputSystem inputSystem;
 
     const uint16_t renderTextureWidth = 1024;
     const uint16_t renderTextureHeight = 512;

@@ -2,11 +2,11 @@
 // Created by Jeppe Nielsen on 22/01/2024.
 //
 
-#include "Simulation.hpp"
+#include "SimpleSimulation.hpp"
 
 using namespace LittleCore;
 
-Simulation::Simulation(entt::registry &registry) :
+SimpleSimulation::SimpleSimulation(entt::registry &registry) :
     registry(registry),
     hierarchySystem(registry),
     meshBoundingBoxSystem(registry),
@@ -19,7 +19,8 @@ Simulation::Simulation(entt::registry &registry) :
 
 }
 
-void Simulation::Update() {
+void SimpleSimulation::Update() {
+    inputSystem.Update();
     hierarchySystem.Update();
     meshBoundingBoxSystem.Update();
     worldBoundingBoxSystem.Update();
@@ -27,10 +28,10 @@ void Simulation::Update() {
     renderOctreeSystem.Update();
 }
 
-void Simulation::Render(BGFXRenderer& bgfxRenderer) {
+void SimpleSimulation::Render(BGFXRenderer& bgfxRenderer) {
     renderSystem.Render(&bgfxRenderer);
 }
 
-InputSystem &Simulation::Input() {
+InputSystem& SimpleSimulation::Input() {
     return inputSystem;
 }

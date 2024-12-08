@@ -13,9 +13,9 @@
 #include "RenderSystem.hpp"
 
 namespace LittleCore {
-    class Simulation {
+    class SimpleSimulation {
     public:
-        Simulation(entt::registry &registry);
+        SimpleSimulation(entt::registry &registry);
 
         void Update();
 

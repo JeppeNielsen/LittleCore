@@ -10,9 +10,8 @@ namespace LittleCore {
     class InputSystem {
     public:
         InputSystem(entt::registry& registry);
-        void BeginEvents();
         void HandleEvent(void* event);
-        void EndEvents();
+        void Update();
     private:
         entt::registry& registry;
         Input currentInput;
