@@ -11,31 +11,25 @@
 
 namespace LittleCore {
 
+
     template<typename ...T>
-    struct SystemsList {
-        std::tuple<T...> systems;
+    struct SimulationSystemList {
+
+        SimulationSystemList(entt::registry& registry) : systems(std::tuple<T...>(GetRegistry<T>(registry)...)) {}
 
         template<typename O>
-        static constexpr std::tuple<O> CreateTuple(entt::registry& registry) {
-            return std::make_tuple(std::ref(registry));
+        constexpr entt::registry& GetRegistry(entt::registry& registry) {
+            return std::forward<entt::registry&>(registry);
         }
 
-        template<typename ...O>
-        static constexpr std::tuple<O...> CreateTuples(entt::registry& registry) {
-            return std::tuple_cat(std::make_tuple(std::ref(registry)));
-        }
-
-        static constexpr SystemsList<T...> Create(entt::registry& registry) {
-            return {CreateTuples<T...>(registry)};
-        }
-
+        std::tuple<T...> systems;
     };
 
     template <typename ...System>
-    using UpdateSystems = SystemsList<System...>;
+    using UpdateSystems = SimulationSystemList<System...>;
 
     template <typename ...System>
-    using RenderSystems = SystemsList<System...>;
+    using RenderSystems = SimulationSystemList<System...>;
 
     template<typename UpdateSystems, typename RenderSystems>
     class Simulation {
@@ -43,8 +37,7 @@ namespace LittleCore {
 
         Simulation(entt::registry& registry)
                 : registry(registry),
-                  updateSystems(UpdateSystems::Create(registry)),
-                  renderSystems(RenderSystems::Create(registry)) {}
+                  updateSystems(registry) {}
 
 
         void Update() {
@@ -54,15 +47,15 @@ namespace LittleCore {
         }
 
         void Render(Renderer& renderer) {
-            TupleHelper::for_each(renderSystems.systems, [&renderer] (auto& updateSystem) {
+            /*TupleHelper::for_each(renderSystems.systems, [&renderer] (auto& updateSystem) {
                 updateSystem.Render(renderer);
             });
+             */
         }
 
     private:
         entt::registry& registry;
         UpdateSystems updateSystems;
-        RenderSystems renderSystems;
     };
 
 }

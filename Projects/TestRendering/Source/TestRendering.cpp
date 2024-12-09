@@ -5,19 +5,9 @@
 #include "TestRendering.hpp"
 #include <SDL3/SDL.h>
 #include "imgui.h"
-#include "Logic/Movable.hpp"
-
-/*
-struct MovementKey {
-    InputKey key;
-    vec3 direction;
-    bool isActive;
-};
-
-struct Movable {
-    std::vector<MovementKey> keys;
-};
- */
+#include "Movable.hpp"
+#include "DefaultSimulation.hpp"
+#include <iostream>
 
 entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, entt::entity parent = entt::null) {
 
@@ -45,7 +35,242 @@ entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, entt::e
     return quad;
 }
 
+struct Settings {
+    int value;
+};
+
+/*
+struct System {
+
+    System(Settings& settings) : settings(settings) {}
+private:
+    Settings& settings;
+};
+
+template <typename ...System>
+using SystemsList = std::tuple<System...>;
+
+template<typename... Systems>
+class World {
+public:
+    World(Settings& settings)
+            : settings(settings),
+              systems(createSystems(std::make_index_sequence<sizeof...(Systems)>{}, settings)) {}
+
+private:
+    Settings& settings;
+    SystemsList<Systems...> systems;
+
+    // Helper function to construct the tuple of systems
+    template <std::size_t... Is>
+    static SystemsList<Systems...> createSystems(std::index_sequence<Is...>, Settings& settings) {
+        return SystemsList<Systems...>{ Systems(settings)... };
+    }
+};
+ */
+
+class Person {
+public:
+    Person(entt::registry& re) : re(re) {}
+
+    void print() const {
+
+    }
+
+private:
+    entt::registry& re;
+};
+
+    class HierarchySystemTest {
+    public:
+        HierarchySystemTest(entt::registry& registry) : registry(registry) {}
+
+        HierarchySystemTest(HierarchySystemTest&& other) : registry(other.registry) {}
+
+    private:
+        entt::registry& registry;
+        entt::observer observer;
+    };
+
+
+struct TestSystem1 {
+
+    TestSystem1(int& number) : number(number) {}
+    TestSystem1(const TestSystem1&) = delete;
+
+    int& number;
+
+};
+
+struct TestSystem2 {
+
+    TestSystem2(int& number) : number(number) {}
+    TestSystem2(const TestSystem1&) = delete;
+
+    int& number;
+
+};
+
+template<typename ...T>
+struct SystemList {
+    using Systems = std::tuple<T...>;
+
+    SystemList(int& number) : systems(std::make_tuple(T(std::forward<int&>(number))...)) {
+
+    }
+
+    Systems systems;
+};
+
+template<typename List>
+struct TestSimulation {
+
+    TestSimulation(int& number) : systems(List(std::forward<int&>(number))) {}
+
+    List systems;
+};
+
+
+#include <tuple>
+#include <iostream>
+
+struct TestSystem1New {
+    TestSystem1New(int& number) : number(number) {}
+
+    int& number;
+
+    // Delete copy constructor
+    TestSystem1New(const TestSystem1New&) = delete;
+    TestSystem1New& operator=(const TestSystem1New&) = delete;
+
+    void Update() {
+        int i = number;
+        std::cout << "Update from TestSystem1New number = " << std::to_string(i) << "\n";
+    }
+};
+
+struct TestSystem2New {
+    TestSystem2New(int& number) : number(number) {}
+
+    int& number;
+
+    // Delete copy constructor
+    //TestSystem2New(const TestSystem2New&) = delete;
+    //TestSystem2New& operator=(const TestSystem2New&) = delete;
+
+    void Update() {
+        int i = number;
+        std::cout << "Update from TestSystem2New number = " << std::to_string(i) << "\n";
+    }
+};
+
+template<typename ...T>
+struct SimulationList {
+
+    SimulationList(int& number) : items(std::tuple<T...>(Get<T>(number)...)) {}
+
+    template<typename O>
+    constexpr int& Get(int& n) {
+        return std::forward<int&>(n);
+    }
+
+    std::tuple<T...> items;
+};
+
+template<typename UpdateSystems>
+struct TestSimulationNew {
+
+    TestSimulationNew(int& number) : systems(number) {}
+
+    void Update() {
+        TupleHelper::for_each(systems.items, [] (auto& updateSystem) {
+            updateSystem.Update();
+        });
+    }
+
+    UpdateSystems systems;
+};
+
+struct TestSimulationNew2 {
+    TestSimulationNew2(int& number) : systems(std::tuple<TestSystem1New, TestSystem2New>(number, number)) {}
+
+    void Update() {
+        TupleHelper::for_each(systems, [] (auto& updateSystem) {
+            updateSystem.Update();
+        });
+    }
+
+    std::tuple<TestSystem1New, TestSystem2New> systems;
+};
+
+
 void TestRendering::Initialize() {
+
+    //using UpdateSystems = UpdateSystems<HierarchySystem, WorldBoundingBoxSystem>;
+    //using RenderSystems = RenderSystems<HierarchySystem>;
+
+    //Simulation<UpdateSystems, RenderSystems> sim(registry);
+
+    int testNumber = 45;
+
+    //using TestSimulationSystems = SystemList<TestSystem1, TestSystem2>;
+
+    //TestSimulation<TestSimulationSystems> gg(testNumber);
+
+    using UpdateSystems = SimulationList<TestSystem1New, TestSystem2New>;
+
+    TestSimulationNew<UpdateSystems> sim(testNumber);
+    //TestSimulationNew2 sim(testNumber);
+
+    sim.Update();
+
+    testNumber = 32;
+
+    sim.Update();
+
+    return;
+
+    //TestSimulationVar<TestSystem> bla(43);
+
+    //Settings settings;
+
+    //World<System> world(settings);
+
+    //DefaultSimulation defaultSimulation(registry);
+
+
+
+    //auto ret = Updates::Create( registry);
+    //Updates ::printType<decltype(ret)>();
+
+    //auto ret = Updates::CreateTuple<HierarchySystem>(registry);
+    //auto ret2 = Updates::CreateTuple<HierarchySystem>(registry);
+
+    //Simulation<Updates, Renders> sim(registry);
+
+    //std::tuple<HierarchySystem> t = std::make_tuple( std::ref(registry));
+
+    //defaultSimulation.Update();
+    //std::tuple<entt::registry&> tupleRegistry = std::make_tuple<entt::registry&>(registry);
+    //std::tuple<HierarchySystem> tuple = std::make_tuple(registry);
+
+
+    /*
+
+     HierarchySystemTest d(registry);
+
+    Person person(registry);
+
+    auto ret = std::make_tuple(person);
+    std::tuple<HierarchySystemTest> ret2 = std::make_tuple(HierarchySystemTest(registry));
+
+    auto final = std::tuple_cat(  TupleHelper::as_ref(ret), TupleHelper::as_ref(ret2));
+
+    Updates::printType<decltype(final)>();
+
+     */
+
+
 
     imGuiController.Initialize(mainWindow, [this]() {
         ImGui::DockSpaceOverViewport();
@@ -173,10 +398,9 @@ void TestRendering::Update(float dt) {
     //registry.patch<LocalTransform>(cameraEntity).rotation = glm::quat({0, 0, time});
     //registry.patch<Camera>(cameraEntity).fieldOfView = 40;
 
-    inputSystem.EndEvents();
+
     simulation.Update();
     movableSystem.Step(registry);
-    inputSystem.BeginEvents();
 }
 
 void TestRendering::Render() {
@@ -196,11 +420,11 @@ void TestRendering::Render() {
     imGuiController.Render();
 }
 
-TestRendering::TestRendering() : simulation(registry), resources(resourcePathMapper), inputSystem(registry) {
+TestRendering::TestRendering() : simulation(registry), resources(resourcePathMapper) {
 
 }
 
 void TestRendering::HandleEvent(void *event) {
     imGuiController.HandleEvent(event);
-    inputSystem.HandleEvent(event);
+    simulation.Input().HandleEvent(event);
 }
