@@ -6,7 +6,7 @@
 #pragma once
 #include "IState.hpp"
 #include <entt/entt.hpp>
-#include "SimpleSimulation.hpp"
+#include "DefaultSimulation.hpp"
 #include "ResourcePathMapper.hpp"
 #include "ResourceManager.hpp"
 #include "TextureResourceLoaderFactory.hpp"
@@ -21,7 +21,7 @@ using Resources = ResourceManager<TextureResourceLoaderFactory, ShaderResourceLo
 class TestRendering : public IState {
     ResourcePathMapper resourcePathMapper;
     entt::registry registry;
-    SimpleSimulation simulation;
+    DefaultSimulation simulation;
     BGFXRenderer bgfxRenderer;
     Resources resources;
     entt::entity cameraEntity;
