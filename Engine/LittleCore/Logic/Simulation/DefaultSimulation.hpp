@@ -15,17 +15,17 @@
 
 namespace LittleCore {
 
+    using DefaultInputSystems = InputSystems<InputSystem>;
+
     using DefaultUpdateSystems = UpdateSystems<
-            InputSystem,
             HierarchySystem,
             MeshBoundingBoxSystem,
             WorldBoundingBoxSystem,
-            WorldTransformSystem,
-            RenderOctreeSystem>;
+            WorldTransformSystem>;
 
     using DefaultRenderSystems = RenderSystems<RenderSystem>;
 
-    using DefaultSimulation = Simulation<DefaultUpdateSystems, DefaultRenderSystems>;
+    using DefaultSimulation = Simulation<DefaultInputSystems, DefaultUpdateSystems, DefaultRenderSystems>;
 
 }
 
