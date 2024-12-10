@@ -10,10 +10,9 @@
 
 using namespace LittleCore;
 
-RenderSystem::RenderSystem(entt::registry &registry, RenderOctreeSystem &renderOctreeSystem) :
+RenderSystem::RenderSystem(entt::registry &registry) :
 registry(registry),
-renderOctreeSystem(renderOctreeSystem) {
-
+renderOctreeSystem(registry) {
 }
 
 void RenderSystem::Render(Renderer* renderer) {
@@ -70,4 +69,8 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
 
     renderer->EndBatch(viewId, currentShaderProgram);
     renderer->EndRender(viewId);
+}
+
+void RenderSystem::Update() {
+    renderOctreeSystem.Update();
 }

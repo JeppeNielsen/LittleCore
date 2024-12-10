@@ -19,13 +19,14 @@ namespace LittleCore {
     class RenderSystem {
     public:
 
-        RenderSystem(entt::registry &registry, RenderOctreeSystem& renderOctreeSystem);
+        RenderSystem(entt::registry &registry);
 
+        void Update();
         void Render(Renderer* renderer);
         void Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer);
 
     private:
         entt::registry& registry;
-        RenderOctreeSystem& renderOctreeSystem;
+        RenderOctreeSystem renderOctreeSystem;
     };
 }
