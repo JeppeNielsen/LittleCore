@@ -28,7 +28,6 @@ namespace LittleCore {
         MeshBoundingBoxSystem meshBoundingBoxSystem;
         WorldBoundingBoxSystem worldBoundingBoxSystem;
         WorldTransformSystem worldTransformSystem;
-        RenderOctreeSystem renderOctreeSystem;
         RenderSystem renderSystem;
         InputSystem inputSystem;
     };

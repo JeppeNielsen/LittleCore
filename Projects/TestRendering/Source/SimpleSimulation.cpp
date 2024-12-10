@@ -12,8 +12,7 @@ SimpleSimulation::SimpleSimulation(entt::registry &registry) :
     meshBoundingBoxSystem(registry),
     worldBoundingBoxSystem(registry),
     worldTransformSystem(registry),
-    renderOctreeSystem(registry),
-    renderSystem(registry, renderOctreeSystem),
+    renderSystem(registry),
     inputSystem(registry)
 {
 
@@ -25,7 +24,7 @@ void SimpleSimulation::Update() {
     meshBoundingBoxSystem.Update();
     worldBoundingBoxSystem.Update();
     worldTransformSystem.Update();
-    renderOctreeSystem.Update();
+    renderSystem.Update();
 }
 
 void SimpleSimulation::Render(BGFXRenderer& bgfxRenderer) {
