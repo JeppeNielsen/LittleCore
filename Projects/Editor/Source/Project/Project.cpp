@@ -33,6 +33,68 @@ void Project::Reset() {
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/entt/src/");
 
+    //glm
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/glm/");
+
+    //bgfx
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bgfx/include/");
+    //moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bgfx/src/bgfx.cpp");
+
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bx/include/");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bx/src/math.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bx/src/bx.cpp");
+
+    moduleSettings.context.defines.push_back("BX_CONFIG_DEBUG=0");
+
+    //stb
+
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/stb/");
+
+    //files
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Files/");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Files/FileHelper.cpp");
+
+    //math
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/BoundingBox.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/BoundingFrustum.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/MeshIntersector.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/Plane.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/Ray.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/Rect.cpp");
+
+
+
+    //Logic headers
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Hierarchy/");
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Input/");
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Movement/");
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Rendering/");
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Simulation/");
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Spatial/");
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Transform/");
+
+    //Logic classes
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Hierarchy/HierarchySystem.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Input/InputKeyMapper.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Input/InputSystem.cpp");
+
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Movement/MovableSystem.cpp");
+
+    //moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Rendering/BgfxRenderer.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Rendering/Camera.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Rendering/RenderSystem.cpp");
+
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Spatial/MeshBoundingBoxSystem.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Spatial/WorldBoundingBoxSystem.cpp");
+
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Transform/WorldTransformSystem.cpp");
+
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/ResourceManagement/");
+
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Tuples/");
+
+
     moduleSettings.libraryFolder = "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Cache/";
 }
 
