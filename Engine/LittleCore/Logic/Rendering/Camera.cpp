@@ -13,6 +13,11 @@
 
 using namespace LittleCore;
 
+bool gethomogeneousDepth() {
+    //return bgfx::getCaps()->homogeneousDepth;
+    return true;
+}
+
 mat4x4 Camera::GetProjection(float aspect) const {
 
     //float proj[16];
@@ -25,11 +30,11 @@ mat4x4 Camera::GetProjection(float aspect) const {
     float proj[16];
 
     if (orthoSize <=0.00001f) {
-        bx::mtxProj(proj, fieldOfView, aspect, near, far, bgfx::getCaps()->homogeneousDepth);
+        bx::mtxProj(proj, fieldOfView, aspect, near, far, gethomogeneousDepth());
     } else {
         float xSize = orthoSize * 0.5f;
         float ySize = xSize * aspect;
-        bx::mtxOrtho(proj, -xSize,xSize,-ySize,ySize, near, far, 0,bgfx::getCaps()->homogeneousDepth);
+        bx::mtxOrtho(proj, -xSize,xSize,-ySize,ySize, near, far, 0,gethomogeneousDepth());
     }
     return glm::make_mat4x4(proj);
 }
