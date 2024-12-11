@@ -9,7 +9,7 @@
 
 using namespace LittleCore;
 
-void MovableSystem::Step(entt::registry &registry) {
+void MovableSystem::Update() {
     for(auto e : registry.view<Input, Movable, LocalTransform>()) {
         auto& input = registry.get<Input>(e);
         auto& movable = registry.get<Movable>(e);
@@ -26,8 +26,12 @@ void MovableSystem::Step(entt::registry &registry) {
 
             if (movementKey.isActive) {
                 auto& transform = registry.patch<LocalTransform>(e);
-                transform.position += movementKey.direction * 0.02f;
+                transform.position +=  movementKey.direction * 0.02f;
             }
         }
     }
+}
+
+MovableSystem::MovableSystem(entt::registry &registry) : registry(registry) {
+
 }

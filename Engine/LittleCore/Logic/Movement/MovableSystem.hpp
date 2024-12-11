@@ -9,7 +9,10 @@
 namespace LittleCore {
     class MovableSystem {
     public:
-        void Step(entt::registry &registry);
+        MovableSystem(entt::registry &registry);
+        void Update();
+    private:
+        entt::registry& registry;
     };
 }
 
