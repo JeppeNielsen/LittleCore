@@ -8,6 +8,7 @@
 #include "TupleHelper.hpp"
 #include <entt/entt.hpp>
 #include <tuple>
+#include "InputHandler.hpp"
 
 namespace LittleCore {
 
@@ -24,7 +25,19 @@ namespace LittleCore {
         std::tuple<T...> systems;
     };
 
-    template <typename ...System>
+    template<typename...>
+    struct ConcatSimulationSystemLists_impl;
+
+    template<typename... s1, typename... s2>
+    struct ConcatSimulationSystemLists_impl<SimulationSystemList<s1...>, SimulationSystemList<s2...>> {
+        using type = SimulationSystemList<s1..., s2...>;
+    };
+
+    template<typename A1, typename A2>
+    using ConcatSimulationSystemLists = typename ConcatSimulationSystemLists_impl<A1,A2>::type;
+
+
+template <typename ...System>
     using InputSystems = SimulationSystemList<System...>;
 
     template <typename ...System>
@@ -43,9 +56,9 @@ namespace LittleCore {
                   updateSystems(registry),
                   renderSystems(registry) {}
 
-        void HandleEvent(void* event) {
-            TupleHelper::for_each(inputSystems.systems, [=] (auto& inputSystem) {
-                inputSystem.HandleEvent(event);
+        void HandleEvent(void* event, InputHandler& inputHandler) {
+            TupleHelper::for_each(inputSystems.systems, [=, &inputHandler] (auto& inputSystem) {
+                inputSystem.HandleEvent(event, inputHandler);
             });
         }
 

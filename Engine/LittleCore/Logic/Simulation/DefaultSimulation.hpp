@@ -15,6 +15,7 @@
 
 namespace LittleCore {
 
+
     using DefaultInputSystems = InputSystems<InputSystem>;
 
     using DefaultUpdateSystems = UpdateSystems<
@@ -26,6 +27,12 @@ namespace LittleCore {
     using DefaultRenderSystems = RenderSystems<RenderSystem>;
 
     using DefaultSimulation = Simulation<DefaultInputSystems, DefaultUpdateSystems, DefaultRenderSystems>;
+
+    template<typename ...T>
+    using CustomUpdateSystems = ConcatSimulationSystemLists<UpdateSystems<T...>, DefaultUpdateSystems>;
+
+    template<typename ...T>
+    using CustomSimulation = Simulation<DefaultInputSystems, CustomUpdateSystems<T...>, DefaultRenderSystems>;
 
 }
 
