@@ -175,7 +175,6 @@ void TestRendering::Update(float dt) {
 
 
     simulation.Update();
-    movableSystem.Step(registry);
 }
 
 void TestRendering::Render() {
@@ -201,5 +200,5 @@ TestRendering::TestRendering() : simulation(registry), resources(resourcePathMap
 
 void TestRendering::HandleEvent(void *event) {
     imGuiController.HandleEvent(event);
-    simulation.HandleEvent(event);
+    simulation.HandleEvent(event, inputHandler);
 }

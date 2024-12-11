@@ -13,6 +13,7 @@
 #include "ResourceManager.hpp"
 #include "TextureResourceLoaderFactory.hpp"
 #include "ShaderResourceLoaderFactory.hpp"
+#include "SDLInputHandler.hpp"
 
 using namespace LittleCore;
 
@@ -73,6 +74,8 @@ struct Movable {
 };
 
 int main_old() {
+
+    SDLInputHandler inputHandler;
 
     SDL_Init(0);
 
@@ -201,7 +204,7 @@ int main_old() {
 
             while (SDL_PollEvent(&event)) {
 
-                simulation.Input().HandleEvent(&event);
+                simulation.Input().HandleEvent(&event, inputHandler);
 
                 switch (event.type) {
                     case SDL_EVENT_KEY_DOWN:
