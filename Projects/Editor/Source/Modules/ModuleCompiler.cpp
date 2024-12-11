@@ -27,6 +27,14 @@ ModuleCompilerResult ModuleCompiler::Compile(const ModuleCompilerContext &contex
         }
     }
 
+    if (!context.defines.empty()) {
+        clang += " ";
+        for (auto define: context.defines) {
+            clang += "-D" + define + " ";
+        }
+    }
+
+
     clang += "-isysroot `xcrun -sdk macosx --show-sdk-path` ";
     clang += "-std=c++17 -dynamiclib -Wno-return-type-c-linkage -O0 ";
     clang += "-o " + context.outputPath + " ";

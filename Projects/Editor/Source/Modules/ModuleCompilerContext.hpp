@@ -9,5 +9,6 @@
 struct ModuleCompilerContext {
     std::vector<std::string> hppFiles;
     std::vector<std::string> cppFiles;
+    std::vector<std::string> defines;
     std::string outputPath;
 };
