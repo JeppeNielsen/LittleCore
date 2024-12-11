@@ -3,7 +3,7 @@
 //
 
 #include "InputSystem.hpp"
-#include <SDL3/SDL.h>
+
 #include <iostream>
 #include "InputKeyMapper.hpp"
 
@@ -12,19 +12,8 @@ using namespace LittleCore;
 InputSystem::InputSystem(entt::registry &registry) : registry(registry){
 }
 
-void InputSystem::HandleEvent(void* eventPtr) {
-    SDL_Event& event = *reinterpret_cast<SDL_Event*>(eventPtr);
-
-    switch (event.type) {
-        case SDL_EVENT_KEY_UP:
-            currentInput.keysUp.push_back(InputKeyMapper::FromId(event.key.keysym.scancode));
-            break;
-
-        case SDL_EVENT_KEY_DOWN:
-            currentInput.keysDown.push_back(InputKeyMapper::FromId(event.key.keysym.scancode));
-            break;
-    }
-
+void InputSystem::HandleEvent(void* eventPtr, InputHandler& inputHandler) {
+    inputHandler.HandleInput(eventPtr, currentInput);
 }
 
 void InputSystem::Update() {

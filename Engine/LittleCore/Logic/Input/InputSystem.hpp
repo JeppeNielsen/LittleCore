@@ -5,12 +5,13 @@
 #pragma once
 #include <entt/entt.hpp>
 #include "Input.hpp"
+#include "InputHandler.hpp"
 
 namespace LittleCore {
     class InputSystem {
     public:
         InputSystem(entt::registry& registry);
-        void HandleEvent(void* event);
+        void HandleEvent(void* event, InputHandler& inputHandler);
         void Update();
     private:
         entt::registry& registry;
