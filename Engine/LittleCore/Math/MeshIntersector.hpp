@@ -9,7 +9,7 @@
 #pragma once
 #include "Math.hpp"
 #include "Ray.hpp"
-#include "../Rendering/Mesh.hpp"
+#include "Mesh.hpp"
 
 namespace LittleCore {
     
