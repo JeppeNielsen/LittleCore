@@ -17,6 +17,10 @@ Project::Project(EngineContext &engineContext) :
 void Project::Reset() {
     moduleSettings = {};
 
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/GuiHelper.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/LocalTransformEditor.cpp");
+
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/");
     moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/EditorRenderer.cpp");
 

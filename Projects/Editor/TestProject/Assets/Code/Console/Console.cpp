@@ -12,17 +12,20 @@
 #include "LocalTransform.hpp"
 #include "WorldTransform.hpp"
 #include "Camera.hpp"
+#include "ComponentEditorCollection.hpp"
+#include "LocalTransformEditor.hpp"
 
 using namespace LittleCore;
 
 struct World {
     entt::registry registry;
 
-    World() : simulation(registry) {
+    World() : simulation(registry), editors(registry) {
 
     }
 
     LittleCore::DefaultSimulation simulation;
+    ComponentEditorCollection<LocalTransformEditor> editors;
 
 
 };
@@ -116,9 +119,9 @@ struct Console : public IModule {
                 if (ImGui::Button("Delete")) {
                     entitiesToDelete.push_back(e);
                 }
-                ImGui::PopID();
 
-                ImGui::SameLine();
+
+                /*ImGui::SameLine();
 
                 ImGui::LabelText("Entity #", std::to_string(index).c_str());
 
@@ -126,6 +129,10 @@ struct Console : public IModule {
 
                 ImGui::SameLine();
                 ImGui::LabelText("Position", std::to_string(pos.x).c_str());
+                 */
+                world.editors.Draw(e);
+
+                ImGui::PopID();
 
                 index++;
             }
