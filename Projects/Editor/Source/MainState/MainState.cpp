@@ -14,16 +14,16 @@ struct Bla {
 
 };
 MainState::MainState() :
-project(engineContext),
-cin("input.txt"),
-cout("output.txt"),
-projectCompiler(project, *this),
-compilerWindow(projectCompiler),
-editorRendererOld(bgfxRenderer),
-editorRenderer([this](const std::string& id, int width, int height, EditorRenderer::Callback callback) {
-        editorRendererOld.Render(id, width, height, callback);
+        project(engineContext),
+        cin("input.txt"),
+        cout("output.txt"),
+        projectCompiler(project, *this),
+        compilerWindow(projectCompiler),
+        textureRenderer(bgfxRenderer),
+        editorRenderer([this](const std::string& id, int width, int height, EditorRenderer::Callback callback) {
+        textureRenderer.Render(id, width, height, callback);
     }, [this] (const std::string& id)  {
-        return editorRendererOld.GetTexture(id);
+        return textureRenderer.GetTexture(id);
     })
 {
 

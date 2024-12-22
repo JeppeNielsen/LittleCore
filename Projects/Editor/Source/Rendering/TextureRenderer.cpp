@@ -2,23 +2,23 @@
 // Created by Jeppe Nielsen on 16/12/2024.
 //
 
-#include "EditorRendererOld.hpp"
+#include "TextureRenderer.hpp"
 #include "FrameBufferFactory.hpp"
 #include <iostream>
 
-EditorRendererOld::EditorRendererOld(LittleCore::Renderer &renderer) : renderer(renderer){
+TextureRenderer::TextureRenderer(LittleCore::Renderer &renderer) : renderer(renderer){
     frameBufferFactory = new FrameBufferFactory();
 }
 
-EditorRendererOld::~EditorRendererOld() {
+TextureRenderer::~TextureRenderer() {
     delete frameBufferFactory;
 }
 
-void EditorRendererOld::Render(const std::string &id, int width, int height, EditorRendererOld::Callback callback) {
+void TextureRenderer::Render(const std::string &id, int width, int height, TextureRenderer::Callback callback) {
     auto& frameBuffer = frameBufferFactory->CreateBuffer(id, width, height);
 
     bgfx::setViewFrameBuffer(0, frameBuffer.framebuffer);
-    
+
     bgfx::touch(0);
 
     callback(renderer);
@@ -29,7 +29,7 @@ void EditorRendererOld::Render(const std::string &id, int width, int height, Edi
 
 }
 
-ImTextureID EditorRendererOld::GetTexture(const std::string &id) {
+ImTextureID TextureRenderer::GetTexture(const std::string &id) {
     FrameBufferFactory::FrameBuffer* frameBuffer;
     if (!frameBufferFactory->TryGetFrameBuffer(id, &frameBuffer)) {
         return nullptr;

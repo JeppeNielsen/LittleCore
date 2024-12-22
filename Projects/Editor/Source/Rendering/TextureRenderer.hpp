@@ -11,11 +11,11 @@
 
 class FrameBufferFactory;
 
-class EditorRendererOld {
+class TextureRenderer {
 public:
 
-    EditorRendererOld(LittleCore::Renderer& renderer);
-    ~EditorRendererOld();
+    TextureRenderer(LittleCore::Renderer& renderer);
+    ~TextureRenderer();
 
     using Callback = std::function<void(LittleCore::Renderer&)>;
 
