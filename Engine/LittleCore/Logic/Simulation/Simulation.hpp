@@ -37,7 +37,7 @@ namespace LittleCore {
     using ConcatSimulationSystemLists = typename ConcatSimulationSystemLists_impl<A1,A2>::type;
 
 
-template <typename ...System>
+    template <typename ...System>
     using InputSystems = SimulationSystemList<System...>;
 
     template <typename ...System>
