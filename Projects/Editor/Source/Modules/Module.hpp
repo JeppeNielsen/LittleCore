@@ -8,6 +8,7 @@
 #include "../ScriptsInclude/IModule.hpp"
 
 struct ModuleFactory;
+struct EditorRenderer;
 
 class Module {
 public:
@@ -18,7 +19,7 @@ public:
     bool IsLoaded();
 
     void Update(float dt);
-    void Render();
+    void Render(EditorRenderer* editorRenderer);
     void OnGui(ImGuiContext* imGuiContext);
 
 private:

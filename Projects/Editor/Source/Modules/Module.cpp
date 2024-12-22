@@ -57,11 +57,11 @@ void Module::Update(float dt) {
     module->Update(dt);
 }
 
-void Module::Render() {
+void Module::Render(EditorRenderer* editorRenderer) {
     if (!module) {
         return;
     }
-    module->Render();
+    module->Render(editorRenderer);
 }
 
 void Module::OnGui(ImGuiContext *imGuiContext) {

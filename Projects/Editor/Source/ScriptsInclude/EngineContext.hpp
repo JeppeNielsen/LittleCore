@@ -6,9 +6,11 @@
 #include <functional>
 #include "imgui.h"
 #include "RegistryCollection.hpp"
+#include "EditorRenderer.hpp"
 
 class EngineContext {
 public:
     ImGuiContext* imGuiContext;
     RegistryCollection* registryCollection;
+    EditorRenderer* editorRenderer;
 };

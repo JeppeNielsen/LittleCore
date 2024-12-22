@@ -9,13 +9,22 @@
 #include <iostream>
 #include <fstream>
 #include "Timer.hpp"
+struct Bla {
 
+
+};
 MainState::MainState() :
 project(engineContext),
 cin("input.txt"),
 cout("output.txt"),
 projectCompiler(project, *this),
-compilerWindow(projectCompiler)
+compilerWindow(projectCompiler),
+editorRendererOld(bgfxRenderer),
+editorRenderer([this](const std::string& id, int width, int height, EditorRenderer::Callback callback) {
+        editorRendererOld.Render(id, width, height, callback);
+    }, [this] (const std::string& id)  {
+        return editorRendererOld.GetTexture(id);
+    })
 {
 
 }
@@ -25,6 +34,10 @@ MainState::~MainState() {
 }
 
 void MainState::Initialize() {
+
+    entt::registry registry;
+
+    entt::observer ob(registry, entt::collector.update<Bla>());
 
     engineContext.registryCollection = &registyCollection;
 
@@ -49,7 +62,7 @@ void MainState::Initialize() {
 
     gui.LoadFont("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Assets/Fonts/LucidaG.ttf", 14);
     engineContext.imGuiContext = ImGui::GetCurrentContext();
-
+    engineContext.editorRenderer = &editorRenderer;
 }
 
 void MainState::Update(float dt) {
@@ -65,7 +78,7 @@ void MainState::Render() {
     gui.Render();
 
     for(auto& module : project.moduleManager.GetModules()) {
-        module.second->Render();
+        module.second->Render(&editorRenderer);
     }
 }
 

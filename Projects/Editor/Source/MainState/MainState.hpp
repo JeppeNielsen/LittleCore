@@ -17,6 +17,8 @@
 #include "TaskRunner.hpp"
 #include "Timer.hpp"
 #include "../Windows/CompilerWindow.hpp"
+#include "../Rendering/EditorRendererOld.hpp"
+#include "BgfxRenderer.hpp"
 
 struct MainState : LittleCore::IState, public IProjectCompilerHandler {
     MainState();
@@ -35,6 +37,9 @@ struct MainState : LittleCore::IState, public IProjectCompilerHandler {
 
     RegistryCollection registyCollection;
     CompilerWindow compilerWindow;
+    LittleCore::BGFXRenderer bgfxRenderer;
+    EditorRendererOld editorRendererOld;
+    EditorRenderer editorRenderer;
 
     std::ifstream cin;
     std::ofstream cout;

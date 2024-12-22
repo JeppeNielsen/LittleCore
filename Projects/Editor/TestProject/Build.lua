@@ -56,7 +56,9 @@ project "TestProject"
       "../../../External/imgui/imgui_draw.cpp",
       "../../../External/imgui/imgui_tables.cpp",
       "../../../External/imgui/imgui_widgets.cpp",
-      "../../../External/imgui/misc/cpp/imgui_stdlib.cpp"
+      "../../../External/imgui/misc/cpp/imgui_stdlib.cpp",
+      "../../../Engine/LittleCore/**.cpp",
+      "../../../Engine/LittleCore/**.hpp" 
     }
 
    includedirs {
@@ -67,6 +69,7 @@ project "TestProject"
         "../../../External/imgui/misc/cpp/",
         "../../../External/entt/src",
         "../Source/ScriptsInclude/",
+        "../../../Engine/LittleCore/**",
    }
 
    links { 

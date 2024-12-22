@@ -6,11 +6,13 @@
 #include "EngineContext.hpp"
 #include "imgui.h"
 
+struct EditorRenderer;
+
 struct IModule {
     virtual ~IModule() {}
     virtual void Initialize(EngineContext& engineContext) { };
     virtual void Update(float dt) = 0;
-    virtual void Render() = 0;
+    virtual void Render(EditorRenderer* editorRenderer) = 0;
 
     virtual void OnGui() = 0;
 
