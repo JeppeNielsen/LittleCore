@@ -14,14 +14,29 @@ inline bool ends_with(std::string const & value, std::string const & ending)
     return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
 
+
+inline bool IsPathValid(std::string const& path) {
+    if (ends_with(path, ".meta")) {
+        return false;
+    }
+
+    if (ends_with(path, ".DS_Store")) {
+        return false;
+    }
+
+    return true;
+}
+
 void ResourcePathMapper::RefreshFromRootPath(const std::string& rootPath) {
     guidToPath.clear();
     pathToGuid.clear();
     MetaFileCreator metaFileCreator;
     FileHelper::IterateFilesRecursively(rootPath, [&, this](const std::string& path) {
-        if (ends_with(path, ".meta")) {
+        if (!IsPathValid(path)) {
             return;
         }
+
+
         std::string guid;
         if (!metaFileCreator.TryGetMetaGuid(path, guid)) {
             guid = metaFileCreator.CreateMetaFile(path);
