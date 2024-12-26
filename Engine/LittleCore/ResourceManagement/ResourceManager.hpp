@@ -6,9 +6,6 @@
 #include "ResourceLoaderManager.hpp"
 
 namespace LittleCore {
-
-
-
     template<typename ...T>
     struct ResourceManager {
         ResourcePathMapper& pathMapper;
@@ -21,8 +18,6 @@ namespace LittleCore {
                 manager.pathMapper = &pathMapper;
             });
         }
-
-
 
         template<typename TResource>
         ResourceHandle<TResource> Create(const std::string& id) {
