@@ -11,9 +11,7 @@ namespace {
 
         entt::registry registry;
 
-        RenderOctreeSystem renderOctreeSystem(registry);
-
-        RenderSystem renderSystem(registry, renderOctreeSystem);
+        RenderSystem renderSystem(registry);
 
         auto entity = registry.create();
 
@@ -80,7 +78,7 @@ namespace {
 
         EXPECT_TRUE(frustum.Intersect(worldBoundingBox.bounds)!=LittleCore::BoundingFrustum::OUTSIDE);
 
-        renderOctreeSystem.Update();
+        renderSystem.Update();
         renderSystem.Render(0, cameraTransform, camera, &testRenderer);
 
         EXPECT_EQ(1, testRenderer.renderCount);
