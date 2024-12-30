@@ -13,6 +13,9 @@ namespace LittleCore {
         void Update();
 
     private:
+        void DestroyRecursive(entt::registry& registry, entt::entity entity);
+        void EntityDestroyed(entt::registry& reg, entt::entity entity);
+        bool isDestroying;
         entt::registry& registry;
         entt::observer observer;
     };
