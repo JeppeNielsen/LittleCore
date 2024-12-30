@@ -67,4 +67,33 @@ namespace {
 
         EXPECT_EQ(entitiesInQuery.size(), 0);
     }
+
+    TEST(OctreeSystem, DeletedEntityShouldBeRemovedFrom) {
+        entt::registry registry;
+        OctreeSystem<> octreeSystem(registry);
+
+        auto entity = registry.create();
+
+        auto& worldBoundingBox = registry.emplace<WorldBoundingBox>(entity);
+        worldBoundingBox.bounds = {{0,0,0} , {1,1,1}};
+
+        registry.patch<WorldBoundingBox>(entity);
+
+        octreeSystem.Update();
+
+        BoundingBox boundingBox = {{1,0,0},{1,1,1}};
+
+        std::vector<entt::entity> entitiesInQuery;
+
+        octreeSystem.Query(boundingBox, entitiesInQuery);
+
+        EXPECT_EQ(entitiesInQuery.size(), 1);
+
+        registry.destroy(entity);
+
+        entitiesInQuery.clear();
+        octreeSystem.Query(boundingBox, entitiesInQuery);
+
+        EXPECT_EQ(entitiesInQuery.size(), 0);
+    }
 }
