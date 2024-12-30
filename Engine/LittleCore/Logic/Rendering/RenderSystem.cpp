@@ -22,7 +22,7 @@ void RenderSystem::Render(Renderer* renderer) {
         auto& worldTransform = registry.get<WorldTransform>(entity);
         auto& camera = registry.get<Camera>(entity);
 
-        Render((bgfx::ViewId )entity, worldTransform, camera, renderer);
+        Render(0, worldTransform, camera, renderer);
     }
 }
 
@@ -67,7 +67,9 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
         renderer->RenderMesh(mesh, worldTransform.world);
     }
 
-    renderer->EndBatch(viewId, currentShaderProgram);
+    if (entities.size()>0) {
+        renderer->EndBatch(viewId, currentShaderProgram);
+    }
     renderer->EndRender(viewId);
 }
 
