@@ -16,6 +16,36 @@ std::string GetEntityName(entt::entity entity) {
     return "Entity " + std::to_string((int)entity);
 }
 
+bool IsEntityInHierarchy(entt::registry& registry, entt::entity entity, entt::entity parent) {
+
+    auto& hierarchy = registry.get<Hierarchy>(entity);
+    auto find = std::find(hierarchy.children.begin(), hierarchy.children.end(), parent);
+
+    if (find != hierarchy.children.end()) {
+        return true;
+    }
+
+    for(auto child : hierarchy.children) {
+        bool isInChild = IsEntityInHierarchy(registry, child, parent);
+        if (isInChild) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool IsParentAllowed(entt::registry& registry, entt::entity entity, entt::entity parent) {
+    if (entity == parent) {
+        return false;
+    }
+
+    if (IsEntityInHierarchy(registry, entity, parent)) {
+        return false;
+    }
+
+    return true;
+}
+
 void DrawEntity(entt::registry& registry, entt::entity entity, entt::entity parent) {
 
     std::string name = GetEntityName(entity);
@@ -36,7 +66,7 @@ void DrawEntity(entt::registry& registry, entt::entity entity, entt::entity pare
     if (ImGui::BeginDragDropTarget()) {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_TREE_NODE")) {
             entt::entity draggedEntity = (*(entt::entity*)payload->Data);
-            if (draggedEntity != entity) {
+            if (IsParentAllowed(registry, draggedEntity, entity)) {
                 Hierarchy& draggedHierarchy = registry.get<Hierarchy>(draggedEntity);
                 draggedHierarchy.parent = entity;
                 registry.patch<Hierarchy>(draggedEntity);
