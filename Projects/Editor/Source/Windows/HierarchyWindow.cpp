@@ -8,7 +8,7 @@
 
 using namespace LittleCore;
 
-HierarchyWindow::HierarchyWindow(EngineContext& engineContext) : engineContext(engineContext) {
+HierarchyWindow::HierarchyWindow(RegistryManager& registryManager) : registryManager(registryManager) {
 
 }
 
@@ -46,15 +46,36 @@ bool IsParentAllowed(entt::registry& registry, entt::entity entity, entt::entity
     return true;
 }
 
-void DrawEntity(entt::registry& registry, entt::entity entity, entt::entity parent) {
+void HierarchyWindow::DrawEntity(entt::registry& registry, entt::entity entity, entt::entity parent) {
 
     std::string name = GetEntityName(entity);
 
-    if (!ImGui::TreeNode(name.c_str())) {
-        return;
+    Hierarchy& hierarchy = registry.get<Hierarchy>(entity);
+
+    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_None;
+    //ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
+    if (hierarchy.children.empty()) {
+        nodeFlags |= ImGuiTreeNodeFlags_Leaf;
     }
 
-    Hierarchy& hierarchy = registry.get<Hierarchy>(entity);
+    if (currentState->selectedEntity == entity) {
+        nodeFlags |= ImGuiTreeNodeFlags_Selected;
+    }
+
+    nodeFlags |= ImGuiTreeNodeFlags_FramePadding;
+
+    nodeFlags |= ImGuiTreeNodeFlags_OpenOnArrow;
+
+    bool isUnfolded = ImGui::TreeNodeEx(name.c_str(), nodeFlags);
+
+    if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+        currentState->selectedEntity = entity;
+    }
+
+    if (!isUnfolded) {
+        return;
+    }
 
     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None | ImGuiDragDropFlags_AcceptBeforeDelivery)) {
         ImGui::SetDragDropPayload("DND_TREE_NODE", &entity, sizeof(entt::entity)); // Set payload
@@ -88,13 +109,23 @@ void DrawEntity(entt::registry& registry, entt::entity entity, entt::entity pare
 void HierarchyWindow::DrawGui() {
     ImGui::Begin("Hierarchy");
 
-    if (engineContext.registryCollection->registries.empty()) {
+    std::string firstId;
+    if (!registryManager.TryGetFirstId(firstId)) {
         ImGui::Text("No registries found");
         ImGui::End();
         return;
     }
 
-    auto& registry = *engineContext.registryCollection->registries[0];
+    auto& state = registryManager.Get(firstId);
+    if (state.registry.expired()) {
+        ImGui::Text("Registry with id %s not valid anymore", firstId.c_str());
+        ImGui::End();
+        return;
+    }
+
+    currentState = &state;
+
+    auto& registry = *state.registry.lock().get();
 
     const auto& view = registry.view<Hierarchy>();
 

@@ -37,7 +37,7 @@ struct MainState : LittleCore::IState, public IProjectCompilerHandler {
     Project project;
     ProjectCompiler projectCompiler;
 
-    RegistryCollection registyCollection;
+    RegistryManager registryManager;
     CompilerWindow compilerWindow;
     HierarchyWindow hierarchyWindow;
 

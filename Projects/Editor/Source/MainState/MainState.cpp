@@ -16,7 +16,7 @@ MainState::MainState() :
         cout("output.txt"),
         projectCompiler(project, *this),
         compilerWindow(projectCompiler),
-        hierarchyWindow(engineContext),
+        hierarchyWindow(registryManager),
         textureRenderer(bgfxRenderer),
         editorRenderer([this](const std::string& id, int width, int height, EditorRenderer::Callback callback) {
             textureRenderer.Render(id, width, height, callback);
@@ -39,7 +39,7 @@ MainState::~MainState() {
 
 void MainState::Initialize() {
 
-    engineContext.registryCollection = &registyCollection;
+    engineContext.registryManager = &registryManager;
 
     // optional performance optimizations
     std::ios_base::sync_with_stdio(false);
@@ -65,7 +65,6 @@ void MainState::Initialize() {
     engineContext.resourceLoader = &resourceLoader;
 
     project.LoadProject("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/TestProject/Assets");
-
 }
 
 void MainState::Update(float dt) {
@@ -90,5 +89,5 @@ void MainState::HandleEvent(void *event) {
 }
 
 void MainState::CompilationFinished(CompilationResult &result) {
-    engineContext.registryCollection->registries.clear();
+    registryManager.Clear();
 }

@@ -5,14 +5,14 @@
 #pragma once
 #include <functional>
 #include "imgui.h"
-#include "RegistryCollection.hpp"
 #include "EditorRenderer.hpp"
 #include "ResourceLoader.hpp"
+#include "RegistryManager.hpp"
 
 class EngineContext {
 public:
     ImGuiContext* imGuiContext;
-    RegistryCollection* registryCollection;
+    RegistryManager* registryManager;
     EditorRenderer* editorRenderer;
     ResourceLoader* resourceLoader;
 };

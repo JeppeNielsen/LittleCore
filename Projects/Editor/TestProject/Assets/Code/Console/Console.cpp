@@ -52,9 +52,9 @@ protected:
 
 
 struct World {
-    entt::registry registry;
+    std::shared_ptr<entt::registry> registry;
 
-    World() : simulation(registry), editors(registry) {
+    World() : registry(std::make_shared<entt::registry>()), simulation(*registry.get()), editors(*registry.get()) {
 
     }
 
@@ -108,21 +108,23 @@ struct Console : public IModule {
 
     void CreateEntity() {
 
-        auto quad = CreateQuad(world.registry, {entities.size(),0,0});
+        auto& registry = *world.registry.get();
+
+        auto quad = CreateQuad(registry, {entities.size(),0,0});
         entities.push_back(quad);
 
-        world.registry.get<Renderable>(quad).shader = resourceLoader->LoadShader("65886F92DEC94836A9E2FEA6C3483543");
+        registry.get<Renderable>(quad).shader = resourceLoader->LoadShader("65886F92DEC94836A9E2FEA6C3483543");
     }
 
     void Initialize(EngineContext& context) override {
-        context.registryCollection->registries.push_back(&world.registry);
+        context.registryManager->Add("Main", world.registry);
         editorRenderer = context.editorRenderer;
         resourceLoader = context.resourceLoader;
     }
 
     void CreateCamera() {
 
-        auto& registry = world.registry;
+        auto& registry = *world.registry.get();
 
         auto cameraObject = registry.create();
         registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -10};
@@ -179,7 +181,7 @@ struct Console : public IModule {
 
             for(auto e : entitiesToDelete) {
                 entities.erase(std::find(entities.begin(), entities.end(), e));
-                world.registry.destroy(e);
+                world.registry.get()->destroy(e);
             }
         ImGui::End();
 

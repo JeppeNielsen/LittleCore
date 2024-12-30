@@ -4,17 +4,18 @@
 
 
 #pragma once
-#include "../ScriptsInclude/EngineContext.hpp"
+#include "../ScriptsInclude/RegistryManager.hpp"
 
 
 class HierarchyWindow {
 public:
-    HierarchyWindow(EngineContext& engineContext);
+    HierarchyWindow(RegistryManager& registryManager);
 
     void DrawGui();
-
+    void DrawEntity(entt::registry& registry, entt::entity entity, entt::entity parent);
 
 private:
-    EngineContext& engineContext;
+    RegistryManager& registryManager;
+    RegistryState* currentState;
 
 };
