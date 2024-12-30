@@ -29,7 +29,7 @@ mat4x4 Camera::GetProjection(float aspect) const {
 
     float proj[16];
 
-    if (orthoSize <=0.00001f) {
+    if (!IsOrthographic()) {
         bx::mtxProj(proj, fieldOfView, aspect, near, far, gethomogeneousDepth());
     } else {
         float xSize = orthoSize * 0.5f;
@@ -56,4 +56,8 @@ Ray Camera::GetRay(const WorldTransform &transform, const ivec2& screenSize, con
     rayEndPosition = viewProjection * rayEndPosition;
     
     return Ray(rayStartPosition, rayEndPosition - rayStartPosition);
+}
+
+bool Camera::IsOrthographic() const {
+    return isOrthographic;
 }

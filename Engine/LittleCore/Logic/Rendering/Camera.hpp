@@ -15,8 +15,9 @@
 namespace LittleCore {
     struct Camera {
 
-        float orthoSize;
-        float fieldOfView;
+        float orthoSize = 1;
+        float fieldOfView = 60;
+        bool isOrthographic = false;
         
         float near;
         float far;
@@ -31,6 +32,8 @@ namespace LittleCore {
         Ray GetRay(const WorldTransform &transform,
                    const ivec2& screenSize,
                    const ivec2& screenPosition) const;
-        
+
+        bool IsOrthographic() const;
+
     };
 }
