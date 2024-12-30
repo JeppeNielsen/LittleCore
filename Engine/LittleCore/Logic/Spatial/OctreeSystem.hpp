@@ -15,11 +15,21 @@
 namespace LittleCore {
     template<typename ...T>
     struct OctreeSystem {
-        
+
         OctreeSystem(entt::registry& registry) : registry(registry) {
             octree.SetBoundingBox({{0,0,0}, {100000,100000,100000}});
             defaultNode.node = nullptr;
             observer.connect(registry, entt::collector.update<WorldBoundingBox>().where<T...>().template group<WorldBoundingBox, T...>());
+            registry.on_destroy<WorldBoundingBox>().connect<&OctreeSystem::EntityDestroyed>(this);
+        }
+
+        void EntityDestroyed(entt::registry& reg, entt::entity entity) {
+            auto it = nodes.find(entity);
+            if (it == nodes.end()) {
+                return;
+            }
+            octree.Remove(it->second);
+            nodes.erase(it);
         }
 
         void Update() {
@@ -43,17 +53,7 @@ namespace LittleCore {
                 octree.Move(node);
             }
         }
-        
-        /*void GameObjectRemoved(Tiny::GameObject gameObject) {
-            if (gameObject >= nodes.size()) {
-                return;
-            }
-            
-            auto& node = nodes[gameObject];
-            octree.Remove(node);
-        }
-         */
-        
+
         void Query(const BoundingFrustum& frustum, std::vector<entt::entity>& entities) const {
             octree.Get(frustum, entities);
         }
@@ -72,6 +72,5 @@ namespace LittleCore {
         Octree<entt::entity> octree;
         std::unordered_map<entt::entity, OctreeNode<entt::entity>> nodes;
         OctreeNode<entt::entity> defaultNode;
-
    };
 }
