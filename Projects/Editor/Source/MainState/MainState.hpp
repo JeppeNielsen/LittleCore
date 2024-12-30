@@ -17,8 +17,10 @@
 #include "TaskRunner.hpp"
 #include "Timer.hpp"
 #include "../Windows/CompilerWindow.hpp"
+#include "../Windows/HierarchyWindow.hpp"
 #include "../Rendering/TextureRenderer.hpp"
 #include "BgfxRenderer.hpp"
+#include "DefaultResourceManager.hpp"
 
 struct MainState : LittleCore::IState, public IProjectCompilerHandler {
     MainState();
@@ -37,9 +39,12 @@ struct MainState : LittleCore::IState, public IProjectCompilerHandler {
 
     RegistryCollection registyCollection;
     CompilerWindow compilerWindow;
+    HierarchyWindow hierarchyWindow;
+
     LittleCore::BGFXRenderer bgfxRenderer;
     TextureRenderer textureRenderer;
     EditorRenderer editorRenderer;
+    ResourceLoader resourceLoader;
 
     std::ifstream cin;
     std::ofstream cout;

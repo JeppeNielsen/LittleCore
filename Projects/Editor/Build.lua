@@ -7,6 +7,7 @@ workspace "LittleCore"
 
 include "../Libs/Build_sdl.lua"
 include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_ShaderCompiler.lua"
 include "../Libs/Build_LittleCore.lua"
 include "../Libs/Build_ImGui.lua"
 
@@ -74,6 +75,7 @@ project "LittleEditor"
       "bimg",
       "bx",
       "LittleCore",
+      "ShaderCompiler",
       "ImGui"
    }
 

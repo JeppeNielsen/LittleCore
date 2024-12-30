@@ -12,10 +12,44 @@
 #include "LocalTransform.hpp"
 #include "WorldTransform.hpp"
 #include "Camera.hpp"
-#include "ComponentEditorCollection.hpp"
-#include "LocalTransformEditor.hpp"
+#include "DefaultComponentEditors.hpp"
+#include "ResourceLoader.hpp"
 
 using namespace LittleCore;
+
+struct Rotatable {
+    float speed;
+};
+
+struct RotatableSystem {
+
+    entt::registry& registry;
+
+    RotatableSystem(entt::registry& registry) : registry(registry) {}
+
+    void Update() {
+        for(auto e : registry.view<Rotatable, LocalTransform>()) {
+            auto& rotatable = registry.get<Rotatable>(e);
+            auto& localTransform = registry.get<LocalTransform>(e);
+
+            vec3 euler = glm::eulerAngles(localTransform.rotation);
+            euler.z += rotatable.speed;
+            localTransform.rotation = glm::quat(euler);
+
+            registry.patch<LocalTransform>(e);
+        }
+    }
+
+};
+
+class RotatableComponentEditor : public ComponentEditor<Rotatable> {
+protected:
+    bool Draw(entt::registry& registry, entt::entity entity, Rotatable& component) override {
+        ImGui::InputFloat("Speed", &component.speed);
+        return ImGui::IsItemEdited();
+    }
+};
+
 
 struct World {
     entt::registry registry;
@@ -24,8 +58,8 @@ struct World {
 
     }
 
-    LittleCore::DefaultSimulation simulation;
-    ComponentEditorCollection<LocalTransformEditor> editors;
+    LittleCore::CustomSimulation<RotatableSystem> simulation;
+    CustomComponentEditors<RotatableComponentEditor> editors;
 
 
 };
@@ -52,6 +86,7 @@ entt::entity CreateQuad(entt::registry& registry, glm::vec3 position, entt::enti
     registry.emplace<Renderable>(quad);
     registry.emplace<LocalBoundingBox>(quad);
     registry.emplace<WorldBoundingBox>(quad);
+    registry.emplace<Rotatable>(quad).speed = 0.1f;
 
     return quad;
 }
@@ -65,6 +100,7 @@ struct Console : public IModule {
     entityList entities;
 
     EditorRenderer* editorRenderer;
+    ResourceLoader* resourceLoader;
 
     bool hasRendered = false;
 
@@ -74,29 +110,33 @@ struct Console : public IModule {
 
         auto quad = CreateQuad(world.registry, {entities.size(),0,0});
         entities.push_back(quad);
+
+        world.registry.get<Renderable>(quad).shader = resourceLoader->LoadShader("65886F92DEC94836A9E2FEA6C3483543");
     }
 
     void Initialize(EngineContext& context) override {
         context.registryCollection->registries.push_back(&world.registry);
         editorRenderer = context.editorRenderer;
+        resourceLoader = context.resourceLoader;
     }
 
     void CreateCamera() {
 
         auto& registry = world.registry;
 
-            auto cameraObject = registry.create();
-            registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -10};
-            registry.emplace<WorldTransform>(cameraObject);
-            registry.emplace<Hierarchy>(cameraObject);
+        auto cameraObject = registry.create();
+        registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -10};
+        registry.emplace<WorldTransform>(cameraObject);
+        registry.emplace<Hierarchy>(cameraObject);
 
-            auto &camera = registry.emplace<Camera>(cameraObject);
-            camera.fieldOfView = 60.0f;
-            camera.near = 1;
-            camera.far = 20;
-            camera.viewRect = {{0,    0},
-                               {1.0f, 1.0f}};
+        auto &camera = registry.emplace<Camera>(cameraObject);
+        camera.fieldOfView = 60.0f;
+        camera.near = 1;
+        camera.far = 20;
+        camera.viewRect = {{0,    0},
+                           {1.0f, 1.0f}};
 
+        entities.push_back(cameraObject);
     }
 
     void OnGui() override {
@@ -145,9 +185,7 @@ struct Console : public IModule {
 
         ImGui::Begin("Game");
 
-        if (hasRendered) {
-            ImGui::Image(textureId, ImVec2((float) 512, (float) 512));
-        }
+        ImGui::Image(textureId, ImVec2((float) 1024, (float) 1024));
         ImGui::End();
     }
 

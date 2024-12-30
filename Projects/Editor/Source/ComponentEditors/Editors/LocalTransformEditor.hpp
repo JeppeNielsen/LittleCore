@@ -4,10 +4,10 @@
 
 
 #pragma once
-#include "ComponentEditor.hpp"
+#include "../ComponentEditor.hpp"
 #include "LocalTransform.hpp"
 
 class LocalTransformEditor : public ComponentEditor<LittleCore::LocalTransform> {
 protected:
-    void Draw(entt::registry &registry, entt::entity entity, LittleCore::LocalTransform &component) override;
+    bool Draw(entt::registry& registry, entt::entity entity, LittleCore::LocalTransform& component) override;
 };

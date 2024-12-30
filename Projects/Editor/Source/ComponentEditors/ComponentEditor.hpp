@@ -16,8 +16,10 @@ public:
             return;
         }
         Component& component = registry.get<Component>(entity);
-        Draw(registry, entity, component);
+        if (Draw(registry, entity, component)) {
+            registry.patch<Component>(entity);
+        }
     }
 
-    virtual void Draw(entt::registry& registry, entt::entity entity, Component& component) = 0;
+    virtual bool Draw(entt::registry& registry, entt::entity entity, Component& component) = 0;
 };

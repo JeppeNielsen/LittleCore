@@ -8,6 +8,8 @@
 #include "../Modules/ModuleManager.hpp"
 #include "../Project/ProjectSettings.hpp"
 #include "../ScriptsInclude/EngineContext.hpp"
+#include "ResourcePathMapper.hpp"
+#include "DefaultResourceManager.hpp"
 
 class Project {
 public:
@@ -18,6 +20,8 @@ public:
     ModuleDefinitionsManager moduleDefinitionsManager;
     ModuleManager moduleManager;
     ProjectSettings projectSettings;
+    LittleCore::ResourcePathMapper resourcePathMapper;
+    LittleCore::DefaultResourceManager defaultResourceManager;
 
     void Reset();
     void LoadProject(const std::string rootPath);

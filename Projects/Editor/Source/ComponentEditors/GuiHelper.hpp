@@ -12,6 +12,7 @@ public:
     static void DrawHeader(const std::string& name);
 
     template<typename T>
-    static void Draw(const std::string& name, T& value);
+    static void Draw(bool& didChange, const std::string& name, T& value);
 
+    static void DrawColor(bool& didChange, const std::string& name, uint32_t& color);
 };

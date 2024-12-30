@@ -17,6 +17,8 @@ TextureRenderer::~TextureRenderer() {
 void TextureRenderer::Render(const std::string &id, int width, int height, TextureRenderer::Callback callback) {
     auto& frameBuffer = frameBufferFactory->CreateBuffer(id, width, height);
 
+    renderer.screenSize = {width, height};
+
     bgfx::setViewFrameBuffer(0, frameBuffer.framebuffer);
 
     bgfx::touch(0);

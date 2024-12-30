@@ -9,22 +9,26 @@
 #include <iostream>
 #include <fstream>
 #include "Timer.hpp"
-struct Bla {
 
-
-};
 MainState::MainState() :
         project(engineContext),
         cin("input.txt"),
         cout("output.txt"),
         projectCompiler(project, *this),
         compilerWindow(projectCompiler),
+        hierarchyWindow(engineContext),
         textureRenderer(bgfxRenderer),
         editorRenderer([this](const std::string& id, int width, int height, EditorRenderer::Callback callback) {
-        textureRenderer.Render(id, width, height, callback);
-    }, [this] (const std::string& id)  {
-        return textureRenderer.GetTexture(id);
-    })
+            textureRenderer.Render(id, width, height, callback);
+        }, [this] (const std::string& id)  {
+            return textureRenderer.GetTexture(id);
+        }),
+        resourceLoader([this](const std::string& id) {
+            return project.defaultResourceManager.Create<LittleCore::ShaderResource>(id);
+        },
+        [this](const std::string& id) {
+            return project.defaultResourceManager.Create<LittleCore::TextureResource>(id);
+        })
 {
 
 }
@@ -35,10 +39,6 @@ MainState::~MainState() {
 
 void MainState::Initialize() {
 
-    entt::registry registry;
-
-    entt::observer ob(registry, entt::collector.update<Bla>());
-
     engineContext.registryCollection = &registyCollection;
 
     // optional performance optimizations
@@ -48,12 +48,11 @@ void MainState::Initialize() {
     std::cin.rdbuf(cin.rdbuf());
     //std::cout.rdbuf(cout.rdbuf());
 
-    project.LoadProject("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/TestProject");
-
     gui.Initialize(mainWindow, [this]() {
         ImGui::DockSpaceOverViewport();
 
         compilerWindow.DrawGui();
+        hierarchyWindow.DrawGui();
 
         for(auto& module : project.moduleManager.GetModules()) {
             module.second->OnGui(engineContext.imGuiContext);
@@ -63,6 +62,10 @@ void MainState::Initialize() {
     gui.LoadFont("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Assets/Fonts/LucidaG.ttf", 14);
     engineContext.imGuiContext = ImGui::GetCurrentContext();
     engineContext.editorRenderer = &editorRenderer;
+    engineContext.resourceLoader = &resourceLoader;
+
+    project.LoadProject("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/TestProject/Assets");
+
 }
 
 void MainState::Update(float dt) {
@@ -74,12 +77,12 @@ void MainState::Update(float dt) {
 }
 
 void MainState::Render() {
-    ImGui::SetCurrentContext(engineContext.imGuiContext);
-    gui.Render();
-
     for(auto& module : project.moduleManager.GetModules()) {
         module.second->Render(&editorRenderer);
     }
+
+    ImGui::SetCurrentContext(engineContext.imGuiContext);
+    gui.Render();
 }
 
 void MainState::HandleEvent(void *event) {

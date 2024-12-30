@@ -8,9 +8,11 @@
 
 Project::Project(EngineContext &engineContext) :
         moduleDefinitionsManager(moduleSettings),
-        moduleManager(engineContext)
+        moduleManager(engineContext),
+        defaultResourceManager(resourcePathMapper)
 {
-
+    defaultResourceManager.CreateLoaderFactory<LittleCore::ShaderResourceLoaderFactory>();
+    defaultResourceManager.CreateLoaderFactory<LittleCore::TextureResourceLoaderFactory>();
 }
 
 
@@ -19,10 +21,15 @@ void Project::Reset() {
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/");
     moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/GuiHelper.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/LocalTransformEditor.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/Editors/LocalTransformEditor.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/Editors/LocalBoundingBoxEditor.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/Editors/CameraEditor.cpp");
+
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/");
     moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/EditorRenderer.cpp");
+    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/ResourceLoader.cpp");
+
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/");
     moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/imgui.cpp");
@@ -98,7 +105,7 @@ void Project::Reset() {
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/ResourceManagement/");
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Tuples/");
-
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Utilities/");
 
     moduleSettings.libraryFolder = "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Cache/";
 }
@@ -107,6 +114,8 @@ void Project::Reset() {
 void Project::LoadProject(const std::string rootPath) {
 
     Reset();
+
+    resourcePathMapper.RefreshFromRootPath(rootPath);
 
     projectSettings.rootPath = rootPath;// "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/TestProject";
 
