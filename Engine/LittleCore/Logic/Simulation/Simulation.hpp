@@ -9,6 +9,8 @@
 #include <entt/entt.hpp>
 #include <tuple>
 #include "InputHandler.hpp"
+#include <iostream>
+#include "TypeUtility.hpp"
 
 namespace LittleCore {
 
@@ -67,7 +69,9 @@ namespace LittleCore {
                 inputSystem.Update();
             });
             TupleHelper::for_each(updateSystems.systems, [] (auto& updateSystem) {
+               //std::cout << "Begin " << TypeUtility::GetClassName< decltype(updateSystem)>() << "\n";
                updateSystem.Update();
+               //std::cout << "End" << TypeUtility::GetClassName< decltype(updateSystem)>() << "\n";
             });
             TupleHelper::for_each(renderSystems.systems, [] (auto& renderSystem) {
                 renderSystem.Update();
