@@ -4,7 +4,6 @@
 
 #include "BgfxRenderer.hpp"
 #include "Math.hpp"
-#include <iostream>
 #include <bx/math.h>
 #include "Math.hpp"
 
@@ -44,15 +43,11 @@ void BGFXRenderer::BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x
 
 void BGFXRenderer::EndRender(bgfx::ViewId viewId) {
 
-
-
 }
 
 void BGFXRenderer::BeginBatch(bgfx::ViewId viewId) {
-
     currentVertex = 0;
     currentTriangle = 0;
-
 }
 
 void BGFXRenderer::RenderMesh(const Mesh& mesh, const glm::mat4x4& world) {
