@@ -54,5 +54,47 @@ namespace {
         EXPECT_TRUE(didExistsInParentChildren && doesNotExistsInParentChildren);
     }
 
+    TEST(HierachySystem, DestroyEntityShouldRemoveChildrenAlso) {
+        entt::registry registry;
+        HierarchySystem hierarchySystem(registry);
+
+        auto parent = registry.create();
+        auto child = registry.create();
+
+        auto& parentHierarchy = registry.emplace<Hierarchy>(parent);
+        auto& childHierarchy = registry.emplace<Hierarchy>(child);
+
+        childHierarchy.parent = parent;
+        registry.patch<Hierarchy>(child);
+
+        hierarchySystem.Update();
+
+        registry.destroy(parent);
+
+        EXPECT_FALSE(registry.valid(child));
+    }
+
+    TEST(HierachySystem, DestroyParentEntityShouldBeRemovedFromParentsChildrenList) {
+        entt::registry registry;
+        HierarchySystem hierarchySystem(registry);
+
+        auto parent = registry.create();
+        auto child = registry.create();
+
+        auto& parentHierarchy = registry.emplace<Hierarchy>(parent);
+        auto& childHierarchy = registry.emplace<Hierarchy>(child);
+
+        childHierarchy.parent = parent;
+        registry.patch<Hierarchy>(child);
+
+        hierarchySystem.Update();
+
+        registry.destroy(child);
+
+        auto& parentChildren = registry.get<Hierarchy>(parent).children;
+        bool doesNotExistsInParentChildren = std::find(parentChildren.begin(), parentChildren.end(), child)==parentChildren.end();
+        EXPECT_TRUE(doesNotExistsInParentChildren);
+    }
+
 
 }
