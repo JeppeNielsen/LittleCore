@@ -91,7 +91,7 @@ namespace {
 
         registry.destroy(child);
 
-        auto& parentChildren = registry.get<Hierarchy>(parent).children;
+        auto& parentChildren = parentHierarchy.children;
         bool doesNotExistsInParentChildren = std::find(parentChildren.begin(), parentChildren.end(), child)==parentChildren.end();
         EXPECT_TRUE(doesNotExistsInParentChildren);
     }
