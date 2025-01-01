@@ -12,8 +12,10 @@
 #include "LocalTransform.hpp"
 #include "WorldTransform.hpp"
 #include "Camera.hpp"
-#include "DefaultComponentEditors.hpp"
+#include "ComponentEditorCollection.hpp"
 #include "ResourceLoader.hpp"
+#include "ComponentEditor.hpp"
+#include "GuiHelper.hpp"
 
 using namespace LittleCore;
 
@@ -45,6 +47,7 @@ struct RotatableSystem {
 class RotatableComponentEditor : public ComponentEditor<Rotatable> {
 protected:
     bool Draw(entt::registry& registry, entt::entity entity, Rotatable& component) override {
+        GuiHelper::DrawHeader("Rotatable");
         ImGui::InputFloat("Speed", &component.speed);
         return ImGui::IsItemEdited();
     }
@@ -54,13 +57,11 @@ protected:
 struct World {
     std::shared_ptr<entt::registry> registry;
 
-    World() : registry(std::make_shared<entt::registry>()), simulation(*registry.get()), editors(*registry.get()) {
+    World() : registry(std::make_shared<entt::registry>()), simulation(*registry.get()) {
 
     }
 
     LittleCore::CustomSimulation<RotatableSystem> simulation;
-    CustomComponentEditors<RotatableComponentEditor> editors;
-
 
 };
 
@@ -93,7 +94,7 @@ entt::entity CreateQuad(entt::registry& registry, glm::vec3 position, entt::enti
 
 struct Console : public IModule {
 
-    World world;
+    std::vector<std::unique_ptr<World>> worlds;
 
     using entityList = std::vector<entt::entity>;
 
@@ -105,10 +106,13 @@ struct Console : public IModule {
     bool hasRendered = false;
 
     ImTextureID textureId;
+    ComponentEditorCollection<RotatableComponentEditor> componentEditorCollection;
+
+
 
     void CreateEntity() {
 
-        auto& registry = *world.registry.get();
+        auto& registry = *worlds[0]->registry.get();
 
         auto quad = CreateQuad(registry, {entities.size(),0,0});
         entities.push_back(quad);
@@ -117,14 +121,18 @@ struct Console : public IModule {
     }
 
     void Initialize(EngineContext& context) override {
-        context.registryManager->Add("Main", world.registry);
+        worlds.push_back(std::make_unique<World>());
+        context.registryManager->Add("Main", worlds[0]->registry);
         editorRenderer = context.editorRenderer;
         resourceLoader = context.resourceLoader;
+        context.componentDrawer->Install([this](entt::registry& registry, entt::entity entity) {
+            componentEditorCollection.Draw(registry, entity);
+        });
     }
 
     void CreateCamera() {
 
-        auto& registry = *world.registry.get();
+        auto& registry = *worlds[0]->registry.get();
 
         auto cameraObject = registry.create();
         registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -10};
@@ -145,43 +153,37 @@ struct Console : public IModule {
 
         ImGui::Begin("Entity Window");
 
-            if (ImGui::Button("Create camera")) {
-                CreateCamera();
+            if (ImGui::Button("Clear registries")) {
+                worlds.clear();
             }
 
-            if (ImGui::Button("Create entity")) {
-                CreateEntity();
-            }
-
-            entityList entitiesToDelete;
-            int index = 0;
-            for (auto e : entities) {
-
-                ImGui::PushID(index);
-                if (ImGui::Button("Delete")) {
-                    entitiesToDelete.push_back(e);
+            if (worlds.size()>0) {
+                if (ImGui::Button("Create camera")) {
+                    CreateCamera();
                 }
 
+                if (ImGui::Button("Create entity")) {
+                    CreateEntity();
+                }
 
-                /*ImGui::SameLine();
+                entityList entitiesToDelete;
+                int index = 0;
+                for (auto e: entities) {
 
-                ImGui::LabelText("Entity #", std::to_string(index).c_str());
+                    ImGui::PushID(index);
+                    if (ImGui::Button("Delete")) {
+                        entitiesToDelete.push_back(e);
+                    }
 
-                auto pos = world.registry.get<LocalTransform>(e).position;
+                    ImGui::PopID();
 
-                ImGui::SameLine();
-                ImGui::LabelText("Position", std::to_string(pos.x).c_str());
-                 */
-                world.editors.Draw(e);
+                    index++;
+                }
 
-                ImGui::PopID();
-
-                index++;
-            }
-
-            for(auto e : entitiesToDelete) {
-                entities.erase(std::find(entities.begin(), entities.end(), e));
-                world.registry.get()->destroy(e);
+                for (auto e: entitiesToDelete) {
+                    entities.erase(std::find(entities.begin(), entities.end(), e));
+                    worlds[0]->registry.get()->destroy(e);
+                }
             }
         ImGui::End();
 
@@ -192,14 +194,19 @@ struct Console : public IModule {
     }
 
     void Update(float dt) override {
-        world.simulation.Update();
+        if (worlds.size()>0) {
+            worlds[0]->simulation.Update();
+        }
     }
 
     void Render(EditorRenderer* editorRenderer) override {
 
 
         editorRenderer->Render("Test", 1024,1024, [this](Renderer& renderer) {
-            world.simulation.Render(renderer);
+            if (worlds.size() == 0) {
+                return;
+            }
+            worlds[0]->simulation.Render(renderer);
         });
         hasRendered = true;
 

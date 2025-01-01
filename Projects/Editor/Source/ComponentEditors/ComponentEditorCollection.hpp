@@ -12,17 +12,14 @@ template<typename ...T>
 class ComponentEditorCollection {
 public:
 
-    ComponentEditorCollection(entt::registry& registry) : registry(registry) { }
-
-    void Draw(entt::entity entity) {
-        LittleCore::TupleHelper::for_each(editors, [this, entity] (auto& editor) {
+    void Draw(entt::registry& registry, entt::entity entity) {
+        LittleCore::TupleHelper::for_each(editors, [&registry, entity] (auto& editor) {
             editor.TryDraw(registry, entity);
         });
     }
 
 private:
     std::tuple<T...> editors;
-    entt::registry& registry;
 };
 
 template<typename...>

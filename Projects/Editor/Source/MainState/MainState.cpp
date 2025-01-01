@@ -17,6 +17,9 @@ MainState::MainState() :
         projectCompiler(project, *this),
         compilerWindow(projectCompiler),
         hierarchyWindow(registryManager),
+        inspectorWindow(registryManager, [this](entt::registry& registry, entt::entity entity) {
+            componentDrawer.Draw(registry, entity);
+        }),
         textureRenderer(bgfxRenderer),
         editorRenderer([this](const std::string& id, int width, int height, EditorRenderer::Callback callback) {
             textureRenderer.Render(id, width, height, callback);
@@ -53,6 +56,7 @@ void MainState::Initialize() {
 
         compilerWindow.DrawGui();
         hierarchyWindow.DrawGui();
+        inspectorWindow.DrawGui();
 
         for(auto& module : project.moduleManager.GetModules()) {
             module.second->OnGui(engineContext.imGuiContext);
@@ -63,6 +67,7 @@ void MainState::Initialize() {
     engineContext.imGuiContext = ImGui::GetCurrentContext();
     engineContext.editorRenderer = &editorRenderer;
     engineContext.resourceLoader = &resourceLoader;
+    engineContext.componentDrawer = &componentDrawer;
 
     project.LoadProject("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/TestProject/Assets");
 }
@@ -90,4 +95,5 @@ void MainState::HandleEvent(void *event) {
 
 void MainState::CompilationFinished(CompilationResult &result) {
     registryManager.Clear();
+    componentDrawer.Clear();
 }

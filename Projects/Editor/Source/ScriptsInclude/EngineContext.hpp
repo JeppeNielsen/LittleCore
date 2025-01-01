@@ -8,6 +8,7 @@
 #include "EditorRenderer.hpp"
 #include "ResourceLoader.hpp"
 #include "RegistryManager.hpp"
+#include "ComponentDrawer.hpp"
 
 class EngineContext {
 public:
@@ -15,4 +16,5 @@ public:
     RegistryManager* registryManager;
     EditorRenderer* editorRenderer;
     ResourceLoader* resourceLoader;
+    ComponentDrawer* componentDrawer;
 };

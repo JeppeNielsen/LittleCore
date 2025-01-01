@@ -12,9 +12,10 @@ public:
     HierarchyWindow(RegistryManager& registryManager);
 
     void DrawGui();
-    void DrawEntity(entt::registry& registry, entt::entity entity, entt::entity parent);
 
 private:
+    void DrawEntity(entt::registry& registry, entt::entity entity, entt::entity parent);
+
     RegistryManager& registryManager;
     RegistryState* currentState;
 
