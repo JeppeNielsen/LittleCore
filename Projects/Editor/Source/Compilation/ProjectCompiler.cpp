@@ -43,11 +43,11 @@ void ProjectCompiler::Compile() {
         result.errors = errorsFromCompilation;
         errorsFromCompilation.clear();
 
+        handler.CompilationFinished(result);
+
         for(auto& module : project.moduleManager.GetModules()) {
             module.second->Unload();
         }
-
-        handler.CompilationFinished(result);
 
         for(auto& module : project.moduleManager.GetModules()) {
             module.second->Load();
