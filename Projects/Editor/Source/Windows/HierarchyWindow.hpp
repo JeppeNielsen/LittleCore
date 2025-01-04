@@ -19,4 +19,7 @@ private:
     RegistryManager& registryManager;
     RegistryState* currentState;
 
+    std::vector<entt::entity> entitiesToCreate;
+    std::vector<entt::entity> entitiesToDelete;
+
 };
