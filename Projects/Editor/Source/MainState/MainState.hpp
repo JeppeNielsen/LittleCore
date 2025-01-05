@@ -48,6 +48,7 @@ struct MainState : LittleCore::IState, public IProjectCompilerHandler {
     EditorRenderer editorRenderer;
     ResourceLoader resourceLoader;
     ComponentDrawer componentDrawer;
+    ComponentFactory componentFactory;
 
     std::ifstream cin;
     std::ofstream cout;

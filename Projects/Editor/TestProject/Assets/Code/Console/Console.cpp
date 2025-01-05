@@ -16,6 +16,7 @@
 #include "ResourceLoader.hpp"
 #include "ComponentEditor.hpp"
 #include "GuiHelper.hpp"
+#include <cmath>
 
 using namespace LittleCore;
 
@@ -53,6 +54,49 @@ protected:
     }
 };
 
+struct Pulsator {
+    float speed = 0.01f;
+    float minScale = 1.0f;
+    float maxScale = 1.5f;
+    float time = 1;
+};
+
+struct PulsatorSystem {
+
+    entt::registry& registry;
+
+    PulsatorSystem(entt::registry& registry) : registry(registry) {}
+
+    void Update() {
+        for(auto e : registry.view<Pulsator, LocalTransform>()) {
+            Pulsator& pulsator = registry.get<Pulsator>(e);
+            LocalTransform& localTransform = registry.get<LocalTransform>(e);
+
+            pulsator.time += pulsator.speed;
+
+            float t = 0.5f + sinf(pulsator.time) * 0.5f;
+            float scale = pulsator.minScale + (pulsator.maxScale - pulsator.minScale) * t;
+
+            localTransform.scale = vec3(scale, scale, scale);
+
+            registry.patch<LocalTransform>(e);
+        }
+    }
+
+};
+
+class PulsatorComponentEditor : public ComponentEditor<Pulsator> {
+protected:
+    bool Draw(entt::registry& registry, entt::entity entity, Pulsator& component) override {
+        GuiHelper::DrawHeader("Pulsator");
+        ImGui::InputFloat("Speed", &component.speed);
+        ImGui::InputFloat("Time", &component.time);
+        ImGui::InputFloat("Min Scale", &component.minScale);
+        ImGui::InputFloat("Max Scale", &component.maxScale);
+
+        return ImGui::IsItemEdited();
+    }
+};
 
 struct World {
     std::shared_ptr<entt::registry> registry;
@@ -61,7 +105,7 @@ struct World {
 
     }
 
-    LittleCore::CustomSimulation<RotatableSystem> simulation;
+    LittleCore::CustomSimulation<RotatableSystem, PulsatorSystem> simulation;
 
 };
 
@@ -106,9 +150,7 @@ struct Console : public IModule {
     bool hasRendered = false;
 
     ImTextureID textureId;
-    ComponentEditorCollection<RotatableComponentEditor> componentEditorCollection;
-
-
+    ComponentEditorCollection<RotatableComponentEditor, PulsatorComponentEditor> componentEditorCollection;
 
     void CreateEntity() {
 
@@ -127,6 +169,11 @@ struct Console : public IModule {
         resourceLoader = context.resourceLoader;
         context.componentDrawer->Install([this](entt::registry& registry, entt::entity entity) {
             componentEditorCollection.Draw(registry, entity);
+        });
+        context.componentFactory->Install([this](entt::registry& registry, entt::entity entity, const std::string& componentId) {
+            componentEditorCollection.CreateComponent(registry, entity, componentId);
+        }, [this]() {
+            return componentEditorCollection.GetComponentIds();
         });
     }
 

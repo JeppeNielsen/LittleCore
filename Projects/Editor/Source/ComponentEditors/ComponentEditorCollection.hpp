@@ -18,6 +18,33 @@ public:
         });
     }
 
+    std::vector<std::string> GetComponentIds() {
+        std::vector<std::string> ids;
+        LittleCore::TupleHelper::for_each(editors, [&ids] (auto& editor) {
+            ids.push_back(editor.GetId());
+        });
+
+        return ids;
+    }
+
+    void CreateComponent(entt::registry& registry, entt::entity entity, const std::string& componentId) {
+        LittleCore::TupleHelper::for_each(editors, [&registry, entity, &componentId] (auto& editor) {
+            if (componentId == editor.GetId()) {
+                editor.Create(registry, entity);
+            }
+        });
+    }
+
+    bool DoesEntityHaveComponent(entt::registry& registry, entt::entity entity, const std::string& componentId) {
+        bool didHaveComponent = false;
+        LittleCore::TupleHelper::for_each(editors, [&registry, entity, &componentId, &didHaveComponent] (auto& editor) {
+            if (componentId == editor.GetId()) {
+                didHaveComponent = editor.HasComponent(registry, entity);
+            }
+        });
+        return didHaveComponent;
+    }
+
 private:
     std::tuple<T...> editors;
 };

@@ -9,6 +9,7 @@
 #include "ResourceLoader.hpp"
 #include "RegistryManager.hpp"
 #include "ComponentDrawer.hpp"
+#include "ComponentFactory.hpp"
 
 class EngineContext {
 public:
@@ -17,4 +18,5 @@ public:
     EditorRenderer* editorRenderer;
     ResourceLoader* resourceLoader;
     ComponentDrawer* componentDrawer;
+    ComponentFactory* componentFactory;
 };

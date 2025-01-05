@@ -147,26 +147,28 @@ void HierarchyWindow::DrawGui() {
 
     const auto& view = registry.view<Hierarchy>();
 
+    bool isRootExpanded = ImGui::TreeNodeEx("Root", ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding);
 
-
-    if (ImGui::TreeNodeEx("Root", ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding)) {
-
-        if (ImGui::BeginPopupContextItem(("RightClickMenuRoot"))) {
-            if (ImGui::MenuItem("New")) {
-                entitiesToCreate.push_back(entt::null);
-            }
-            ImGui::EndPopup();
+    if (ImGui::BeginPopupContextItem(("RightClickMenuRoot"))) {
+        if (ImGui::MenuItem("New")) {
+            entitiesToCreate.push_back(entt::null);
         }
+        ImGui::EndPopup();
+    }
 
-        if (ImGui::BeginDragDropTarget()) {
-            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_TREE_NODE")) {
-                entt::entity draggedEntity = (*(entt::entity*) payload->Data);
-                Hierarchy& draggedHierarchy = registry.get<Hierarchy>(draggedEntity);
-                draggedHierarchy.parent = entt::null;
-                registry.patch<Hierarchy>(draggedEntity);
-            }
-            ImGui::EndDragDropTarget();
+
+    if (ImGui::BeginDragDropTarget()) {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_TREE_NODE")) {
+            entt::entity draggedEntity = (*(entt::entity*) payload->Data);
+            Hierarchy& draggedHierarchy = registry.get<Hierarchy>(draggedEntity);
+            draggedHierarchy.parent = entt::null;
+            registry.patch<Hierarchy>(draggedEntity);
         }
+        ImGui::EndDragDropTarget();
+    }
+
+
+    if (isRootExpanded) {
 
         for (auto [entity, hierarchy]: view.each()) {
             if (hierarchy.parent == entt::null) {
@@ -177,11 +179,6 @@ void HierarchyWindow::DrawGui() {
         ImGui::TreePop();
     }
 
-
-
-
-
-
     ImGui::End();
 
     for(auto e : entitiesToCreate) {
@@ -189,6 +186,7 @@ void HierarchyWindow::DrawGui() {
         registry.emplace<LocalTransform>(newEntity);
         registry.emplace<WorldTransform>(newEntity);
         registry.emplace<Hierarchy>(newEntity).parent = e;
+        state.selectedEntity = newEntity;
     }
     entitiesToCreate.clear();
 

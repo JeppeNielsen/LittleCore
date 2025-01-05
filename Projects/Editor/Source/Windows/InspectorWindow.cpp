@@ -6,8 +6,9 @@
 #include <imgui.h>
 
 InspectorWindow::InspectorWindow(RegistryManager& registryManager,
-                                 InspectorWindow::DrawCustomFunction drawCustomFunction)
-                                 : registryManager(registryManager), drawCustomFunction(drawCustomFunction) {
+                                 ComponentDrawer& componentDrawer,
+                                 ComponentFactory& componentFactory)
+                                 : registryManager(registryManager), componentDrawer(componentDrawer), componentFactory(componentFactory) {
 
 }
 
@@ -37,7 +38,30 @@ void InspectorWindow::DrawGui() {
     }
 
     defaultComponentEditors.Draw(registry, state.selectedEntity);
-    drawCustomFunction(registry, state.selectedEntity);
+    componentDrawer.Draw(registry, state.selectedEntity);
+
+    auto ids = defaultComponentEditors.GetComponentIds();
+    auto customIds = componentFactory.GetComponentIds();
+    ids.insert(ids.begin(), customIds.begin(), customIds.end());
+
+    if (ImGui::BeginPopupContextWindow("ComponentCreateMenu")) {
+
+        for(auto componentId : ids) {
+            if (defaultComponentEditors.DoesEntityHaveComponent(registry, state.selectedEntity, componentId)) {
+                continue;
+            }
+            std::string id = "Add " + componentId;
+
+            if (ImGui::MenuItem(id.c_str())) {
+                defaultComponentEditors.CreateComponent(registry, state.selectedEntity, componentId);
+                componentFactory.CreateComponent(registry, state.selectedEntity, componentId);
+            }
+        }
+
+        ImGui::EndPopup();
+    }
+
+
 
     ImGui::End();
 }

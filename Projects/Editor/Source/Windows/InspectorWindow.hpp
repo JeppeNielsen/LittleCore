@@ -8,15 +8,18 @@
 #include "../ScriptsInclude/RegistryManager.hpp"
 #include "../ComponentEditors/DefaultComponentEditors.hpp"
 #include <entt/entt.hpp>
+#include "../ScriptsInclude/ComponentDrawer.hpp"
+#include "../ScriptsInclude/ComponentFactory.hpp"
 
 class InspectorWindow {
 public:
-    using DrawCustomFunction = std::function<void(entt::registry&, entt::entity)>;
-
-    InspectorWindow(RegistryManager& registryManager, DrawCustomFunction drawCustomFunction);
+    InspectorWindow(RegistryManager& registryManager,
+                    ComponentDrawer& componentDrawer,
+                    ComponentFactory& componentFactory);
     void DrawGui();
 private:
     RegistryManager& registryManager;
     DefaultComponentEditors defaultComponentEditors;
-    DrawCustomFunction drawCustomFunction;
+    ComponentDrawer& componentDrawer;
+    ComponentFactory& componentFactory;
 };
