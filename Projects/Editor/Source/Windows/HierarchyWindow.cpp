@@ -100,9 +100,7 @@ void HierarchyWindow::DrawEntity(entt::registry& registry, entt::entity entity, 
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_TREE_NODE")) {
             entt::entity draggedEntity = (*(entt::entity*)payload->Data);
             if (IsParentAllowed(registry, draggedEntity, entity)) {
-                Hierarchy& draggedHierarchy = registry.get<Hierarchy>(draggedEntity);
-                draggedHierarchy.parent = entity;
-                registry.patch<Hierarchy>(draggedEntity);
+                reparentedEntities.push_back({draggedEntity, entity});
             }
         }
         ImGui::EndDragDropTarget();
@@ -160,8 +158,7 @@ void HierarchyWindow::DrawGui() {
     if (ImGui::BeginDragDropTarget()) {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_TREE_NODE")) {
             entt::entity draggedEntity = (*(entt::entity*) payload->Data);
-            Hierarchy& draggedHierarchy = registry.get<Hierarchy>(draggedEntity);
-            draggedHierarchy.parent = entt::null;
+            reparentedEntities.push_back({draggedEntity, entt::null});
             registry.patch<Hierarchy>(draggedEntity);
         }
         ImGui::EndDragDropTarget();
@@ -180,6 +177,12 @@ void HierarchyWindow::DrawGui() {
     }
 
     ImGui::End();
+
+    for(auto reparentedEntity : reparentedEntities) {
+        registry.get<Hierarchy>(reparentedEntity.entity).parent = reparentedEntity.newParent;
+        registry.patch<Hierarchy>(reparentedEntity.entity);
+    }
+    reparentedEntities.clear();
 
     for(auto e : entitiesToCreate) {
         auto newEntity = registry.create();

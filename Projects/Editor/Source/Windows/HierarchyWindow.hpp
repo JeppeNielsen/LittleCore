@@ -19,6 +19,12 @@ private:
     RegistryManager& registryManager;
     RegistryState* currentState;
 
+    struct ReparentedEntity {
+        entt::entity entity;
+        entt::entity newParent;
+    };
+
+    std::vector<ReparentedEntity> reparentedEntities;
     std::vector<entt::entity> entitiesToCreate;
     std::vector<entt::entity> entitiesToDelete;
 
