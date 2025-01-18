@@ -36,7 +36,6 @@ void ResourcePathMapper::RefreshFromRootPath(const std::string& rootPath) {
             return;
         }
 
-
         std::string guid;
         if (!metaFileCreator.TryGetMetaGuid(path, guid)) {
             guid = metaFileCreator.CreateMetaFile(path);
@@ -54,6 +53,14 @@ std::string ResourcePathMapper::GetPath(const std::string& guid) const {
 std::string ResourcePathMapper::GetGuid(const std::string& path) const {
     auto it = pathToGuid.find(path);
     return it == pathToGuid.end() ? "" : it->second;
+}
+
+const ResourcePathMapper::PathToGuid& ResourcePathMapper::PathToGuids() const {
+    return pathToGuid;
+}
+
+const ResourcePathMapper::GuidToPath& ResourcePathMapper::GuidToPaths() const {
+    return guidToPath;
 }
 
 

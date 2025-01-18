@@ -9,16 +9,23 @@
 namespace LittleCore {
     class ResourcePathMapper {
     public:
+        using Map = std::unordered_map<std::string, std::string>;
+        using GuidToPath = Map;
+        using PathToGuid = Map;
+
+
         void RefreshFromRootPath(const std::string& rootPath);
 
         std::string GetPath(const std::string& id) const;
         std::string GetGuid(const std::string& path) const;
 
-    private:
-        using Map = std::unordered_map<std::string, std::string>;
+        const PathToGuid& PathToGuids() const;
+        const GuidToPath& GuidToPaths() const;
 
-        Map guidToPath;
-        Map pathToGuid;
+    private:
+
+        GuidToPath guidToPath;
+        PathToGuid pathToGuid;
 
     };
 
