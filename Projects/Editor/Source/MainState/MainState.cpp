@@ -18,6 +18,7 @@ MainState::MainState() :
         compilerWindow(projectCompiler),
         hierarchyWindow(registryManager),
         inspectorWindow(registryManager, componentDrawer, componentFactory),
+        projectWindow(project.resourcePathMapper),
         textureRenderer(bgfxRenderer),
         editorRenderer([this](const std::string& id, int width, int height, EditorRenderer::Callback callback) {
             textureRenderer.Render(id, width, height, callback);
@@ -55,6 +56,7 @@ void MainState::Initialize() {
         compilerWindow.DrawGui();
         hierarchyWindow.DrawGui();
         inspectorWindow.DrawGui();
+        projectWindow.DrawGui();
 
         for(auto& module : project.moduleManager.GetModules()) {
             module.second->OnGui(engineContext.imGuiContext);

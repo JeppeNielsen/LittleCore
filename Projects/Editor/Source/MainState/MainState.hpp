@@ -19,6 +19,7 @@
 #include "../Windows/CompilerWindow.hpp"
 #include "../Windows/HierarchyWindow.hpp"
 #include "../Windows/InspectorWindow.hpp"
+#include "../Windows/ProjectWindow.hpp"
 #include "../Rendering/TextureRenderer.hpp"
 #include "BgfxRenderer.hpp"
 #include "DefaultResourceManager.hpp"
@@ -42,6 +43,7 @@ struct MainState : LittleCore::IState, public IProjectCompilerHandler {
     CompilerWindow compilerWindow;
     HierarchyWindow hierarchyWindow;
     InspectorWindow inspectorWindow;
+    ProjectWindow projectWindow;
 
     LittleCore::BGFXRenderer bgfxRenderer;
     TextureRenderer textureRenderer;
