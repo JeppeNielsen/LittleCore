@@ -28,7 +28,7 @@ class TestRendering : public IState {
     entt::entity cameraEntity;
     ResourceHandle<ShaderResource> shader;
     ResourceHandle<TextureResource> texture;
-    bgfx::UniformHandle colorTexture;
+    ResourceHandle<TextureResource> texture2;
     float time;
     ImGuiController imGuiController;
     SDLInputHandler inputHandler;

@@ -7,19 +7,22 @@
 #include "imgui.h"
 #include "Movable.hpp"
 #include "DefaultSimulation.hpp"
+#include "Texturable.hpp"
 #include <iostream>
 
-entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, entt::entity parent = entt::null) {
+entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, glm::vec3 scale, entt::entity parent = entt::null) {
 
     auto quad = registry.create();
-    registry.emplace<LocalTransform>(quad).position = position;
+    auto& tr = registry.emplace<LocalTransform>(quad);
+    tr.position = position;
+    tr.scale = scale;
     registry.emplace<WorldTransform>(quad);
     registry.emplace<Hierarchy>(quad).parent = parent;
     auto& mesh = registry.emplace<Mesh>(quad);
-    mesh.vertices.push_back({{-1,-1,0}, 0x00FF0000 , {0,0}});
-    mesh.vertices.push_back({{1,-1,0}, 0xff000000 , {0,1} });
-    mesh.vertices.push_back({{1,1,0}, 0xff000000, {1,1}});
-    mesh.vertices.push_back({{-1,1,0}, 0xffFF0000,{1,0}});
+    mesh.vertices.push_back({{-1,-1,0}, 0xFFFFFF , {0,0}});
+    mesh.vertices.push_back({{1,-1,0}, 0xFFFFFF , {0,1} });
+    mesh.vertices.push_back({{1,1,0}, 0xFFFFFF, {1,1}});
+    mesh.vertices.push_back({{-1,1,0}, 0xFFFFFF,{1,0}});
     mesh.triangles.push_back(0);
     mesh.triangles.push_back(1);
     mesh.triangles.push_back(2);
@@ -31,6 +34,7 @@ entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, entt::e
     registry.emplace<Renderable>(quad);
     registry.emplace<LocalBoundingBox>(quad);
     registry.emplace<WorldBoundingBox>(quad);
+    registry.emplace<Texturable>(quad);
 
     return quad;
 }
@@ -112,17 +116,19 @@ void TestRendering::Initialize() {
 
     shader = resources.Create<ShaderResource>("4EBD82BDCBCA4F78B597C8B2DF9A08F7");
     texture = resources.Create<TextureResource>("B62D424BF40F46359248CDE498930422");
+    texture2 = resources.Create<TextureResource>("0C73A4153FCA4854A1CFBB8BCC33E1AC");
 
-    colorTexture  = bgfx::createUniform("colorTexture",  bgfx::UniformType::Sampler);
+   quad1 = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
+   registry.get<Renderable>(quad1).shader = shader;
+   registry.get<Texturable>(quad1).texture = texture;
 
-    quad1 = CreateQuadNew(registry, {0, 0, 0});
-    registry.get<Renderable>(quad1).shader = shader;
-
-    quad2 = CreateQuadNew(registry, {3, 0, 0}, quad1);
+    quad2 = CreateQuadNew(registry, {3, 0, 0}, {1,0.05,1});
     registry.get<Renderable>(quad2).shader = shader;
+    registry.get<Texturable>(quad2).texture = texture2;
 
-    auto quad3 = CreateQuadNew(registry, {0, 2, 0}, quad2);
+    auto quad3 = CreateQuadNew(registry, {3, 2, 0}, {0.05, 1,1});
     registry.get<Renderable>(quad3).shader = shader;
+    registry.get<Texturable>(quad3).texture = texture;
 
 
     auto& quadMovable = registry.emplace<Movable>(quad1);
@@ -165,7 +171,7 @@ void TestRendering::Initialize() {
 }
 
 void TestRendering::Update(float dt) {
-    registry.patch<LocalTransform>(quad2).position = {0, -1 + sinf(time*0.5f) *1, 0};
+   // registry.patch<LocalTransform>(quad2).position = {0, -1 + sinf(time*0.5f) *1, 0};
     //registry.patch<LocalTransform>(quad1).position = {2 + sinf(time)*2,0,0};
 
     time += dt;
@@ -185,7 +191,6 @@ void TestRendering::Render() {
 
     bgfx::touch(0);
 
-    bgfx::setTexture(0, colorTexture, texture->handle);
     simulation.Render(bgfxRenderer);
     bgfx::frame();
 
