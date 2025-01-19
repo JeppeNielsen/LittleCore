@@ -7,15 +7,16 @@
 
 
 #include <ResourcePathMapper.hpp>
+#include "../Project/Project.hpp"
 
 class ProjectWindow {
 public:
 
-    ProjectWindow(LittleCore::ResourcePathMapper& resourcePathMapper);
+    ProjectWindow(Project& project);
 
     void DrawGui();
 
 private:
-    LittleCore::ResourcePathMapper& resourcePathMapper;
+    Project& project;
 
 };

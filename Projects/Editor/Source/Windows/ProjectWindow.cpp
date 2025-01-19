@@ -32,9 +32,10 @@ std::vector<std::string> splitPath(const std::string& path, char delimiter = '/'
 }
 
 // Build the hierarchy tree from the file paths
-void buildTree(Node& root, const std::unordered_map<std::string, std::string>& filePaths) {
-    for (const auto& path : filePaths) {
-        auto components = splitPath(path.first);
+void buildTree(Node& root, const std::unordered_map<std::string, std::string>& filePaths, const std::size_t cutoffPath) {
+    for (const auto& pathKeyValue : filePaths) {
+        std::string path = pathKeyValue.first.substr(cutoffPath);
+        auto components = splitPath(path);
         Node* current = &root;
         for (size_t i = 0; i < components.size(); ++i) {
             const auto& part = components[i];
@@ -43,12 +44,12 @@ void buildTree(Node& root, const std::unordered_map<std::string, std::string>& f
 
                 auto& file = current->children[part];
                 file.name = part;
-                file.path = path.first;
+                file.path = path;
             } else {
                 // Navigate or create the directory node
                 current = &current->children[part];
                 current->name = part;
-                current->path = path.first;
+                current->path = path;
             }
         }
     }
@@ -95,7 +96,7 @@ void traverseTree(const Node& node, const std::string& prefix = "") {
 
 
 
-ProjectWindow::ProjectWindow(LittleCore::ResourcePathMapper& resourcePathMapper) : resourcePathMapper(resourcePathMapper) {
+ProjectWindow::ProjectWindow(Project& project) : project(project) {
 
 }
 
@@ -103,8 +104,8 @@ void ProjectWindow::DrawGui() {
     ImGui::Begin("Project");
 
     Node root;
-    root.name = "Root";
-    buildTree(root, resourcePathMapper.PathToGuids());
+    root.name = "Project";
+    buildTree(root, project.resourcePathMapper.PathToGuids(), project.projectSettings.rootPath.size());
     traverseTree(root);
 
     ImGui::End();
