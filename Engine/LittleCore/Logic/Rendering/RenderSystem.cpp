@@ -6,7 +6,9 @@
 #include "WorldTransform.hpp"
 #include "Mesh.hpp"
 #include "Renderable.hpp"
+#include "Texturable.hpp"
 #include <algorithm>
+#include <iostream>
 
 using namespace LittleCore;
 
@@ -48,29 +50,29 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
     });
 
     bgfx::ProgramHandle currentShaderProgram = BGFX_INVALID_HANDLE;
+    bgfx::TextureHandle currentTexture = BGFX_INVALID_HANDLE;
+    auto colorTextureUniform = uniforms.GetHandle("colorTexture", bgfx::UniformType::Sampler);
 
     for(auto entity : entities) {
         const Renderable& renderable = registry.get<Renderable>(entity);
+        Texturable* texturable = registry.try_get<Texturable>(entity);
 
-        if (renderable.shader && currentShaderProgram.idx != renderable.shader->handle.idx) {
+        renderer->BeginBatch(viewId);
 
-            if (currentShaderProgram.idx != bgfx::kInvalidHandle) {
-                renderer->EndBatch(viewId, currentShaderProgram);
-            }
-
-            currentShaderProgram = renderable.shader->handle;
-            renderer->BeginBatch(viewId);
+        if (texturable) {
+            bgfx::setTexture(0, colorTextureUniform, texturable->texture->handle);
         }
 
         const WorldTransform& worldTransform = registry.get<WorldTransform>(entity);
         const Mesh& mesh = registry.get<Mesh>(entity);
         renderer->RenderMesh(mesh, worldTransform.world);
+        renderer->EndBatch(viewId, renderable.shader->handle);
     }
 
-    if (entities.size()>0) {
-        renderer->EndBatch(viewId, currentShaderProgram);
-    }
+    std::cout << "Num entities rendered : " << entities.size()<<"\n";
+
     renderer->EndRender(viewId);
+
 }
 
 void RenderSystem::Update() {

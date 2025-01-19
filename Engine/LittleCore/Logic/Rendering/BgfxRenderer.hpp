@@ -12,13 +12,19 @@ namespace LittleCore {
         static constexpr size_t maxVertices = 1 << 16;
         static constexpr size_t maxIndices = 1 << 16;
 
-        bgfx::DynamicVertexBufferHandle vertexBuffer;
-        bgfx::DynamicIndexBufferHandle indexBuffer;
-        LittleCore::Vertex vertices[maxVertices];
-        uint16_t indices[maxIndices];
+        bgfx::TransientVertexBuffer vertexBuffer;
+        bgfx::TransientIndexBuffer indexBuffer;
 
         int currentVertex = 0;
         int currentTriangle = 0;
+
+        int startBatchVertex;
+        int startBatchIndex;
+
+        bgfx::VertexLayout vertexLayout;
+
+        Vertex* vertices;
+        uint16_t* indices;
 
     public:
 

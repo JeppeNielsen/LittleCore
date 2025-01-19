@@ -10,15 +10,11 @@
 using namespace LittleCore;
 
 BGFXRenderer::BGFXRenderer() {
-    vertexBuffer = bgfx::createDynamicVertexBuffer(sizeof(vertices),
-                                            LittleCore::Vertex::CreateVertexLayout());
-
-    indexBuffer = bgfx::createDynamicIndexBuffer(sizeof(indices), BGFX_BUFFER_NONE);
+    vertexLayout = LittleCore::Vertex::CreateVertexLayout();
 }
 
 BGFXRenderer::~BGFXRenderer() {
-    bgfx::destroy(indexBuffer);
-    bgfx::destroy(vertexBuffer);
+
 }
 
 void BGFXRenderer::BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection, const Camera& camera) {
@@ -39,6 +35,13 @@ void BGFXRenderer::BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x
     if (camera.clearBackground) {
         bgfx::setViewClear(viewId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, camera.clearColor, 1.0f, 0);
     }
+
+
+    currentVertex = 0;
+    currentTriangle = 0;
+    bgfx::allocTransientBuffers(&vertexBuffer, vertexLayout, maxVertices, &indexBuffer, maxIndices);
+    vertices = (Vertex*)vertexBuffer.data;
+    indices = (uint16*)indexBuffer.data;
 }
 
 void BGFXRenderer::EndRender(bgfx::ViewId viewId) {
@@ -46,11 +49,13 @@ void BGFXRenderer::EndRender(bgfx::ViewId viewId) {
 }
 
 void BGFXRenderer::BeginBatch(bgfx::ViewId viewId) {
-    currentVertex = 0;
-    currentTriangle = 0;
+    startBatchIndex = currentVertex;
+    startBatchIndex = currentTriangle;
 }
 
 void BGFXRenderer::RenderMesh(const Mesh& mesh, const glm::mat4x4& world) {
+
+
 
     int baseTriangleIndex = currentVertex;
     for (int i = 0; i < mesh.vertices.size(); ++i) {
@@ -91,11 +96,8 @@ void BGFXRenderer::EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgr
     //| BGFX_STATE_BLEND_ALPHA
     ;
 
-    bgfx::update(vertexBuffer,0,bgfx::makeRef(vertices, currentVertex * sizeof (Vertex)));
-    bgfx::update(indexBuffer,0,bgfx::makeRef(indices, currentTriangle* sizeof (uint16_t)));
-
-    bgfx::setVertexBuffer(0, vertexBuffer, 0, currentVertex);
-    bgfx::setIndexBuffer(indexBuffer, 0, currentTriangle);
+    bgfx::setVertexBuffer(0, &vertexBuffer, startBatchVertex, currentVertex - startBatchVertex);
+    bgfx::setIndexBuffer(&indexBuffer, startBatchIndex, currentTriangle - startBatchIndex);
 
     // Set render states.
     bgfx::setState(state);
