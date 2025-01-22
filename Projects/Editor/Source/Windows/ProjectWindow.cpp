@@ -11,9 +11,12 @@
 #include <algorithm>
 #include "../Utilities/PathHelper.hpp"
 
+static std::string draggingResourcePath;
+
 struct Node {
     std::string name;
     std::string path;
+    std::string fullPath;
     std::map<std::string, Node> children;
     bool isFile = false; // Mark if this node represents a file
 };
@@ -34,6 +37,7 @@ std::vector<std::string> splitPath(const std::string& path, char delimiter = '/'
 // Build the hierarchy tree from the file paths
 void buildTree(Node& root, const std::unordered_map<std::string, std::string>& filePaths, const std::size_t cutoffPath) {
     for (const auto& pathKeyValue : filePaths) {
+        std::string fullPath = pathKeyValue.first;
         std::string path = pathKeyValue.first.substr(cutoffPath);
         auto components = splitPath(path);
         Node* current = &root;
@@ -45,11 +49,13 @@ void buildTree(Node& root, const std::unordered_map<std::string, std::string>& f
                 auto& file = current->children[part];
                 file.name = part;
                 file.path = path;
+                file.fullPath = fullPath;
             } else {
                 // Navigate or create the directory node
                 current = &current->children[part];
                 current->name = part;
                 current->path = path;
+                current->fullPath = fullPath;
             }
         }
     }
@@ -79,9 +85,16 @@ void traverseTree(const Node& node, const std::string& prefix = "") {
 
     if (ImGui::BeginPopupContextItem(("ProjectRightClickMenu" + node.path).c_str())) {
         if (ImGui::MenuItem("Reveal in File System")) {
-            PathHelper::RevealPath(node.path);
+            PathHelper::RevealPath(node.fullPath);
         }
         ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None | ImGuiDragDropFlags_AcceptBeforeDelivery)) {
+        draggingResourcePath = node.fullPath;
+        ImGui::SetDragDropPayload("ResourcePath", static_cast<const void*>(draggingResourcePath.data()), draggingResourcePath.size()); // Set payload
+        ImGui::Text("Dragging: %s", draggingResourcePath.c_str());
+        ImGui::EndDragDropSource();
     }
 
     if (isUnfolded) {
@@ -102,6 +115,11 @@ ProjectWindow::ProjectWindow(Project& project) : project(project) {
 
 void ProjectWindow::DrawGui() {
     ImGui::Begin("Project");
+
+    if (ImGui::Button("Refresh")) {
+        project.resourcePathMapper.RefreshFromRootPath(project.projectSettings.rootPath);
+    }
+
 
     Node root;
     root.name = "Project";

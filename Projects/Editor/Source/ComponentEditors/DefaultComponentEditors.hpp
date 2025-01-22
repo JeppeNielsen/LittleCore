@@ -7,12 +7,14 @@
 #include "Editors/LocalBoundingBoxEditor.hpp"
 #include "Editors/LocalTransformEditor.hpp"
 #include "Editors/CameraEditor.hpp"
+#include "Editors/TexturableEditor.hpp"
 
 using DefaultComponentEditors =
         ComponentEditorCollection<
                 LocalBoundingBoxEditor,
                 LocalTransformEditor,
-                CameraEditor
+                CameraEditor,
+                TexturableEditor
                 >;
 
 template<typename ...T>

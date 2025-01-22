@@ -78,3 +78,6 @@ void GuiHelper::Draw<Rect>(bool& didChange, const std::string& name, Rect& value
     Draw(didChange, "max", value.max);
 }
 
+void GuiHelper::DrawLabel(const std::string& label) {
+    ImGui::LabelText(label.c_str(), "");
+}

@@ -7,9 +7,14 @@
 
 InspectorWindow::InspectorWindow(RegistryManager& registryManager,
                                  ComponentDrawer& componentDrawer,
-                                 ComponentFactory& componentFactory)
-                                 : registryManager(registryManager), componentDrawer(componentDrawer), componentFactory(componentFactory) {
+                                 ComponentFactory& componentFactory,
+                                 LittleCore::DefaultResourceManager& resourceManager)
+                                 : registryManager(registryManager),
+                                 componentDrawer(componentDrawer),
+                                 componentFactory(componentFactory),
+                                 resourceManager(resourceManager){
 
+    defaultComponentEditors.GetEditor<TexturableEditor>().SetPathMapper(resourceManager);
 }
 
 void InspectorWindow::DrawGui() {

@@ -17,7 +17,7 @@ MainState::MainState() :
         projectCompiler(project, *this),
         compilerWindow(projectCompiler),
         hierarchyWindow(registryManager),
-        inspectorWindow(registryManager, componentDrawer, componentFactory),
+        inspectorWindow(registryManager, componentDrawer, componentFactory, project.defaultResourceManager),
         projectWindow(project),
         textureRenderer(bgfxRenderer),
         editorRenderer([this](const std::string& id, int width, int height, EditorRenderer::Callback callback) {

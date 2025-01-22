@@ -45,6 +45,11 @@ public:
         return didHaveComponent;
     }
 
+    template<typename TEditor>
+    TEditor& GetEditor() {
+        return std::get<TEditor>(editors);
+    }
+
 private:
     std::tuple<T...> editors;
 };

@@ -15,11 +15,13 @@ class InspectorWindow {
 public:
     InspectorWindow(RegistryManager& registryManager,
                     ComponentDrawer& componentDrawer,
-                    ComponentFactory& componentFactory);
+                    ComponentFactory& componentFactory,
+                    LittleCore::DefaultResourceManager& resourceManager);
     void DrawGui();
 private:
     RegistryManager& registryManager;
     DefaultComponentEditors defaultComponentEditors;
     ComponentDrawer& componentDrawer;
     ComponentFactory& componentFactory;
+    LittleCore::DefaultResourceManager& resourceManager;
 };

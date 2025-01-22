@@ -15,4 +15,5 @@ public:
     static void Draw(bool& didChange, const std::string& name, T& value);
 
     static void DrawColor(bool& didChange, const std::string& name, uint32_t& color);
+    static void DrawLabel(const std::string& label);
 };

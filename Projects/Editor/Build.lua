@@ -3,7 +3,7 @@ require "clion"
 location "Build"
 
 workspace "LittleCore"
-   startproject "TestEntt"
+   startproject "LittleEditor"
 
 include "../Libs/Build_sdl.lua"
 include "../Libs/Build_bgfx.lua"
