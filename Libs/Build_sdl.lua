@@ -4,6 +4,7 @@ local SDL_DIR = "../External/sdl"
 project "SDL"
    kind "StaticLib"
    language "C"
+   targetdir "../bin/%{cfg.buildcfg}"
 
    buildoptions { "-x objective-c -fobjc-arc" }
 

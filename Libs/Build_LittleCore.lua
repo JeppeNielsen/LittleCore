@@ -29,6 +29,10 @@ project "LittleCore"
       "../External/stb",
       "../External/sdl/include"
    }
+
+   links {
+      "bgfx"
+   }
   
    filter "configurations:Debug"
       defines { "DEBUG" }

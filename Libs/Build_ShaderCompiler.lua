@@ -20,6 +20,7 @@ local SPIRV_TOOLS    = path.join(BGFX_DIR, "3rdparty/spirv-tools")
 project "spirv-opt"
 	kind "StaticLib"
 	language "C++"
+	targetdir "../bin/%{cfg.buildcfg}"
     cppdialect "C++17"
 
 	includedirs {
@@ -167,6 +168,7 @@ project "spirv-opt"
 project "spirv-cross"
 	kind "StaticLib"
 	language "C++"
+	targetdir "../bin/%{cfg.buildcfg}"
     cppdialect "C++17"
 
 	defines {
@@ -220,6 +222,7 @@ project "spirv-cross"
 project "glslang"
 	kind "StaticLib"
 	language "C++"
+	targetdir "../bin/%{cfg.buildcfg}"
     cppdialect "C++17"
 
 	defines {
@@ -318,6 +321,7 @@ project "glslang"
 
 project "glsl-optimizer"
 	kind "StaticLib"
+	targetdir "../bin/%{cfg.buildcfg}"
 	language "C++"
     cppdialect "C++17"
 
@@ -572,6 +576,7 @@ project "glsl-optimizer"
 project "fcpp"
 	kind "StaticLib"
 	language "C++"
+    targetdir "../bin/%{cfg.buildcfg}"
     cppdialect "C++17"
 
 	defines { -- fcpp
@@ -614,6 +619,7 @@ project "fcpp"
 project "shaderc"
 	kind "StaticLib"
 	language "C++"
+	targetdir "../bin/%{cfg.buildcfg}"
     cppdialect "C++17"
 
 	includedirs {
@@ -682,6 +688,7 @@ project "shaderc"
 project "ShaderCompiler"
    kind "StaticLib"
    language "C++"
+   targetdir "../bin/%{cfg.buildcfg}"
    cppdialect "C++17"
    
    files { 
