@@ -10,5 +10,7 @@ struct ModuleCompilerContext {
     std::vector<std::string> hppFiles;
     std::vector<std::string> cppFiles;
     std::vector<std::string> defines;
+    std::vector<std::string> libPaths;
+    std::vector<std::string> libs;
     std::string outputPath;
 };

@@ -63,23 +63,13 @@ void Project::Reset() {
     moduleSettings.context.defines.push_back("BX_CONFIG_DEBUG=0");
 
     //stb
-
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/stb/");
 
     //files
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Files/");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Files/FileHelper.cpp");
 
     //math
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/BoundingBox.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/BoundingFrustum.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/MeshIntersector.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/Plane.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/Ray.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Math/Rect.cpp");
-
-
 
     //Logic headers
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Hierarchy/");
@@ -91,25 +81,14 @@ void Project::Reset() {
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Transform/");
 
     //Logic classes
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Hierarchy/HierarchySystem.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Input/InputKeyMapper.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Input/InputSystem.cpp");
-
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Movement/MovableSystem.cpp");
-
-    //moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Rendering/BgfxRenderer.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Rendering/Camera.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Rendering/RenderSystem.cpp");
-
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Spatial/MeshBoundingBoxSystem.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Spatial/WorldBoundingBoxSystem.cpp");
-
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Logic/Transform/WorldTransformSystem.cpp");
-
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/ResourceManagement/");
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Tuples/");
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Engine/LittleCore/Utilities/");
+
+    //libs
+    moduleSettings.context.libPaths.push_back("/Users/jeppe/Jeppes/LittleCore/bin/Debug");
+    moduleSettings.context.libs.push_back("LittleCore");
 
     moduleSettings.libraryFolder = "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Cache/";
 }

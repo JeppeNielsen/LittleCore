@@ -34,6 +34,19 @@ ModuleCompilerResult ModuleCompiler::Compile(const ModuleCompilerContext &contex
         }
     }
 
+    if (!context.libPaths.empty()) {
+        clang += " ";
+        for (auto libPath: context.libPaths) {
+            clang += "-L" + libPath + " ";
+        }
+    }
+
+    if (!context.libs.empty()) {
+        clang += " ";
+        for (auto lib: context.libs) {
+            clang += "-l" + lib + " ";
+        }
+    }
 
     clang += "-isysroot `xcrun -sdk macosx --show-sdk-path` ";
     clang += "-std=c++17 -dynamiclib -Wno-return-type-c-linkage -O0 ";
