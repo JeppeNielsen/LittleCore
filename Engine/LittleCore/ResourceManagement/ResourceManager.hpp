@@ -4,6 +4,7 @@
 #pragma once
 #include "TupleHelper.hpp"
 #include "ResourceLoaderManager.hpp"
+#include "ResourceInfo.hpp"
 
 namespace LittleCore {
     template<typename ...T>
@@ -24,6 +25,13 @@ namespace LittleCore {
             return std::get<
                     TupleHelper::index_in_tuple<TResource, Resources>::value
             >(managers).Create(id);
+        }
+
+        template<typename TResource>
+        ResourceInfo GetInfo(const ResourceHandle<TResource>& handle) {
+            return std::get<
+                    TupleHelper::index_in_tuple<TResource, Resources>::value
+            >(managers).GetInfo(handle);
         }
 
         template<typename TLoaderFactory, typename ...TArgs>

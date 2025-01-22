@@ -6,6 +6,7 @@
 #include "ResourceHandle.hpp"
 #include "ResourceLoaderFactory.hpp"
 #include "ResourcePathMapper.hpp"
+#include "ResourceInfo.hpp"
 #include <memory>
 
 namespace LittleCore {
@@ -13,12 +14,26 @@ namespace LittleCore {
     template<typename TLoaderFactory>
     struct ResourceLoaderManager {
         using TResource = typename TLoaderFactory::LoaderType::Type;
-        std::map<std::string, ResourceStorage<TResource>> storages;
+        std::unordered_map<std::string, ResourceStorage<TResource>> storages;
         std::unique_ptr<TLoaderFactory> loaderFactory;
         ResourcePathMapper* pathMapper;
 
         void SetFactory(std::unique_ptr<TLoaderFactory>&& loaderFactory) {
             this->loaderFactory = std::move(loaderFactory);
+        }
+
+        ResourceInfo GetInfo(const ResourceHandle<TResource>& handle) {
+            for(auto& [id, resourceStorage] : storages) {
+                ResourceStorage<TResource>* storage = &resourceStorage;
+                if (storage == handle.storage) {
+                    return {
+                        id,
+                        storage->loader->path,
+                        false
+                    };
+                }
+            }
+            return {"", "",true };
         }
 
         ResourceHandle<TResource> Create(const std::string& id) {
