@@ -60,6 +60,10 @@ namespace {
             void EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram) override {
 
             }
+
+            void SetTexture(const std::string& id, bgfx::TextureHandle texture) override {
+
+            }
         };
 
         TestRenderer testRenderer;
