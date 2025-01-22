@@ -11,7 +11,7 @@
 #include "Renderable.hpp"
 #include "OctreeSystem.hpp"
 #include "Renderer.hpp"
-#include "UniformCollection.hpp"
+#include "Texturable.hpp"
 
 namespace LittleCore {
 
@@ -29,6 +29,5 @@ namespace LittleCore {
     private:
         entt::registry& registry;
         RenderOctreeSystem renderOctreeSystem;
-        UniformCollection uniforms;
     };
 }

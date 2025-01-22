@@ -107,3 +107,8 @@ void BGFXRenderer::EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgr
     numBatches++;
 }
 
+void BGFXRenderer::SetTexture(const std::string& id, bgfx::TextureHandle texture) {
+    auto textureUniform = uniformCollection.GetHandle(id, bgfx::UniformType::Sampler);
+    bgfx::setTexture(0, textureUniform, texture);
+}
+

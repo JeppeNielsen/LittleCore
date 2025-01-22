@@ -51,28 +51,26 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
 
     bgfx::ProgramHandle currentShaderProgram = BGFX_INVALID_HANDLE;
     bgfx::TextureHandle currentTexture = BGFX_INVALID_HANDLE;
-    auto colorTextureUniform = uniforms.GetHandle("colorTexture", bgfx::UniformType::Sampler);
 
     for(auto entity : entities) {
+        renderer->BeginBatch(viewId);
+
         const Renderable& renderable = registry.get<Renderable>(entity);
         Texturable* texturable = registry.try_get<Texturable>(entity);
 
-        renderer->BeginBatch(viewId);
-
         if (texturable) {
-            bgfx::setTexture(0, colorTextureUniform, texturable->texture->handle);
+            renderer->SetTexture("colorTexture", texturable->texture->handle);
         }
 
         const WorldTransform& worldTransform = registry.get<WorldTransform>(entity);
         const Mesh& mesh = registry.get<Mesh>(entity);
         renderer->RenderMesh(mesh, worldTransform.world);
-        renderer->EndBatch(viewId, renderable.shader->handle);
+        if (renderable.shader) {
+            renderer->EndBatch(viewId, renderable.shader->handle);
+        }
     }
 
-    std::cout << "Num entities rendered : " << entities.size()<<"\n";
-
     renderer->EndRender(viewId);
-
 }
 
 void RenderSystem::Update() {

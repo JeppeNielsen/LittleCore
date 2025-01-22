@@ -5,6 +5,7 @@
 #pragma once
 #include "Renderer.hpp"
 #include "Camera.hpp"
+#include "UniformCollection.hpp"
 
 namespace LittleCore {
     class BGFXRenderer : public Renderer {
@@ -25,6 +26,7 @@ namespace LittleCore {
 
         Vertex* vertices;
         uint16_t* indices;
+        UniformCollection uniformCollection;
 
     public:
 
@@ -36,9 +38,12 @@ namespace LittleCore {
         virtual void BeginBatch(bgfx::ViewId viewId) override;
         virtual void RenderMesh(const Mesh& mesh, const glm::mat4x4& world) override;
         virtual void EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram) override;
+        virtual void SetTexture(const std::string& id, bgfx::TextureHandle texture) override;
 
         int numMeshes;
         int numBatches;
+
+
     };
 
 }
