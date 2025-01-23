@@ -21,11 +21,7 @@ void Project::Reset() {
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/");
     moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/GuiHelper.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/Editors/LocalTransformEditor.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/Editors/LocalBoundingBoxEditor.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ComponentEditors/Editors/CameraEditor.cpp");
-
-
+    
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/");
     moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/EditorRenderer.cpp");
     moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Source/ScriptsInclude/ResourceLoader.cpp");
@@ -36,14 +32,6 @@ void Project::Reset() {
 
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/imgui.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/imgui_demo.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/imgui_draw.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/imgui_tables.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/imgui_widgets.cpp");
-
-    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/misc/cpp/");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/misc/cpp/imgui_stdlib.cpp");
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/imgui/misc/cpp/");
 
@@ -54,11 +42,8 @@ void Project::Reset() {
 
     //bgfx
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bgfx/include/");
-    //moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bgfx/src/bgfx.cpp");
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bx/include/");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bx/src/math.cpp");
-    moduleSettings.context.cppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bx/src/bx.cpp");
 
     moduleSettings.context.defines.push_back("BX_CONFIG_DEBUG=0");
 
@@ -89,6 +74,24 @@ void Project::Reset() {
     //libs
     moduleSettings.context.libPaths.push_back("/Users/jeppe/Jeppes/LittleCore/bin/Debug");
     moduleSettings.context.libs.push_back("LittleCore");
+    //moduleSettings.context.libs.push_back("bgfx");
+    moduleSettings.context.libs.push_back("bx");
+    //moduleSettings.context.libs.push_back("bimg");
+    moduleSettings.context.libs.push_back("ImGui");
+
+
+    /*
+     *
+     * "SDL",
+      "bgfx",
+      "bimg",
+      "bx",
+      "LittleCore",
+      "ShaderCompiler",
+      "ImGui"
+     *
+     *
+     */
 
     moduleSettings.libraryFolder = "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Cache/";
 }
