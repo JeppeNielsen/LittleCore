@@ -26,3 +26,6 @@
 [submodule "External/sdl"]
 	path = External/sdl
 	url = https://github.com/libsdl-org/SDL.git
+[submodule "External/json"]
+	path = External/json
+	url = https://github.com/nlohmann/json.git
