@@ -4,7 +4,8 @@
 #include <fstream>
 #include <ComponentSerializer.hpp>
 #include "DefaultSimulation.hpp"
-#include "ComponentSerializerRegistry.hpp"
+#include "EntitySerializer.hpp"
+#include "RegistrySerializer.hpp"
 
 using namespace LittleCore;
 
@@ -12,30 +13,28 @@ using namespace LittleCore;
 // Example components
 struct Position {
     float x, y;
-
-    // Serialization for nlohmann/json
-    friend void to_json(nlohmann::json &j, const Position &p) {
-        j = nlohmann::json{{"x", p.x}, {"y", p.y}};
-    }
-
-    friend void from_json(const nlohmann::json &j, Position &p) {
-        j.at("x").get_to(p.x);
-        j.at("y").get_to(p.y);
-    }
 };
 
 struct Velocity {
     float dx, dy;
+};
 
-    // Serialization for nlohmann/json
-    friend void to_json(nlohmann::json &j, const Velocity &v) {
-        j = nlohmann::json{{"dx", v.dx}, {"dy", v.dy}};
+struct Children {
+    std::vector<entt::entity> children;
+};
+
+struct ChildrenSerializer : public ComponentSerializer<Children> {
+
+    void Serialize(json& json, const Children& component) override {
+        json["children"] = component.children;
     }
 
-    friend void from_json(const nlohmann::json &j, Velocity &v) {
-        j.at("dx").get_to(v.dx);
-        j.at("dy").get_to(v.dy);
+    Children Deserialize(const json &j) override {
+        Children children;
+        children.children = j["children"].get<std::vector<entt::entity>>();
+        return children;
     }
+
 };
 
 
@@ -47,8 +46,9 @@ struct PositionSerializer : public ComponentSerializer<Position> {
 
     Position Deserialize(const json &j) override {
         Position position;
-        j.at("dx").get_to(position.x);
-        j.at("dy").get_to(position.y);
+        j.at("x").get_to(position.x);
+        j.at("y").get_to(position.y);
+        return position;
     }
 
 };
@@ -63,141 +63,59 @@ struct VelocitySerializer : public ComponentSerializer<Velocity> {
         Velocity velocity;
         j.at("dx").get_to(velocity.dx);
         j.at("dy").get_to(velocity.dy);
+        return velocity;
     }
 
 };
 
-using DefaultComponentSerializerRegistry = ComponentSerializerRegistry<PositionSerializer, VelocitySerializer>;
-
-
-// Serialize the entire registry to JSON
-void serialize_registry(const entt::registry &registry, nlohmann::json &output) {
-    output["entities"] = nlohmann::json::array();
-    output["components"] = nlohmann::json::object();
-
-    const auto& storage = registry.storage<entt::entity>();
-    for (auto entity : *storage) {
-        output["entities"].push_back(entity);
-    }
-
-    // Save components by type
-    if (!registry.storage<Position>()->empty()) {
-        nlohmann::json position_data = nlohmann::json::array();
-        for (auto [entity, pos] : registry.view<Position>().each()) {
-            position_data.push_back({{"entity", entity}, {"component", pos}});
-        }
-        output["components"]["Position"] = position_data;
-    }
-
-    if (!registry.storage<Velocity>()->empty()) {
-        nlohmann::json velocity_data = nlohmann::json::array();
-        for (auto [entity, vel] : registry.view<Velocity>().each()) {
-            velocity_data.push_back({{"entity", entity}, {"component", vel}});
-        }
-        output["components"]["Velocity"] = velocity_data;
-    }
-}
-
-// Deserialize the registry from JSON
-void deserialize_registry(entt::registry &registry, const nlohmann::json &input) {
-    registry.clear();
-
-    // Restore entities
-    for (const auto &entity_json : input["entities"]) {
-        registry.create(entity_json);
-    }
-
-    // Restore components
-    if (input["components"].contains("Position")) {
-        for (const auto &entry : input["components"]["Position"]) {
-            auto entity = entry["entity"].get<entt::entity>();
-            auto pos = entry["component"].get<Position>();
-            registry.emplace<Position>(entity, pos);
-        }
-    }
-
-    if (input["components"].contains("Velocity")) {
-        for (const auto &entry : input["components"]["Velocity"]) {
-            auto entity = entry["entity"].get<entt::entity>();
-            auto vel = entry["component"].get<Velocity>();
-            registry.emplace<Velocity>(entity, vel);
-        }
-    }
-}
+using DefaultEntitySerializer = EntitySerializer<PositionSerializer, VelocitySerializer, ChildrenSerializer>;
 
 int main() {
-
-    DefaultComponentSerializerRegistry defaultComponentSerializerRegistry;
-    
-    entt::registry registry;
-    std::ifstream input_file("registry.json");
-    nlohmann::json input_json;
-    input_file >> input_json;
-
-    DefaultSimulation defaultSimulation(registry);
-
-    try {
-        deserialize_registry(registry, input_json);
-        std::cout << "Parsing succes\n";
-    } catch(std::exception& e) {
-        std::cout << "Parsing failed" << e.what() << "\n";
-    }
-
-    // Verify deserialization
-    std::cout << "Deserialized Entities:\n";
-    //registry.each([](auto entity) {
-    //    std::cout << "Entity: " << int(entity) << '\n';
-    //});
-
-    for (auto [entity, pos] : registry.view<Position>().each()) {
-        std::cout << "Position: " << pos.x << ", " << pos.y << '\n';
-    }
-
-    for (auto [entity, vel] : registry.view<Velocity>().each()) {
-        std::cout << "Velocity: " << vel.dx << ", " << vel.dy << '\n';
-    }
-
-}
-
-int main_old() {
     entt::registry registry;
 
     // Create some entities and add components
     auto entity1 = registry.create();
     registry.emplace<Position>(entity1, 10.0f, 20.0f);
-    registry.emplace<Velocity>(entity1, 1.0f, 1.5f);
+    registry.emplace<Velocity>(entity1, 5.0f, 1.5f);
+
 
     auto entity2 = registry.create();
     registry.emplace<Position>(entity2, 30.0f, 40.0f);
 
-    // Serialize the registry to JSON
-    nlohmann::json json_data;
-    serialize_registry(registry, json_data);
+    auto& c = registry.emplace<Children>(entity1);
+            c.children.push_back(entity2);
+            c.children.push_back(entity1);
 
-    // Write JSON to a file
-    std::ofstream file("registry.json");
-    file << json_data.dump(4);
-    file.close();
+    DefaultEntitySerializer defaultEntitySerializer;
 
-    // Print JSON to console
-    std::cout << "Serialized JSON:\n" << json_data.dump(4) << "\n";
+    RegistrySerializer<DefaultEntitySerializer> registrySerializer(defaultEntitySerializer);
+
+    //std::ofstream file("registry.json");
+    //registrySerializer.Serialize(file, registry);
+    //file.close();
 
     // Clear and deserialize the registry from JSON
     std::ifstream input_file("registry.json");
-    nlohmann::json input_json;
-    input_file >> input_json;
 
-    deserialize_registry(registry, input_json);
+    entt::registry newRegistry;
+    registrySerializer.Deserialize(input_file, newRegistry);
 
-    // Verify deserialization
-    std::cout << "Deserialized Entities:\n";
-    //registry.each([](auto entity) {
-    //    std::cout << "Entity: " << int(entity) << '\n';
-    //});
+    //deserialize_registry(registry, input_json);
 
+    std::cout << "Serialized Entities:\n";
     for (auto [entity, pos] : registry.view<Position>().each()) {
         std::cout << "Position: " << pos.x << ", " << pos.y << '\n';
     }
+
+    // Verify deserialization
+    std::cout << "Deserialized Entities:\n";
+    for (auto [entity, pos] : newRegistry.view<Position>().each()) {
+        std::cout << "Position: " << pos.x << ", " << pos.y << '\n';
+    }
+    for (auto [entity, c] : newRegistry.view<Children>().each()) {
+        std::cout << "Children: " << c.children.size() <<"\n";
+    }
+
 
     return 0;
 }
