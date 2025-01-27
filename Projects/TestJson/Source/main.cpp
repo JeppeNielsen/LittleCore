@@ -19,9 +19,35 @@ struct Velocity {
     float dx, dy;
 };
 
+
+
+
 struct Children {
-    std::vector<entt::entity> children;
+
+
+    struct ChildInfo {
+        entt::entity entity;
+        std::string name;
+
+        friend void to_json(nlohmann::json& j, const Children::ChildInfo& p) {
+            j["entity"] = p.entity;
+            j["name"] = p.name;
+        }
+
+        friend void from_json(const nlohmann::json& j, Children::ChildInfo& p) {
+            j.at("entity").get_to(p.entity);
+            j.at("name").get_to(p.name);
+        }
+    };
+
+
+
+    using ChildList = std::vector<ChildInfo>;
+
+    ChildList children;
 };
+
+
 
 struct ChildrenSerializer : public ComponentSerializer<Children> {
 
@@ -31,7 +57,7 @@ struct ChildrenSerializer : public ComponentSerializer<Children> {
 
     Children Deserialize(const json &j) override {
         Children children;
-        children.children = j["children"].get<std::vector<entt::entity>>();
+        children.children = j["children"].get<Children::ChildList>();
         return children;
     }
 
@@ -83,16 +109,16 @@ int main() {
     registry.emplace<Position>(entity2, 30.0f, 40.0f);
 
     auto& c = registry.emplace<Children>(entity1);
-            c.children.push_back(entity2);
-            c.children.push_back(entity1);
+            c.children.push_back({entity2, "Entity2"});
+            c.children.push_back({entity1, "Entity1"});
 
     DefaultEntitySerializer defaultEntitySerializer;
 
     RegistrySerializer<DefaultEntitySerializer> registrySerializer(defaultEntitySerializer);
 
-    //std::ofstream file("registry.json");
-    //registrySerializer.Serialize(file, registry);
-    //file.close();
+    std::ofstream file("registry.json");
+    registrySerializer.Serialize(file, registry);
+    file.close();
 
     // Clear and deserialize the registry from JSON
     std::ifstream input_file("registry.json");

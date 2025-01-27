@@ -4,18 +4,19 @@
 
 
 #pragma once
-#include <nlohmann/json.hpp>
+#include <glaze/json.hpp>
 
 namespace LittleCore {
     template<typename T>
     struct ComponentSerializer {
-        using json = nlohmann::json;
         using ComponentType = T;
 
         virtual ~ComponentSerializer() = default;
 
-        virtual void Serialize(json& json, const T& component) = 0;
-        virtual T Deserialize(const json &j) = 0;
+        void CanSerialize() {}
+
+        virtual bool Serialize(glz::json_t& json, const T& component) = 0;
+        virtual bool Deserialize(const glz::json_t &json, T& component) = 0;
 
     };
 }

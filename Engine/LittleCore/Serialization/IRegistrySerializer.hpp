@@ -13,8 +13,8 @@ namespace LittleCore {
 
         virtual ~IRegistrySerializer() = default;
 
-        virtual void Serialize(std::ostream& stream, const entt::registry& registry) const = 0;
-        virtual void Deserialize(std::istream& stream, entt::registry& registry) const = 0;
+        virtual bool Serialize(std::ostream& stream, const entt::registry& registry) const = 0;
+        virtual bool Deserialize(std::istream& stream, entt::registry& registry) const = 0;
 
     };
 

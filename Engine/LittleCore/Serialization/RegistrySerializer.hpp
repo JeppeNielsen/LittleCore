@@ -4,40 +4,60 @@
 
 #pragma once
 #include "IRegistrySerializer.hpp"
-#include <nlohmann/json.hpp>
 #include "EntitySerializer.hpp"
 
 namespace LittleCore {
 
-    template<typename TComponentSerializerRegistry>
+    template<typename TEntitySerializer>
     struct RegistrySerializer : public IRegistrySerializer {
 
-        RegistrySerializer(TComponentSerializerRegistry& componentSerializerRegistry) :
-        componentSerializerRegistry(componentSerializerRegistry) { }
+        RegistrySerializer(TEntitySerializer& entitySerializer) :
+                entitySerializer(entitySerializer) { }
 
-        void Serialize(std::ostream& stream, const entt::registry& registry) const override {
-            nlohmann::json json;
+        bool Serialize(std::ostream& stream, const entt::registry& registry) const override {
+            glz::json_t json;
 
             const auto& storage = registry.storage<entt::entity>();
-            for (auto entity : *storage) {
-                componentSerializerRegistry.SerializeEntity(json,registry,entity);
+            for (auto entity: *storage) {
+                if (!entitySerializer.SerializeEntity(json, registry, entity)) {
+                    return false;
+                }
             }
 
-            stream << json.dump(4);
+            std::string output;
+            auto error = glz::write_json(json, output);
+            if (!error) {
+                stream << output;
+                return true;
+            }
+            return false;
         }
 
-        void Deserialize(std::istream& stream, entt::registry& registry) const override {
-            nlohmann::json json;
-            stream >> json;
-            for (const auto &[key, value] : json.items()) {
-                auto wantedEntityId = static_cast<entt::entity>(std::stoul(key));
-                auto entity = registry.create(wantedEntityId);
-                componentSerializerRegistry.DeserializeEntity(value,registry,entity);
+        bool Deserialize(std::istream& stream, entt::registry& registry) const override {
+            std::string jsonString;
+            stream >> jsonString;
+            glz::json_t json;
+            auto error = glz::read_json(json, jsonString);
+
+            if (error) {
+                return false;
             }
+
+            auto& obj = json.get_object();
+            for (const auto &[key, value] : obj) {
+                auto entityId = std::stoul(key);
+                auto wantedEntityId = static_cast<entt::entity>(entityId);
+                auto entity = registry.create(wantedEntityId);
+                if (!entitySerializer.DeserializeEntity(value,registry,entity)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
     private:
-        TComponentSerializerRegistry& componentSerializerRegistry;
+        TEntitySerializer& entitySerializer;
     };
 
 }

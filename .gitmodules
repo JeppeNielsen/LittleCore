@@ -29,3 +29,6 @@
 [submodule "External/json"]
 	path = External/json
 	url = https://github.com/nlohmann/json.git
+[submodule "External/glaze"]
+	path = External/glaze
+	url = https://github.com/stephenberry/glaze.git
