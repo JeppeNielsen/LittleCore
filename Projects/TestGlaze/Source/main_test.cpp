@@ -123,7 +123,7 @@ using DefaultEntitySerializer = EntitySerializer<Position, Velocity, TexturableS
 
 using DefaultRegistrySerializer = RegistrySerializer<DefaultEntitySerializer>;
 
-int main() {
+int main_dol() {
 
     entt::registry registry;
 
@@ -134,9 +134,11 @@ int main() {
 
     DefaultEntitySerializer entitySerializer;
     DefaultRegistrySerializer registrySerializer(entitySerializer);
-    if (false){
+    if (true){
         std::ofstream outputFile("registry.json");
-        registrySerializer.Serialize(outputFile, registry);
+        std::stringstream  ss;
+        registrySerializer.Serialize(ss, registry);
+        outputFile<<pretty_print_json(ss.str());
     }
 
     {
