@@ -13,10 +13,10 @@
 
 using namespace LittleCore;
 
-template<typename T, typename S>
+template<typename TComponent, typename TSerializedComponent>
 struct ComponentSerializerBase {
-    using ComponentType = T;
-    using SerializedComponent = S;
+    using Component = TComponent;
+    using SerializedComponent = TSerializedComponent;
     void CanSerialize() { };
 };
 
@@ -25,11 +25,20 @@ concept CustomSerializer = requires(T t) {
     { t.CanSerialize() } -> std::same_as<void>;
 };
 
-template<typename T>
-using SerializedComponent = std::tuple<uint32_t, const T*>;
+
 
 template<typename T>
-using SerializedComponentDirect = std::tuple<uint32_t, T>;
+using SerializedComponentPtr = std::tuple<uint32_t, const T*>;
+
+template<typename T>
+using SerializedComponent = std::tuple<uint32_t, T>;
+
+template<typename T, typename TypeName>
+struct SerializedComponentPtrList {
+    using ComponentType = T;
+    std::string type = LittleCore::TypeUtility::GetClassName<TypeName>();
+    std::vector<SerializedComponentPtr<T>> components;
+};
 
 template<typename T, typename TypeName>
 struct SerializedComponentList {
@@ -38,20 +47,32 @@ struct SerializedComponentList {
     std::vector<SerializedComponent<T>> components;
 };
 
-template<typename T, typename TypeName>
-struct SerializedComponentDirectList {
-    using ComponentType = T;
-    std::string type = LittleCore::TypeUtility::GetClassName<TypeName>();
-    std::vector<SerializedComponentDirect<T>> components;
-};
-
 template<typename ...T>
 struct SerializedRegistry {
 
     template<typename S>
     static constexpr auto Iterate() {
         if constexpr (CustomSerializer<S>) {
-            return std::make_tuple(SerializedComponentDirectList<typename S::SerializedComponent, typename S::ComponentType>());
+            return std::make_tuple(SerializedComponentList<typename S::SerializedComponent, typename S::Component>());
+        } else {
+            return std::make_tuple(SerializedComponentPtrList<S, S>());
+        }
+    }
+
+    static constexpr auto GetComponents() {
+        return std::tuple_cat(Iterate<T>()...);
+    }
+
+    decltype(GetComponents()) components;
+};
+
+template<typename ...T>
+struct DeserializedRegistry {
+
+    template<typename S>
+    static constexpr auto Iterate() {
+        if constexpr (CustomSerializer<S>) {
+            return std::make_tuple(SerializedComponentList<typename S::SerializedComponent, typename S::Component>());
         } else {
             return std::make_tuple(SerializedComponentList<S, S>());
         }
@@ -62,25 +83,6 @@ struct SerializedRegistry {
     }
 
     decltype(GetComponents()) components;
-
-
-};
-
-template<typename T>
-using DeserializedComponent = std::tuple<uint32_t, T>;
-
-template<typename T>
-struct DeserializedComponentList {
-    using ComponentType = T;
-    std::string type = LittleCore::TypeUtility::GetClassName<T>();
-    std::vector<DeserializedComponent<T>> components;
-};
-
-template<typename ...T>
-struct DeserializedRegistry {
-
-    std::tuple<DeserializedComponentList<T>...> components;
-
 };
 
 
@@ -110,7 +112,7 @@ struct SerializedRegistryFactory {
     CustomSerializers customSerializers;
     std::tuple<T*...> typesToSerialize;
 
-    auto Create(const entt::registry& registry) {
+    SerializedRegistry<T...> Create(const entt::registry& registry) {
         SerializedRegistry<T...> serializedRegistry;
 
         LittleCore::TupleHelper::for_each(typesToSerialize, [&] (auto typeToSerializePtr) {
@@ -118,13 +120,13 @@ struct SerializedRegistryFactory {
 
             if constexpr (CustomSerializer<TypeToSerialize>) {
                 using SerializedComponentType = TypeToSerialize::SerializedComponent;
-                using ComponentType = TypeToSerialize::ComponentType;
-                using ComponentList = SerializedComponentDirectList<SerializedComponentType, ComponentType>;
+                using ComponentType = TypeToSerialize::Component;
+                using ComponentList = SerializedComponentList<SerializedComponentType, ComponentType>;
                 ComponentList& componentList = std::get<ComponentList>(serializedRegistry.components);
                 auto& customSerializer = std::get<TypeToSerialize>(customSerializers);
 
                 for(const auto& [entity, component] : registry.view<ComponentType>().each()) {
-                    SerializedComponentDirect<SerializedComponentType> comp;
+                    SerializedComponent<SerializedComponentType> comp;
                     std::get<0>(comp) = (uint32_t)entity;
                     customSerializer.Serialize(component, std::get<1>(comp));
                     componentList.components.emplace_back(comp);
@@ -132,13 +134,13 @@ struct SerializedRegistryFactory {
 
             } else {
 
-                using ComponentList = SerializedComponentList<TypeToSerialize, TypeToSerialize>;
+                using ComponentList = SerializedComponentPtrList<TypeToSerialize, TypeToSerialize>;
 
                 auto& componentList = std::get<ComponentList>(serializedRegistry.components);
 
                 for (const auto& [entity, component]: registry.view<TypeToSerialize>().each()) {
 
-                    SerializedComponent<TypeToSerialize> comp;
+                    SerializedComponentPtr<TypeToSerialize> comp;
                     std::get<0>(comp) = (uint32_t) entity;
                     std::get<1>(comp) = &component;
 
@@ -151,6 +153,9 @@ struct SerializedRegistryFactory {
 
         return serializedRegistry;
     }
+
+    DeserializedRegistry<T...> CreateDeserialized()
+
 
 
 };
