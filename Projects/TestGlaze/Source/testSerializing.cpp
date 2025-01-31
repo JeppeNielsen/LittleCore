@@ -11,28 +11,58 @@
 #include "TupleHelper.hpp"
 #include <entt/entt.hpp>
 
-/*
-template<typename T>
-struct SerializedComponent {
-    const uint32_t e;
-    const T* component;
+using namespace LittleCore;
+
+template<typename T, typename S>
+struct ComponentSerializerBase {
+    using ComponentType = T;
+    using SerializedComponent = S;
+    void CanSerialize() { };
 };
- */
+
+template <typename T>
+concept CustomSerializer = requires(T t) {
+    { t.CanSerialize() } -> std::same_as<void>;
+};
 
 template<typename T>
 using SerializedComponent = std::tuple<uint32_t, const T*>;
 
 template<typename T>
+using SerializedComponentDirect = std::tuple<uint32_t, T>;
+
+template<typename T, typename TypeName>
 struct SerializedComponentList {
     using ComponentType = T;
-    std::string type = LittleCore::TypeUtility::GetClassName<T>();
+    std::string type = LittleCore::TypeUtility::GetClassName<TypeName>();
     std::vector<SerializedComponent<T>> components;
+};
+
+template<typename T, typename TypeName>
+struct SerializedComponentDirectList {
+    using ComponentType = T;
+    std::string type = LittleCore::TypeUtility::GetClassName<TypeName>();
+    std::vector<SerializedComponentDirect<T>> components;
 };
 
 template<typename ...T>
 struct SerializedRegistry {
 
-    std::tuple<SerializedComponentList<T>...> components;
+    template<typename S>
+    static constexpr auto Iterate() {
+        if constexpr (CustomSerializer<S>) {
+            return std::make_tuple(SerializedComponentDirectList<typename S::SerializedComponent, typename S::ComponentType>());
+        } else {
+            return std::make_tuple(SerializedComponentList<S, S>());
+        }
+    }
+
+    static constexpr auto GetComponents() {
+        return std::tuple_cat(Iterate<T>()...);
+    }
+
+    decltype(GetComponents()) components;
+
 
 };
 
@@ -54,24 +84,68 @@ struct DeserializedRegistry {
 };
 
 
-template<typename T>
+
+
+template<typename ...T>
+struct ComponentList;
+
+template<typename ...T>
 struct SerializedRegistryFactory {
 
+    template<typename S>
+    static auto FindCustomSerializers() {
+        if constexpr (CustomSerializer<S>) {
+            return std::tuple<S>();
+        } else {
+            return std::tuple<>();
+        }
+    }
 
-    T Create(const entt::registry& registry) {
-        T serializedRegistry;
+    static constexpr auto GetAllCustomSerializers() {
+        return std::tuple_cat(FindCustomSerializers<T>()...);
+    }
 
-        LittleCore::TupleHelper::for_each(serializedRegistry.components, [&] (auto& componentList) {
-            using ComponentListType = typename std::remove_reference_t<decltype(componentList)>;
-            using ComponentType = ComponentListType::ComponentType;
-            for(const auto& [entity, component] : registry.view<ComponentType>().each()) {
-                SerializedComponent<ComponentType> comp;
-                std::get<0>(comp) = (uint32_t)entity;
-                std::get<1>(comp) = &component;
+    using CustomSerializers = decltype(GetAllCustomSerializers());
 
-                componentList.components.push_back(comp);
+    CustomSerializers customSerializers;
+    std::tuple<T*...> typesToSerialize;
+
+    auto Create(const entt::registry& registry) {
+        SerializedRegistry<T...> serializedRegistry;
+
+        LittleCore::TupleHelper::for_each(typesToSerialize, [&] (auto typeToSerializePtr) {
+            using TypeToSerialize = typename std::remove_pointer_t<decltype(typeToSerializePtr)>;
+
+            if constexpr (CustomSerializer<TypeToSerialize>) {
+                using SerializedComponentType = TypeToSerialize::SerializedComponent;
+                using ComponentType = TypeToSerialize::ComponentType;
+                using ComponentList = SerializedComponentDirectList<SerializedComponentType, ComponentType>;
+                ComponentList& componentList = std::get<ComponentList>(serializedRegistry.components);
+                auto& customSerializer = std::get<TypeToSerialize>(customSerializers);
+
+                for(const auto& [entity, component] : registry.view<ComponentType>().each()) {
+                    SerializedComponentDirect<SerializedComponentType> comp;
+                    std::get<0>(comp) = (uint32_t)entity;
+                    customSerializer.Serialize(component, std::get<1>(comp));
+                    componentList.components.emplace_back(comp);
+                }
+
+            } else {
+
+                using ComponentList = SerializedComponentList<TypeToSerialize, TypeToSerialize>;
+
+                auto& componentList = std::get<ComponentList>(serializedRegistry.components);
+
+                for (const auto& [entity, component]: registry.view<TypeToSerialize>().each()) {
+
+                    SerializedComponent<TypeToSerialize> comp;
+                    std::get<0>(comp) = (uint32_t) entity;
+                    std::get<1>(comp) = &component;
+
+                    componentList.components.emplace_back(comp);
+                }
+
             }
-
         });
 
 
@@ -80,6 +154,8 @@ struct SerializedRegistryFactory {
 
 
 };
+
+
 
 struct Renderable {
     int shaderId;
@@ -95,12 +171,40 @@ struct Velocity {
     float vy;
 };
 
-using DefaultSerializedRegistry = SerializedRegistry<Renderable, Transform, Velocity>;
+struct Texturable {
+    int textureId;
+};
 
-using DefaultDeserializedRegistry = DeserializedRegistry<Renderable, Transform, Velocity>;
+struct SerializableTexturable {
+    std::string path;
+};
 
-using DefaultSerializedRegistryFactory = SerializedRegistryFactory<DefaultSerializedRegistry>;
+struct TexturableSerializer : ComponentSerializerBase<Texturable, SerializableTexturable> {
 
+    void Serialize(const Texturable& texturable, SerializableTexturable& serializableTexturable) {
+        if (texturable.textureId == 5) {
+            serializableTexturable.path = "Image.png";
+        } else {
+            serializableTexturable.path = "Ship.png";
+        }
+    }
+
+    void Deserialize(const SerializableTexturable& serializableComponent, Texturable& texturable) {
+        if (serializableComponent.path == "Image.png") {
+            texturable.textureId = 5;
+        } else {
+            texturable.textureId = 0;
+        }
+    }
+
+
+};
+
+//using DefaultDeserializedRegistry = DeserializedRegistry<Renderable, Transform, Velocity>;
+
+using DefaultSerializedRegistryFactory = SerializedRegistryFactory<Renderable, Transform, TexturableSerializer>;
+
+using Objects = std::tuple<Renderable, Transform>;
 
 int main() {
 
@@ -108,19 +212,21 @@ int main() {
     auto entity = registry.create();
     registry.emplace<Renderable>(entity);
     registry.emplace<Transform>(entity);
+    registry.emplace<Texturable>(entity);
 
     auto entity2 = registry.create();
     registry.emplace<Renderable>(entity2);
+    registry.emplace<Texturable>(entity2).textureId = 5;
 
     DefaultSerializedRegistryFactory factory;
 
     auto serialized = factory.Create(registry);
 
-
     std::string jsonBuffer;
     glz::write<glz::opts{.prettify = true}>(serialized, jsonBuffer);
 
     std::cout << jsonBuffer << "\n";
+/*
 
     DefaultDeserializedRegistry deserialized;
 
@@ -134,5 +240,7 @@ int main() {
     std::string pretty_json;
     glz::write<glz::opts{.prettify = true}>(deserialized, pretty_json);
     std::cout << pretty_json << "\n";
+
+    */
     return 0;
 }
