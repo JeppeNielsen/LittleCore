@@ -115,6 +115,75 @@ struct RegistrySerializer {
     CustomSerializers customSerializers;
     std::tuple<T*...> typesToSerialize;
 
+    struct IDeserializer {
+        virtual ~IDeserializer() = default;
+        virtual void Deserialize(const std::vector<glz::json_t>& components, entt::registry& registry) = 0;
+    };
+
+    template<typename TComponent>
+    struct Deserializer : public IDeserializer {
+        void Deserialize(const std::vector<glz::json_t>& components, entt::registry& registry) {
+
+            for (const auto& component: components) {
+                auto componentElement = component.get_array();
+                entt::entity entityId = (entt::entity)componentElement[0].as<int>();
+                auto componentJson = componentElement[1];
+                if (!registry.valid(entityId)) {
+                    entityId = registry.create(entityId);
+                }
+
+                TComponent& componentData = registry.emplace<TComponent>(entityId);
+                glz::read_json(componentData, componentJson);
+            }
+        }
+    };
+
+    template<typename TCustomSerializer>
+    struct CustomDeserializer : public IDeserializer {
+        TCustomSerializer& customSerializer;
+
+        CustomDeserializer(TCustomSerializer& customSerializer) : customSerializer(customSerializer){
+
+        }
+
+        void Deserialize(const std::vector<glz::json_t>& components, entt::registry& registry) {
+            using TComponent = TCustomSerializer::Component;
+            using TSerializedComponent = TCustomSerializer::SerializedComponent;
+
+            for (const auto& component: components) {
+                auto componentElement = component.get_array();
+                entt::entity entityId = (entt::entity)componentElement[0].as<int>();
+                auto componentJson = componentElement[1];
+                if (!registry.valid(entityId)) {
+                    entityId = registry.create(entityId);
+                }
+                TSerializedComponent serializedComponent;
+                glz::read_json(serializedComponent, componentJson);
+
+                TComponent& componentData = registry.emplace<TComponent>(entityId);
+
+                customSerializer.Deserialize(serializedComponent, componentData);
+            }
+
+        }
+    };
+
+    std::unordered_map<std::string, std::unique_ptr<IDeserializer>> deserializers;
+
+    RegistrySerializer() {
+        LittleCore::TupleHelper::for_each(typesToSerialize, [&] (auto typeToSerializePtr) {
+            using ComponentType = typename std::remove_pointer_t<decltype(typeToSerializePtr)>;
+
+            if constexpr (CustomSerializer<ComponentType>) {
+                std::string typeName = TypeUtility::GetClassName<typename ComponentType::Component>();
+                deserializers[typeName] = std::make_unique<CustomDeserializer<ComponentType>>(std::get<ComponentType>(customSerializers));
+            } else {
+                std::string typeName = TypeUtility::GetClassName<ComponentType>();
+                deserializers[typeName] = std::make_unique<Deserializer<ComponentType>>();
+            }
+        });
+    }
+
     bool Serialize(const entt::registry& registry, std::ostream& stream) {
         SerializedRegistry<T...> serializedRegistry;
 
@@ -200,9 +269,6 @@ struct RegistrySerializer {
 
         });
 
-
-
-
         return true;
     }
 
@@ -221,72 +287,29 @@ struct RegistrySerializer {
             return false;
         }
 
-        auto& componentTypes = obj["components"];
+        const auto& componentTypes = obj["components"].get_array();
 
-        for (const auto& componentType: componentTypes.get_array()) {
+        for(const auto& componentType : componentTypes) {
+            if (!componentType.contains("type")) {
+                continue;
+            }
 
-            std::string componentTypeName = componentType["type"].get<std::string>();
+            const auto& componentTypeId = componentType["type"].get_string();
 
-            std::cout << "componentTypeName: " << componentTypeName << "\n";
+            const auto& deserializer = deserializers.find(componentTypeId);
 
-            LittleCore::TupleHelper::for_each(typesToSerialize, [&] (auto typeToSerializePtr) {
-                using TypeToDeserialize = typename std::remove_pointer_t<decltype(typeToSerializePtr)>;
-                std::string typeName = TypeUtility::GetClassName<TypeToDeserialize>();
+            if (deserializer == deserializers.end()) {
+                continue;
+            }
 
+            if (!componentType.contains("components")) {
+                return false;
+            }
 
-                if constexpr (CustomSerializer<TypeToDeserialize>) {
-                    return;
-                }
+            const auto& componentElements = componentType["components"].get_array();
 
-                if (typeName != componentTypeName) {
-                    return;
-                }
-
-                auto& components = componentType["components"].get_array();
-
-                std::cout << "componentTypeName: num " << components.size() << "\n";
-
-
-                for (const auto& component: components) {
-
-
-                   auto componentElement = component.get_array();
-                   auto entityId = componentElement[0].as<int>();
-                   auto componentJson = componentElement[1];
-
-                    //std::string componentJsonString;
-                    //glz::write<glz::opts{}>(componentJson, componentJsonString);
-
-                    TypeToDeserialize componentData;
-                    glz::read_json(componentData, componentJson);
-
-                    //std::cout<< "componentJsonString: " << componentJsonString << "\n";
-
-                    std::cout << "x: "<< componentData.x << "\n";
-
-                }
-
-
-
-            });
-
-
-
-
-
+            deserializer->second->Deserialize(componentElements, registry);
         }
-
-
-
-        //auto entityId = std::stoul(key);
-        //auto wantedEntityId = static_cast<entt::entity>(entityId);
-        //auto entity = registry.create(wantedEntityId);
-        //if (!entitySerializer.DeserializeEntity(value,registry,entity)) {
-        //    return false;
-        //}
-
-
-
 
         return true;
     }
@@ -340,7 +363,7 @@ struct TexturableSerializer : ComponentSerializerBase<Texturable, SerializableTe
 
 //using DefaultDeserializedRegistry = DeserializedRegistry<Renderable, Transform, Velocity>;
 
-using DefaultRegistrySerializer = RegistrySerializer<Transform>;
+using DefaultRegistrySerializer = RegistrySerializer<Renderable, Transform, TexturableSerializer>;
 
 using Objects = std::tuple<Renderable, Transform>;
 
@@ -367,6 +390,20 @@ int main() {
     std::ifstream inputFile("registry.json");
     entt::registry deserializedRegistry;
     serializer.Deserialize(inputFile, deserializedRegistry);
+
+
+    std::cout << "Deserialized Entities:\n";
+    for (auto [entity, renderable] : deserializedRegistry.view<Renderable>().each()) {
+        std::cout << "Renderable: shaderId = " << renderable.shaderId << "\n";
+    }
+    for (auto [entity, t] : deserializedRegistry.view<Transform>().each()) {
+        std::cout << "Transform: x: " <<t.x << ", y:"<<t.y << "\n";
+    }
+
+    for (auto [entity, t] : deserializedRegistry.view<Texturable>().each()) {
+        std::cout << "Transform: textureId: " <<t.textureId << "\n";
+    }
+
 
 /*
 
