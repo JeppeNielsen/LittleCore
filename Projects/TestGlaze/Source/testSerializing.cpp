@@ -10,6 +10,9 @@
 #include <TypeUtility.hpp>
 #include "TupleHelper.hpp"
 #include <entt/entt.hpp>
+#include <ostream>
+#include <fstream>
+#include <sstream>
 
 using namespace LittleCore;
 
@@ -92,7 +95,7 @@ template<typename ...T>
 struct ComponentList;
 
 template<typename ...T>
-struct SerializedRegistryFactory {
+struct RegistrySerializer {
 
     template<typename S>
     static auto FindCustomSerializers() {
@@ -112,7 +115,7 @@ struct SerializedRegistryFactory {
     CustomSerializers customSerializers;
     std::tuple<T*...> typesToSerialize;
 
-    SerializedRegistry<T...> Create(const entt::registry& registry) {
+    bool Serialize(const entt::registry& registry, std::ostream& stream) {
         SerializedRegistry<T...> serializedRegistry;
 
         LittleCore::TupleHelper::for_each(typesToSerialize, [&] (auto typeToSerializePtr) {
@@ -150,13 +153,143 @@ struct SerializedRegistryFactory {
             }
         });
 
+        //glz::write<glz::opts{.prettify = true}>(serializedRegistry, [&](std::string_view sv) { stream << sv; });
 
-        return serializedRegistry;
+        std::string buffer;
+        auto error = glz::write<glz::opts{.prettify = true}>(serializedRegistry, buffer);
+
+        if (error) {
+            return false;
+        }
+        stream<<buffer;
+
+        return true;
     }
 
-    DeserializedRegistry<T...> CreateDeserialized()
+    bool Deserialize_old(entt::registry& registry, const std::istream& stream) {
+        DeserializedRegistry<T...> deserializedRegistry;
+
+        std::stringstream buffer;
+        buffer << stream.rdbuf();
+
+        std::cout << buffer.str()<<"\n";
+
+        auto error = glz::read_json(deserializedRegistry, buffer.str());
+
+        if (error) {
+            return false;
+        }
+
+        std::unordered_set<entt::entity> createdEntities;
+
+        LittleCore::TupleHelper::for_each(typesToSerialize, [&] (auto typeToSerializePtr) {
+            using TypeToSerialize = typename std::remove_pointer_t<decltype(typeToSerializePtr)>;
+
+            if constexpr (CustomSerializer<TypeToSerialize>) {
 
 
+            } else {
+                using ComponentList = SerializedComponentList<TypeToSerialize, TypeToSerialize>;
+                auto& componentList = std::get<ComponentList>(deserializedRegistry.components);
+
+                for(auto& item : componentList.components) {
+                    std::cout <<"name: "<<componentList.type<< "id: " << std::get<0>(item) << "\n";
+                }
+
+            }
+
+        });
+
+
+
+
+        return true;
+    }
+
+    bool Deserialize(const std::istream& stream, entt::registry& registry) {
+        std::stringstream buffer;
+        buffer << stream.rdbuf();
+        glz::json_t json;
+        auto error = glz::read_json(json, buffer.str());
+
+        if (error) {
+            return false;
+        }
+
+        auto& obj = json.get_object();
+        if (!obj.contains("components")) {
+            return false;
+        }
+
+        auto& componentTypes = obj["components"];
+
+        for (const auto& componentType: componentTypes.get_array()) {
+
+            std::string componentTypeName = componentType["type"].get<std::string>();
+
+            std::cout << "componentTypeName: " << componentTypeName << "\n";
+
+            LittleCore::TupleHelper::for_each(typesToSerialize, [&] (auto typeToSerializePtr) {
+                using TypeToDeserialize = typename std::remove_pointer_t<decltype(typeToSerializePtr)>;
+                std::string typeName = TypeUtility::GetClassName<TypeToDeserialize>();
+
+
+                if constexpr (CustomSerializer<TypeToDeserialize>) {
+                    return;
+                }
+
+                if (typeName != componentTypeName) {
+                    return;
+                }
+
+                auto& components = componentType["components"].get_array();
+
+                std::cout << "componentTypeName: num " << components.size() << "\n";
+
+
+                for (const auto& component: components) {
+
+
+                   auto componentElement = component.get_array();
+                   auto entityId = componentElement[0].as<int>();
+                   auto componentJson = componentElement[1];
+
+                    //std::string componentJsonString;
+                    //glz::write<glz::opts{}>(componentJson, componentJsonString);
+
+                    TypeToDeserialize componentData;
+                    glz::read_json(componentData, componentJson);
+
+                    //std::cout<< "componentJsonString: " << componentJsonString << "\n";
+
+                    std::cout << "x: "<< componentData.x << "\n";
+
+                }
+
+
+
+            });
+
+
+
+
+
+        }
+
+
+
+        //auto entityId = std::stoul(key);
+        //auto wantedEntityId = static_cast<entt::entity>(entityId);
+        //auto entity = registry.create(wantedEntityId);
+        //if (!entitySerializer.DeserializeEntity(value,registry,entity)) {
+        //    return false;
+        //}
+
+
+
+
+        return true;
+    }
 
 };
 
@@ -207,7 +340,7 @@ struct TexturableSerializer : ComponentSerializerBase<Texturable, SerializableTe
 
 //using DefaultDeserializedRegistry = DeserializedRegistry<Renderable, Transform, Velocity>;
 
-using DefaultSerializedRegistryFactory = SerializedRegistryFactory<Renderable, Transform, TexturableSerializer>;
+using DefaultRegistrySerializer = RegistrySerializer<Transform>;
 
 using Objects = std::tuple<Renderable, Transform>;
 
@@ -223,14 +356,18 @@ int main() {
     registry.emplace<Renderable>(entity2);
     registry.emplace<Texturable>(entity2).textureId = 5;
 
-    DefaultSerializedRegistryFactory factory;
+    DefaultRegistrySerializer serializer;
 
-    auto serialized = factory.Create(registry);
+    //std::stringstream buffer;
+    //serializer.Serialize(registry, buffer);
 
-    std::string jsonBuffer;
-    glz::write<glz::opts{.prettify = true}>(serialized, jsonBuffer);
+    //std::ofstream file("registry.json");
+    //file<<buffer.str();
 
-    std::cout << jsonBuffer << "\n";
+    std::ifstream inputFile("registry.json");
+    entt::registry deserializedRegistry;
+    serializer.Deserialize(inputFile, deserializedRegistry);
+
 /*
 
     DefaultDeserializedRegistry deserialized;
