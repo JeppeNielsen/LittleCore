@@ -132,6 +132,7 @@ entt::entity CreateQuad(entt::registry& registry, glm::vec3 position, entt::enti
     registry.emplace<LocalBoundingBox>(quad);
     registry.emplace<WorldBoundingBox>(quad);
     registry.emplace<Rotatable>(quad).speed = 0.1f;
+    registry.emplace<Texturable>(quad);
 
     return quad;
 }
@@ -160,6 +161,7 @@ struct Console : public IModule {
         entities.push_back(quad);
 
         registry.get<Renderable>(quad).shader = resourceLoader->LoadShader("65886F92DEC94836A9E2FEA6C3483543");
+        registry.get<Texturable>(quad).texture = resourceLoader->LoadTexture("4BC3DABE71914C1782E4333052810803");
     }
 
     void Initialize(EngineContext& context) override {
