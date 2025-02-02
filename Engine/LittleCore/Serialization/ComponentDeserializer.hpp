@@ -9,7 +9,7 @@ namespace LittleCore {
 
     template<typename TComponent>
     struct ComponentDeserializer : public IComponentDeserializer {
-        void Deserialize(const std::vector<glz::json_t>& components, entt::registry& registry) {
+        glz::error_ctx Deserialize(const std::vector<glz::json_t>& components, entt::registry& registry) {
 
             for (const auto& component: components) {
                 auto componentElement = component.get_array();
@@ -20,8 +20,12 @@ namespace LittleCore {
                 }
 
                 TComponent& componentData = registry.emplace<TComponent>(entityId);
-                glz::read_json(componentData, componentJson);
+                auto error = glz::read_json(componentData, componentJson);
+                if (error) {
+                    return error;
+                }
             }
+            return {};
         }
     };
 

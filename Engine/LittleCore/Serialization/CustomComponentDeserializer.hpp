@@ -14,7 +14,7 @@ namespace LittleCore {
         CustomComponentDeserializer(TCustomSerializer& customSerializer)
         : customSerializer(customSerializer) { }
 
-        void Deserialize(const std::vector<glz::json_t>& components, entt::registry& registry) {
+        glz::error_ctx Deserialize(const std::vector<glz::json_t>& components, entt::registry& registry) {
             using TComponent = TCustomSerializer::Component;
             using TSerializedComponent = TCustomSerializer::SerializedComponent;
 
@@ -26,12 +26,17 @@ namespace LittleCore {
                     entityId = registry.create(entityId);
                 }
                 TSerializedComponent serializedComponent;
-                glz::read_json(serializedComponent, componentJson);
+                auto error = glz::read_json(serializedComponent, componentJson);
+
+                if (error) {
+                    return error;
+                }
 
                 TComponent& componentData = registry.emplace<TComponent>(entityId);
-
                 customSerializer.Deserialize(serializedComponent, componentData);
             }
+
+            return {};
         }
     };
 

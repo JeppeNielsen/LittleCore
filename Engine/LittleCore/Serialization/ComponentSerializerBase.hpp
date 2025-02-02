@@ -6,17 +6,17 @@
 #include <tuple>
 
 namespace LittleCore {
-
-    template <typename T>
-    concept CustomSerializer = requires(T t) {
-        { t.CanSerialize() } -> std::same_as<void>;
+    struct IComponentSerializerBase {
+        ~IComponentSerializerBase() = default;
     };
 
     template<typename TComponent, typename TSerializedComponent>
-    struct ComponentSerializerBase {
+    struct ComponentSerializerBase : public IComponentSerializerBase {
+        ~ComponentSerializerBase() = default;
         using Component = TComponent;
         using SerializedComponent = TSerializedComponent;
-
-        void CanSerialize() {};
     };
+
+    template <typename T>
+    concept CustomSerializerPredicate = std::derived_from<T, IComponentSerializerBase>;
 }

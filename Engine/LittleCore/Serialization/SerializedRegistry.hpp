@@ -35,7 +35,7 @@ namespace LittleCore {
 
         template<typename S>
         static constexpr auto Iterate() {
-            if constexpr (CustomSerializer < S >) {
+            if constexpr (CustomSerializerPredicate < S >) {
                 return std::make_tuple(
                         SerializedComponentList<typename S::SerializedComponent, typename S::Component>());
             } else {

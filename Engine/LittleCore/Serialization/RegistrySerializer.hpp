@@ -18,7 +18,7 @@ namespace LittleCore {
 
         template<typename S>
         static auto FindCustomSerializers() {
-            if constexpr (CustomSerializer<S>) {
+            if constexpr (CustomSerializerPredicate<S>) {
                 return std::tuple<S>();
             } else {
                 return std::tuple<>();
@@ -40,7 +40,7 @@ namespace LittleCore {
             LittleCore::TupleHelper::for_each(typesToSerialize, [&] (auto typeToSerializePtr) {
                 using ComponentType = typename std::remove_pointer_t<decltype(typeToSerializePtr)>;
 
-                if constexpr (CustomSerializer<ComponentType>) {
+                if constexpr (CustomSerializerPredicate<ComponentType>) {
                     std::string typeName = TypeUtility::GetClassName<typename ComponentType::Component>();
                     deserializers[typeName] = std::make_unique<CustomComponentDeserializer<ComponentType>>(std::get<ComponentType>(customSerializers));
                 } else {
@@ -56,7 +56,7 @@ namespace LittleCore {
             LittleCore::TupleHelper::for_each(typesToSerialize, [&] (auto typeToSerializePtr) {
                 using TypeToSerialize = typename std::remove_pointer_t<decltype(typeToSerializePtr)>;
 
-                if constexpr (CustomSerializer<TypeToSerialize>) {
+                if constexpr (CustomSerializerPredicate<TypeToSerialize>) {
                     using SerializedComponentType = TypeToSerialize::SerializedComponent;
                     using ComponentType = TypeToSerialize::Component;
                     using ComponentList = SerializedComponentList<SerializedComponentType, ComponentType>;
@@ -98,19 +98,19 @@ namespace LittleCore {
             return true;
         }
 
-        bool Deserialize(const std::istream& stream, entt::registry& registry) {
+        glz::error_ctx Deserialize(const std::istream& stream, entt::registry& registry, std::string& jsonString) {
             std::stringstream buffer;
             buffer << stream.rdbuf();
             glz::json_t json;
             auto error = glz::read_json(json, buffer.str());
 
             if (error) {
-                return false;
+                return error;
             }
 
             auto& obj = json.get_object();
             if (!obj.contains("components")) {
-                return false;
+                return glz::error_ctx(glz::error_code::missing_key, "Missing components key");
             }
 
             const auto& componentTypes = obj["components"].get_array();
@@ -129,15 +129,18 @@ namespace LittleCore {
                 }
 
                 if (!componentType.contains("components")) {
-                    return false;
+                    return glz::error_ctx(glz::error_code::missing_key, componentTypeId + ": Missing components key");
                 }
 
                 const auto& componentElements = componentType["components"].get_array();
 
-                deserializer->second->Deserialize(componentElements, registry);
+                auto error = deserializer->second->Deserialize(componentElements, registry);
+                if (error) {
+                    return error;
+                }
             }
 
-            return true;
+            return {};
         }
     };
 
