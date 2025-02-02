@@ -44,11 +44,11 @@ void Fiber::Promise::return_void() noexcept {
     }
 }
 
-std::experimental::suspend_always Fiber::Promise::yield_value(int val) {
+std::suspend_always Fiber::Promise::yield_value(int val) {
     return {};
 }
 
-std::experimental::suspend_always Fiber::Promise::yield_value(Fiber fiber) {
+std::suspend_always Fiber::Promise::yield_value(Fiber fiber) {
     fiber.promise->parent = this;
 
     auto root = FindRoot(fiber.promise);
@@ -57,11 +57,11 @@ std::experimental::suspend_always Fiber::Promise::yield_value(Fiber fiber) {
     return {};
 }
 
-std::experimental::suspend_always Fiber::Promise::initial_suspend() noexcept {
+std::suspend_always Fiber::Promise::initial_suspend() noexcept {
     return {};
 }
 
-std::experimental::suspend_always Fiber::Promise::final_suspend() noexcept {
+std::suspend_always Fiber::Promise::final_suspend() noexcept {
     return {};
 }
 

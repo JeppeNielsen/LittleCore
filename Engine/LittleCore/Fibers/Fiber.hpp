@@ -4,7 +4,7 @@
 
 
 #pragma once
-#include <experimental/coroutine>
+#include <coroutine>
 #include <vector>
 
 namespace LittleCore {
@@ -18,7 +18,7 @@ namespace LittleCore {
         Fiber();
 
         struct Promise;
-        using CoroutineHandle = std::experimental::coroutine_handle<Promise>;
+        using CoroutineHandle = std::coroutine_handle<Promise>;
 
         struct Promise {
 
@@ -32,13 +32,13 @@ namespace LittleCore {
 
             void return_void() noexcept;
 
-            std::experimental::suspend_always yield_value(int val);
+            std::suspend_always yield_value(int val);
 
-            std::experimental::suspend_always yield_value(Fiber fiber);
+            std::suspend_always yield_value(Fiber fiber);
 
-            std::experimental::suspend_always initial_suspend() noexcept;
+            std::suspend_always initial_suspend() noexcept;
 
-            std::experimental::suspend_always final_suspend() noexcept;
+            std::suspend_always final_suspend() noexcept;
 
             bool Step();
 
