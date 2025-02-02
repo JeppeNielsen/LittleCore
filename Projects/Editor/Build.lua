@@ -84,8 +84,6 @@ project "LittleEditor"
    filter "system:linux"
       links { "dl", "GL", "pthread", "X11" }
    filter "system:macosx"
-      buildoptions { "-arch arm64" }
-      linkoptions { "-arch arm64 -L/Users/jeppe/Jeppes/Scripting/clang18/lib -rpath /Users/jeppe/Jeppes/Scripting/clang18/lib" }
       links {
          "QuartzCore.framework", 
          "Cocoa.framework", 
