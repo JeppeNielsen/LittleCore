@@ -79,8 +79,11 @@ int main() {
 
     std::ifstream inputFile("registry.json");
     entt::registry deserializedRegistry;
-    serializer.Deserialize(inputFile, deserializedRegistry);
-
+    std::string jsonBuffer;
+    auto error = serializer.Deserialize(inputFile, deserializedRegistry, jsonBuffer);
+    if (error) {
+        std::cout << "Deserialization failed: " << glz::format_error(error, jsonBuffer) <<"\n";
+    }
 
     std::cout << "Deserialized Entities:\n";
     for (auto [entity, renderable] : deserializedRegistry.view<Renderable>().each()) {
@@ -91,7 +94,7 @@ int main() {
     }
 
     for (auto [entity, t] : deserializedRegistry.view<Texturable>().each()) {
-        std::cout << "Transform: textureId: " <<t.textureId << "\n";
+        std::cout << "Texturable: textureId: " <<t.textureId << "\n";
     }
 
 
