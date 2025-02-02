@@ -40,8 +40,11 @@ namespace LittleCore {
             for_each<I + 1, FuncT, Tp...>(t, f);
         }
 
+        template <typename T, typename Tuple>
+        constexpr bool has_type_in_tuple = false;  // Base case
 
-
+        template <typename T, typename... Ts>
+        constexpr bool has_type_in_tuple<T, std::tuple<Ts...>> = (std::same_as<T, Ts> || ...);
 
     };
 
