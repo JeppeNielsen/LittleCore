@@ -1,3 +1,5 @@
+include "Clang.lua"
+
 project "LittleCore"
    kind "StaticLib" 
    language "C++"
@@ -14,6 +16,7 @@ project "LittleCore"
       "../External/bgfx/include",
       "../External/bx/include",
       "../External/entt/single_include",
+      "../External/glaze/include",
       "../External/glm",
       "../External/stb",
       "../External/sdl/include"
@@ -25,6 +28,7 @@ project "LittleCore"
       "../External/bgfx/include",
       "../External/bx/include",
       "../External/entt/single_include",
+      "../External/glaze/include",
       "../External/glm",
       "../External/stb",
       "../External/sdl/include"
@@ -37,10 +41,9 @@ project "LittleCore"
    filter "configurations:Debug"
       defines { "DEBUG" }
       symbols "On"
-      cppdialect "C++20"
+      cppdialect "C++23"
 
    filter "configurations:Release"
       defines { "NDEBUG" }
       optimize "On"
-      cppdialect "C++20"
-
+      cppdialect "C++23"

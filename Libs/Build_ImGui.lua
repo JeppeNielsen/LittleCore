@@ -39,10 +39,9 @@ project "ImGui"
    filter "configurations:Debug"
       defines { "DEBUG" }
       symbols "On"
-      cppdialect "C++17"
+      cppdialect "C++23"
 
    filter "configurations:Release"
       defines { "NDEBUG" }
       optimize "On"
-      cppdialect "C++17"
-
+      cppdialect "C++23"

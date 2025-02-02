@@ -21,7 +21,7 @@ project "spirv-opt"
 	kind "StaticLib"
 	language "C++"
 	targetdir "../bin/%{cfg.buildcfg}"
-    cppdialect "C++17"
+    cppdialect "C++23"
 
 	includedirs {
 		SPIRV_TOOLS,
@@ -145,7 +145,7 @@ project "spirv-opt"
 		path.join(SPIRV_TOOLS, "source/val/validate_ray_tracing_reorder.cpp")
 	}
 
-	configuration { "vs*" }
+	filter { "vs*" }
 		buildoptions {
 			"/wd4127", -- warning C4127: conditional expression is constant
 			"/wd4389", -- warning C4389: '==': signed/unsigned mismatch
@@ -153,23 +153,23 @@ project "spirv-opt"
 			"/wd4706", -- warning C4706: assignment within conditional expression
 		}
 
-	configuration { "mingw* or linux* or osx*" }
+	filter { "mingw* or linux* or osx*" }
 		buildoptions {
 			"-Wno-switch",
 		}
 
-	configuration { "mingw* or linux-gcc-*" }
+	filter { "mingw* or linux-gcc-*" }
 		buildoptions {
 			"-Wno-misleading-indentation",
 		}
 
-	configuration {}
+	filter {}
 
 project "spirv-cross"
 	kind "StaticLib"
 	language "C++"
 	targetdir "../bin/%{cfg.buildcfg}"
-    cppdialect "C++17"
+    cppdialect "C++23"
 
 	defines {
 		"SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS",
@@ -204,7 +204,7 @@ project "spirv-cross"
 		path.join(SPIRV_CROSS, "spirv_reflect.hpp"),
 	}
 
-	configuration { "vs*" }
+	filter { "vs*" }
 		buildoptions {
 			"/wd4018", -- warning C4018: '<': signed/unsigned mismatch
 			"/wd4245", -- warning C4245: 'return': conversion from 'int' to 'unsigned int', signed/unsigned mismatch
@@ -212,18 +212,18 @@ project "spirv-cross"
 			"/wd4715", -- warning C4715: '': not all control paths return a value
 		}
 
-	configuration { "mingw* or linux* or osx*" }
+	filter { "mingw* or linux* or osx*" }
 		buildoptions {
 			"-Wno-type-limits",
 		}
 
-	configuration {}
+	filter {}
 
 project "glslang"
 	kind "StaticLib"
 	language "C++"
 	targetdir "../bin/%{cfg.buildcfg}"
-    cppdialect "C++17"
+    cppdialect "C++23"
 
 	defines {
 		"ENABLE_OPT=1", -- spirv-tools
@@ -251,19 +251,19 @@ project "glslang"
 		path.join(GLSLANG, "OGLCompilersDLL/**.h"),
 	}
 
-	configuration { "windows" }
+	filter { "windows" }
 		removefiles {
 			path.join(GLSLANG, "glslang/OSDependent/Unix/**.cpp"),
 			path.join(GLSLANG, "glslang/OSDependent/Unix/**.h"),
 		}
 
-	configuration { "not windows" }
+	filter { "not windows" }
 		removefiles {
 			path.join(GLSLANG, "glslang/OSDependent/Windows/**.cpp"),
 			path.join(GLSLANG, "glslang/OSDependent/Windows/**.h"),
 		}
 
-	configuration { "vs*" }
+	filter { "vs*" }
 		buildoptions {
 			"/wd4005", -- warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
 			"/wd4065", -- warning C4065: switch statement contains 'default' but no 'case' labels
@@ -281,13 +281,13 @@ project "glslang"
 			"/wd4838", -- warning C4838: conversion from 'spv::GroupOperation' to 'unsigned int' requires a narrowing conversion
 		}
 
-	configuration { "mingw-gcc or linux-gcc" }
+	filter { "mingw-gcc or linux-gcc" }
 		buildoptions {
 			"-Wno-logical-op",
 			"-Wno-maybe-uninitialized",
 		}
 
-	configuration { "mingw* or linux* or osx*" }
+	filter { "mingw* or linux* or osx*" }
 		buildoptions {
 			"-fno-strict-aliasing", -- glslang has bugs if strict aliasing is used.
 			"-Wno-ignored-qualifiers",
@@ -305,25 +305,25 @@ project "glslang"
 			"-Wno-unused-variable",
 		}
 
-	configuration { "osx*" }
+	filter { "osx*" }
 		buildoptions {
 			"-Wno-c++11-extensions",
 			"-Wno-unused-const-variable",
 			"-Wno-deprecated-register",
 		}
 
-	configuration { "linux-gcc-*" }
+	filter { "linux-gcc-*" }
 		buildoptions {
 			"-Wno-unused-but-set-variable",
 		}
 
-	configuration {}
+	filter {}
 
 project "glsl-optimizer"
 	kind "StaticLib"
 	targetdir "../bin/%{cfg.buildcfg}"
 	language "C++"
-    cppdialect "C++17"
+    cppdialect "C++23"
 
 	includedirs {
 		path.join(GLSL_OPTIMIZER, "src"),
@@ -508,17 +508,15 @@ project "glsl-optimizer"
 		path.join(GLSL_OPTIMIZER, "src/glsl/builtin_stubs.cpp"),
 	}
 
-	configuration { "Release" }
-		flags {
-			"Optimize",
-		}
+	filter { "Release" }
+		optimize "On"
 
-		removeflags {
+		--removeflags {
 			-- GCC 4.9 -O2 + -fno-strict-aliasing don't work together...
-			"OptimizeSpeed",
-		}
+		--	"OptimizeSpeed",
+		--}
 
-	configuration { "vs*" }
+	filter { "vs*" }
 		includedirs {
 			path.join(GLSL_OPTIMIZER, "src/glsl/msvc"),
 		}
@@ -546,7 +544,7 @@ project "glsl-optimizer"
 			"/wd4996", -- warning C4996: 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C++ conformant name: _strdup.
 		}
 
-	configuration { "mingw* or linux* or osx*" }
+	filter { "mingw* or linux* or osx*" }
 		buildoptions {
 			"-fno-strict-aliasing", -- glsl-optimizer has bugs if strict aliasing is used.
 
@@ -561,23 +559,23 @@ project "glsl-optimizer"
 			"-Wshadow", -- glsl-optimizer is full of -Wshadow warnings ignore it.
 		}
 
-	configuration { "osx*" }
+	filter { "osx*" }
 		buildoptions {
 			"-Wno-deprecated-register",
 		}
 
-	configuration { "mingw* or linux-gcc-*" }
+	filter { "mingw* or linux-gcc-*" }
 		buildoptions {
 			"-Wno-misleading-indentation",
 		}
 
-	configuration {}
+	filter {}
 
 project "fcpp"
 	kind "StaticLib"
 	language "C++"
     targetdir "../bin/%{cfg.buildcfg}"
-    cppdialect "C++17"
+    cppdialect "C++23"
 
 	defines { -- fcpp
 		"NINCLUDE=64",
@@ -598,7 +596,7 @@ project "fcpp"
 		path.join(FCPP_DIR, "cpp6.c"),
 	}
 
-	configuration { "vs*" }
+	filter { "vs*" }
 
 		buildoptions {
 			"/wd4055", -- warning C4055: 'type cast': from data pointer 'void *' to function pointer 'void (__cdecl *)(char *,void *)'
@@ -607,20 +605,20 @@ project "fcpp"
 			"/wd4706", -- warning C4706: assignment within conditional expression
 		}
 
-	configuration { "not vs*" }
+	filter { "not vs*" }
 		buildoptions {
 			"-Wno-implicit-fallthrough",
 			"-Wno-incompatible-pointer-types",
 			"-Wno-parentheses-equality",
 		}
 
-	configuration {}
+	filter {}
 
 project "shaderc"
 	kind "StaticLib"
 	language "C++"
 	targetdir "../bin/%{cfg.buildcfg}"
-    cppdialect "C++17"
+    cppdialect "C++23"
 
 	includedirs {
 		path.join(BIMG_DIR, "include"),
@@ -662,25 +660,25 @@ project "shaderc"
 		path.join(BGFX_DIR, "src/shader**"),
 	}
 
-	configuration { "mingw-*" }
+	filter { "mingw-*" }
 		targetextension ".exe"
 
-	configuration { "osx*" }
+	filter { "osx*" }
 		links {
 			"Cocoa.framework",
 		}
 
-	configuration { "vs*" }
+	filter { "vs*" }
 		includedirs {
 			path.join(GLSL_OPTIMIZER, "include/c99"),
 		}
 
-	configuration { "vs20* or mingw*" }
+	filter { "vs20* or mingw*" }
 		links {
 			"psapi",
 		}
 
-	configuration { "osx* or linux*" }
+	filter { "osx* or linux*" }
 		links {
 			"pthread",
 		}
@@ -689,7 +687,7 @@ project "ShaderCompiler"
    kind "StaticLib"
    language "C++"
    targetdir "../bin/%{cfg.buildcfg}"
-   cppdialect "C++17"
+   cppdialect "C++23"
    
    files { 
       "../Engine/ShaderCompiler/**.hpp", 
@@ -716,6 +714,5 @@ project "ShaderCompiler"
 		"bx",
 		"shaderc"
    }
-
 
 		

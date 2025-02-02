@@ -51,7 +51,7 @@ project "LittleEditor"
 
    kind "WindowedApp"
    language "C++"
-   cppdialect "C++17"
+   cppdialect "C++23"
 
    files { 
       "Source/**.cpp",
@@ -84,7 +84,9 @@ project "LittleEditor"
    filter "system:linux"
       links { "dl", "GL", "pthread", "X11" }
    filter "system:macosx"
-      links { 
+      buildoptions { "-arch arm64" }
+      linkoptions { "-arch arm64 -L/Users/jeppe/Jeppes/Scripting/clang18/lib -rpath /Users/jeppe/Jeppes/Scripting/clang18/lib" }
+      links {
          "QuartzCore.framework", 
          "Cocoa.framework", 
          "IOKit.framework", 
@@ -94,5 +96,5 @@ project "LittleEditor"
          "Metal.framework",
          "OpenGL.framework"
       }
-
+   SetClangPath()
    setBxCompat()

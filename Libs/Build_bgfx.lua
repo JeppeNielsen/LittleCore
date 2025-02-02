@@ -17,7 +17,7 @@ project "bgfx"
    kind "StaticLib"
    language "C++"
    targetdir "../bin/%{cfg.buildcfg}"
-   cppdialect "C++14"
+   cppdialect "C++23"
    exceptionhandling "Off"
    defines "__STDC_FORMAT_MACROS"
 
@@ -57,7 +57,7 @@ project "bimg"
    kind "StaticLib"
    language "C++"
    targetdir "../bin/%{cfg.buildcfg}"
-   cppdialect "C++14"
+   cppdialect "C++23"
    exceptionhandling "Off"
    files
    {
@@ -74,13 +74,17 @@ project "bimg"
       path.join(BIMG_DIR, "3rdparty/astc-encoder"),
       path.join(BIMG_DIR, "3rdparty/astc-encoder/include")
    }
+   filter "system:macos"
+      architecture "arm64"
+      buildoptions { "-arch arm64" }
+      linkoptions { "-arch arm64 -stdlib=libc++" }
    setBxCompat()
 
 project "bx"
    kind "StaticLib"
    language "C++"
    targetdir "../bin/%{cfg.buildcfg}"
-   cppdialect "C++14"
+   cppdialect "C++23"
    exceptionhandling "Off"
    defines "__STDC_FORMAT_MACROS"
    files
@@ -106,5 +110,6 @@ project "bx"
    filter "action:vs*"
       defines "_CRT_SECURE_NO_WARNINGS"
       defines "_CRT_SECURE_NO_WARNINGS"
+   
    setBxCompat()
       
