@@ -71,8 +71,8 @@ int main() {
 
     DefaultRegistrySerializer serializer;
 
-    //std::stringstream buffer;
-    //serializer.Serialize(registry, buffer);
+    std::stringstream buffer;
+    serializer.Serialize(registry, buffer);
 
     //std::ofstream file("registry.json");
     //file<<buffer.str();
