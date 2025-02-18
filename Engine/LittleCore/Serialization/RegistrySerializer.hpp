@@ -55,7 +55,7 @@ namespace LittleCore {
             });
         }
 
-        bool Serialize(const entt::registry& registry, std::ostream& stream) {
+        std::string Serialize(const entt::registry& registry) {
             SerializedRegistry<T...> serializedRegistry;
 
             LittleCore::TupleHelper::for_each(typesToSerialize, [&] (auto typeToSerializePtr) {
@@ -92,30 +92,23 @@ namespace LittleCore {
                 }
             });
 
-            std::string buffer;
-            auto error = glz::write<glz::opts{.prettify = true}>(serializedRegistry, buffer);
-
-            if (error) {
-                return false;
-            }
-
-            stream << buffer;
-            return true;
+            std::string jsonString;
+            auto error = glz::write<glz::opts{.prettify = true}>(serializedRegistry, jsonString);
+            return jsonString;
         }
 
-        glz::error_ctx Deserialize(const std::istream& stream, entt::registry& registry, std::string& jsonString) {
-            std::stringstream buffer;
-            buffer << stream.rdbuf();
+        std::string Deserialize(entt::registry& registry, const std::string& jsonString) const {
             glz::json_t json;
-            auto error = glz::read_json(json, buffer.str());
+            auto error = glz::read_json(json, jsonString);
 
             if (error) {
-                return error;
+                return glz::format_error(error, jsonString);
             }
 
             auto& obj = json.get_object();
             if (!obj.contains("components")) {
-                return glz::error_ctx(glz::error_code::missing_key, "Missing components key");
+                error = glz::error_ctx(glz::error_code::missing_key, "Missing components key");
+                return glz::format_error(error, jsonString);
             }
 
             const auto& componentTypes = obj["components"].get_array();
@@ -134,14 +127,15 @@ namespace LittleCore {
                 }
 
                 if (!componentType.contains("components")) {
-                    return glz::error_ctx(glz::error_code::missing_key, componentTypeId + ": Missing components key");
+                    error = glz::error_ctx(glz::error_code::missing_key, componentTypeId + ": Missing components key");
+                    return glz::format_error(error, jsonString);
                 }
 
                 const auto& componentElements = componentType["components"].get_array();
 
                 auto error = deserializer->second->Deserialize(componentElements, registry);
                 if (error) {
-                    return error;
+                    return glz::format_error(error, jsonString);
                 }
             }
 
