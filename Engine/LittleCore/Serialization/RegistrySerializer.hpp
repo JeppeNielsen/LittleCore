@@ -36,6 +36,11 @@ namespace LittleCore {
 
         std::unordered_map<std::string, std::unique_ptr<IComponentDeserializer>> deserializers;
 
+        template<typename TSerializer>
+        TSerializer& GetSerializer() {
+            return std::get<TSerializer>(customSerializers);
+        }
+
         RegistrySerializer() {
             LittleCore::TupleHelper::for_each(typesToSerialize, [&] (auto typeToSerializePtr) {
                 using ComponentType = typename std::remove_pointer_t<decltype(typeToSerializePtr)>;
