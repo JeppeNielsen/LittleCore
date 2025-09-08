@@ -5,6 +5,7 @@
 
 #include "RegistrySerializer.hpp"
 #include <iostream>
+#include <sstream>
 
 using namespace LittleCore;
 
@@ -32,6 +33,10 @@ struct SerializableTexturable {
 
 struct TexturableSerializer : ComponentSerializerBase<Texturable, SerializableTexturable> {
 
+    void SetDatabase() {
+
+    }
+
     void Serialize(const Texturable& texturable, SerializableTexturable& serializableTexturable) {
         if (texturable.textureId == 5) {
             serializableTexturable.path = "Image.png";
@@ -55,8 +60,6 @@ struct TexturableSerializer : ComponentSerializerBase<Texturable, SerializableTe
 
 using DefaultRegistrySerializer = RegistrySerializer<Renderable, Transform, TexturableSerializer>;
 
-using Objects = std::tuple<Renderable, Transform>;
-
 int main() {
 
     entt::registry registry;
@@ -70,19 +73,22 @@ int main() {
     registry.emplace<Texturable>(entity2).textureId = 5;
 
     DefaultRegistrySerializer serializer;
+    serializer.GetSerializer<TexturableSerializer>().SetDatabase();
 
-    std::stringstream buffer;
-    serializer.Serialize(registry, buffer);
+    std::string serializedJson = serializer.Serialize(registry);
+
+    std::cout << serializedJson << "\n";
 
     //std::ofstream file("registry.json");
     //file<<buffer.str();
 
     std::ifstream inputFile("registry.json");
+    std::stringstream jsonString;
+    jsonString << inputFile.rdbuf();
     entt::registry deserializedRegistry;
-    std::string jsonBuffer;
-    auto error = serializer.Deserialize(inputFile, deserializedRegistry, jsonBuffer);
-    if (error) {
-        std::cout << "Deserialization failed: " << glz::format_error(error, jsonBuffer) <<"\n";
+    auto error = serializer.Deserialize(deserializedRegistry, jsonString.str());
+    if (error.size()>0) {
+        std::cout << "Deserialization failed: " << error <<"\n";
     }
 
     std::cout << "Deserialized Entities:\n";
