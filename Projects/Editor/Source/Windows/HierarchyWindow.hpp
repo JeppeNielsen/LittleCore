@@ -13,6 +13,8 @@ public:
 
     void DrawGui();
 
+    void Update();
+
 private:
     void DrawEntity(entt::registry& registry, entt::entity entity, entt::entity parent);
 

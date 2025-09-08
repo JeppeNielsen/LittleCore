@@ -141,7 +141,7 @@ void HierarchyWindow::DrawGui() {
 
     currentState = &state;
 
-    auto& registry = *state.registry.lock().get();
+    entt::registry& registry = *state.registry.lock();
 
     const auto& view = registry.view<Hierarchy>();
 
@@ -184,14 +184,16 @@ void HierarchyWindow::DrawGui() {
     }
     reparentedEntities.clear();
 
+    /*
     for(auto e : entitiesToCreate) {
-        auto newEntity = registry.create();
-        registry.emplace<LocalTransform>(newEntity);
-        registry.emplace<WorldTransform>(newEntity);
-        registry.emplace<Hierarchy>(newEntity).parent = e;
-        state.selectedEntity = newEntity;
+        //entt::entity newEntity = registry.create();
+        //registry.emplace<LocalTransform>(newEntity);
+        //registry.emplace<WorldTransform>(newEntity);
+        //registry.emplace<Hierarchy>(newEntity).parent = e;
+        //state.selectedEntity = newEntity;
     }
     entitiesToCreate.clear();
+     */
 
 
     for(auto e : entitiesToDelete) {
@@ -199,6 +201,30 @@ void HierarchyWindow::DrawGui() {
     }
     entitiesToDelete.clear();
 
+}
+
+void HierarchyWindow::Update() {
+
+    std::string firstId;
+    if (!registryManager.TryGetFirstId(firstId)) {
+        return;
+    }
+
+    auto& state = registryManager.Get(firstId);
+    if (state.registry.expired()) {
+        return;
+    }
+
+    entt::registry& registry = *state.registry.lock();
+
+    for(auto e : entitiesToCreate) {
+        entt::entity newEntity = registry.create();
+        //registry.emplace<LocalTransform>(newEntity);
+        //registry.emplace<WorldTransform>(newEntity);
+        //registry.emplace<Hierarchy>(newEntity).parent = e;
+        //state.selectedEntity = newEntity;
+    }
+    entitiesToCreate.clear();
 
 
 

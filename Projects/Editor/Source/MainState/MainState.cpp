@@ -75,6 +75,7 @@ void MainState::Initialize() {
 
 void MainState::Update(float dt) {
     projectCompiler.Update();
+    hierarchyWindow.Update();
 
     for(auto& module : project.moduleManager.GetModules()) {
         module.second->Update(dt);

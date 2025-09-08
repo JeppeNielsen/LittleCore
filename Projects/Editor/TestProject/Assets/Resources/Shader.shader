@@ -18,8 +18,7 @@
 
     void main()
     {
-        //a_position.x += sin(a_position.x+a_position.y*3);
-    	gl_Position = mul(u_modelViewProj, vec4(a_position, 1.0) );
+        gl_Position = mul(u_modelViewProj, vec4(a_position, 1.0) );
     	v_color0 = a_color0;
     	v_texcoord0 = a_texcoord0;
     	vertexPosition = gl_Position;
