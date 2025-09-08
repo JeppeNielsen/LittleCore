@@ -29,3 +29,6 @@
 [submodule "External/glaze"]
 	path = External/glaze
 	url = https://github.com/stephenberry/glaze.git
+[submodule "External/netImgui"]
+	path = External/netImgui
+	url = https://github.com/sammyfreg/netImgui
