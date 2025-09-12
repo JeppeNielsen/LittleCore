@@ -51,7 +51,7 @@ project "TestRendering"
 
    kind "WindowedApp"
    language "C++"
-   cppdialect "C++17"
+   cppdialect "C++23"
 
    files { 
       "Source/**.cpp",
