@@ -101,12 +101,9 @@ namespace NetImguiServer {
 // but output is redirected to an allocated client texture  instead default swapchain
 //=================================================================================================
 
-        void HAL_RenderDrawData(RemoteClient::Client& client, ImDrawData* pDrawData)
-        {
-            if( !client.mpHAL_AreaRT )
-            {
+        void HAL_RenderDrawData(RemoteClient::Client& client, ImDrawData* pDrawData) {
+            if (!client.mpHAL_AreaRT) {
                 return;
-
             }
 
             const bgfx::FrameBufferHandle fb = toFbHandle(client.mpHAL_AreaRT);
@@ -118,34 +115,20 @@ namespace NetImguiServer {
             uint16_t rtH = client.mAreaSizeY;
 
             setupViewForRT(0, fb, rtW, rtH, client.mBGSettings.mClearColor);
-
             {
                 void* mainBackend = ImGui::GetIO().BackendRendererUserData;
                 NetImgui::Internal::ScopedImguiContext scopedCtx(client.mpBGContext);
                 ImGui::GetIO().BackendRendererUserData = mainBackend;
-                //ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
-                //ImGui::Render();// Re-appropriate the existing renderer backend, for this client rendeering
                 staticUIController->ScheduleDrawData(0, ImGui::GetDrawData());
-
                 bgfx::touch(0);
                 bgfx::frame();
             }
-            if (pDrawData)
-            {
-                //ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
-                //ImGui::Render();
-
+            if (pDrawData) {
                 staticUIController->ScheduleDrawData(0, pDrawData);
-
                 bgfx::touch(0);
-
                 bgfx::frame();
-
             }
-
-
             bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
-
         }
 
 
