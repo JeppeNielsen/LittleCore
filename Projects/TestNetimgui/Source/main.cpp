@@ -35,7 +35,7 @@ static void setupViewForRT(bgfx::ViewId viewId,
                            const float clearColor[4])
 {
     bgfx::setViewFrameBuffer(viewId, fb);
-    bgfx::setViewRect(viewId, 0, 0, width, height);
+    //bgfx::setViewRect(viewId, 0, 0, width, height);
     const uint32_t rgba =
             (uint32_t(clearColor[3] * 255.f) << 24) |
             (uint32_t(clearColor[0] * 255.f) << 16) |
@@ -122,17 +122,27 @@ namespace NetImguiServer {
             {
                 void* mainBackend = ImGui::GetIO().BackendRendererUserData;
                 NetImgui::Internal::ScopedImguiContext scopedCtx(client.mpBGContext);
-                ImGui::GetIO().BackendRendererUserData = mainBackend; // Re-appropriate the existing renderer backend, for this client rendeering
+                ImGui::GetIO().BackendRendererUserData = mainBackend;
+                //ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
+                //ImGui::Render();// Re-appropriate the existing renderer backend, for this client rendeering
                 staticUIController->ScheduleDrawData(0, ImGui::GetDrawData());
+
+                bgfx::touch(0);
+                bgfx::frame();
             }
             if (pDrawData)
             {
+                //ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
+                //ImGui::Render();
+
                 staticUIController->ScheduleDrawData(0, pDrawData);
+
+                bgfx::touch(0);
+
+                bgfx::frame();
+
             }
 
-            bgfx::touch(0);
-
-            bgfx::frame();
 
             bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
 
@@ -197,32 +207,6 @@ namespace NetImguiServer {
 //=================================================================================================
         bool HAL_CreateRenderTarget(uint16_t Width, uint16_t Height, void*& pOutRT, void*& pOutTexture)
         {
-            if (pOutTexture) {
-
-                bgfx::TextureInfo textureInfo;
-                bgfx::calcTextureSize(
-                        textureInfo,       // Will be filled with the texture info
-                        0,          // width (set to 0 when retrieving from handle)
-                        0,          // height
-                        0,          // depth
-                        false,      // cubeMap
-                        false,      // hasMips
-                        1,          // numLayers
-                        bgfx::TextureFormat::Count // ignored here
-                );
-
-                //bgfx::getTexture(toTexHandle(pOutTexture), &textureInfo);
-
-
-
-
-                //std::cout << textureInfo.width;
-
-                //TextureSaver::SaveTGA(toTexHandle(pOutTexture), "test.tga", textureInfo.width, textureInfo.height,
-                //                     bgfx::TextureFormat::RGBA8, false);
-
-            }
-
             // Match your original behavior: drop any existing resources.
             HAL_DestroyRenderTarget(pOutRT, pOutTexture);
 
@@ -528,9 +512,13 @@ struct ImguiTest : IState {
 
         ImGui::Begin("My test window");
 
+
         if (ImGui::Button("Show extra window")) {
             showWindow = !showWindow;
         }
+
+        if( ImGui::IsItemHovered() )
+            ImGui::SetTooltip("Terminate this sample.");
 
         ImGui::End();
 
