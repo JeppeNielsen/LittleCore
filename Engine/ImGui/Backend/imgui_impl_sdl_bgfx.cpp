@@ -328,13 +328,23 @@ void ImGui_Impl_sdl_bgfx_Render(const bgfx::ViewId view_id, ImDrawData *draw_dat
           const uint16_t y(bx::max<float>(cmd->ClipRect.y - clip_position.y, 0.0f));
           const uint16_t width(bx::min<float>(cmd->ClipRect.z - clip_position.x - x, 65535.0f));
           const uint16_t height(bx::min<float>(cmd->ClipRect.w - clip_position.y - y, 65535.0f));
-          encoder->setScissor(x * clip_scale.x, y * clip_scale.x, width * clip_scale.x,
-                              height * clip_scale.x);
+          encoder->setScissor(x * clip_scale.x, y * clip_scale.y, width * clip_scale.x,
+                              height * clip_scale.y);
 
           encoder->setState(state);
           encoder->setTexture(0, uniform_texture, texture_handle, sampler_state);
-          encoder->setVertexBuffer(0, &tvb, 0, numVertices);
-          encoder->setIndexBuffer(&tib, offset, cmd->ElemCount);
+
+            const uint32_t startVertex = (uint32_t)cmd->VtxOffset;
+            const uint32_t numVertsForThisBind = numVertices - startVertex; // safe upper bound
+
+            encoder->setVertexBuffer(0, &tvb, startVertex, numVertsForThisBind);
+
+            // FIX 2b: Use IdxOffset directly (not a running 'offset')
+            encoder->setIndexBuffer(&tib, (uint32_t)cmd->IdxOffset, (uint32_t)cmd->ElemCount);
+
+
+            //encoder->setVertexBuffer(0, &tvb, 0, numVertices);
+          //encoder->setIndexBuffer(&tib, offset, cmd->ElemCount);
           encoder->submit(view_id, program);
         }
       }
@@ -373,6 +383,8 @@ void ImGui_Implbgfx_CreateDeviceObjects()
   is_init = bgfx::isValid(font_texture);
   // Store our identifier
   io.Fonts->TexID = (void *)(intptr_t)font_texture.idx;
+
+  io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 }
 
 void ImGui_Implbgfx_InvalidateDeviceObjects()
