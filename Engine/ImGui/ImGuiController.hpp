@@ -8,6 +8,7 @@
 #include <string>
 
 class ImFont;
+class ImDrawData;
 
 namespace LittleCore {
     class ImGuiController {
@@ -23,9 +24,13 @@ namespace LittleCore {
         void Destroy();
         ImFont* LoadFont(const std::string& fontPath, float fontSize);
 
+        void ScheduleDrawData(uint16_t viewId, ImDrawData* draw_data);
+
     private:
         void* mainWindow;
         RenderFunction renderFunction;
+        std::vector<ImDrawData*> scheduledDrawData;
+        std::vector<uint16_t> scheduledViewIds;
 
     };
 }
