@@ -56,6 +56,8 @@ project "TestNetimgui"
    files { 
       "Source/**.cpp",
       "Source/**.hpp",
+      "../../External/netImgui/Code/ServerApp/Source/*.cpp",
+      "../../External/netImgui/Code/Client/Private/*.cpp"
    }
 
    includedirs {
@@ -66,7 +68,11 @@ project "TestNetimgui"
       "../../External/bx/include",
       "../../External/entt/single_include",
       "../../Engine/ImGui",
-      "../../External/imgui"
+      "../../External/imgui",
+      "../../External/netImgui/Code/ServerApp/Source/",
+      "../../External/netImgui/Code/Client/",
+      "../../External/netImgui/Code/"
+        
    }
 
    links { 
