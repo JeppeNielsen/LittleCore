@@ -82,46 +82,15 @@ namespace NetImguiServer {
                 void* mainBackend = ImGui::GetIO().BackendRendererUserData;
                 NetImgui::Internal::ScopedImguiContext scopedCtx(client.mpBGContext);
                 ImGui::GetIO().BackendRendererUserData = mainBackend;
-                staticUIController->ScheduleDrawData(0, ImGui::GetDrawData());
+                staticUIController->Draw(0, ImGui::GetDrawData());
                 bgfx::touch(0);
                 bgfx::frame();
             }
             if (pDrawData) {
-                staticUIController->ScheduleDrawData(0, pDrawData);
+                staticUIController->Draw(0, pDrawData);
                 bgfx::touch(0);
                 bgfx::frame();
             }
-            bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
-        }
-
-        void HAL_RenderDrawData_old(RemoteClient::Client& client, ImDrawData* pDrawData)
-        {
-            if (!client.mpHAL_AreaRT) {
-                return;
-            }
-
-            const bgfx::FrameBufferHandle fb = toFbHandle(client.mpHAL_AreaRT);
-            if (!bgfx::isValid(fb)) {
-                return;
-            }
-
-            const bgfx::ViewId viewId = getClientViewId(client);
-            setupViewForRT(viewId, fb, client.mAreaSizeX, client.mAreaSizeY, client.mBGSettings.mClearColor);
-            {
-                void* mainBackend = ImGui::GetIO().BackendRendererUserData;
-                NetImgui::Internal::ScopedImguiContext scopedCtx(client.mpBGContext);
-
-                ImGui::GetIO().BackendRendererUserData = mainBackend;
-
-                if (ImDrawData* dd = ImGui::GetDrawData()) {
-                    staticUIController->ScheduleDrawData(viewId, dd);
-                }
-            }
-
-            if (pDrawData) {
-                staticUIController->ScheduleDrawData(viewId, pDrawData);
-            }
-
             bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
         }
 

@@ -89,10 +89,7 @@ ImFont* ImGuiController::LoadFont(const std::string &fontPath, float fontSize) {
     return io.Fonts->AddFontFromFileTTF(fontPath.c_str(), fontSize, &config);
 }
 
-void ImGuiController::ScheduleDrawData(uint16_t viewId, ImDrawData* draw_data) {
+void ImGuiController::Draw(uint16_t viewId, ImDrawData* draw_data) {
     ImGui_Impl_sdl_bgfx_Render(viewId, draw_data, 0);
-
-    //scheduledDrawData.push_back(draw_data);
-    //scheduledViewIds.push_back(viewId);
 }
 
