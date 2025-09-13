@@ -15,16 +15,13 @@ struct ImguiTest : IState {
     ImguiTest() : netimguiController(gui) {}
 
     void Initialize() override {
-
-        std::string cmdArgs;
-
         gui.Initialize(mainWindow, [this]() {
             OnGUI();
         });
 
         gui.LoadFont("/Users/jeppe/Jeppes/LittleCore/Projects/TestImGui/Source/Fonts/LucidaG.ttf", 12);
         if (!netimguiController.Start()) {
-            std::cout << "NetIMGUI lib failed\n";
+            std::cout << "Netimgui lib failed\n";
         }
     }
 
