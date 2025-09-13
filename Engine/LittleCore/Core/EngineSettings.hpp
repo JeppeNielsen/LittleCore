@@ -10,6 +10,7 @@ namespace LittleCore {
 
     struct EngineSettings {
         std::string mainWindowTitle;
+        bool showWindow = true;
     };
 
 }

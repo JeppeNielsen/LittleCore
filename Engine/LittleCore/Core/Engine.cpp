@@ -22,7 +22,13 @@ void Engine::MainLoop(const std::function<void()>& gfxInitialized) {
 
     SDL_Init(0);
 
-    auto window = SDL_CreateWindow(settings.mainWindowTitle.c_str(), width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+
+    if (!settings.showWindow) {
+        flags |= SDL_WINDOW_HIDDEN;
+    }
+
+    auto window = SDL_CreateWindow(settings.mainWindowTitle.c_str(), width, height, flags);
 
     SDL_StartTextInput();
 
