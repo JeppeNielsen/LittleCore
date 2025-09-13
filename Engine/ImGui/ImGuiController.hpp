@@ -6,6 +6,7 @@
 #pragma once
 #include <functional>
 #include <string>
+#include "imgui.h"
 
 class ImFont;
 class ImDrawData;

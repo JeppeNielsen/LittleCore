@@ -10,6 +10,7 @@ include "../Libs/Build_bgfx.lua"
 include "../Libs/Build_ShaderCompiler.lua"
 include "../Libs/Build_LittleCore.lua"
 include "../Libs/Build_ImGui.lua"
+include "../Libs/Build_Netimgui.lua"
 
 solution "LittleCore"
    configurations { "Release", "Debug" }
@@ -55,9 +56,7 @@ project "TestNetimgui"
 
    files { 
       "Source/**.cpp",
-      "Source/**.hpp",
-      "../../External/netImgui/Code/ServerApp/Source/*.cpp",
-      "../../External/netImgui/Code/Client/Private/*.cpp"
+      "Source/**.hpp"
    }
 
    includedirs {
@@ -68,11 +67,13 @@ project "TestNetimgui"
       "../../External/bx/include",
       "../../External/entt/single_include",
       "../../Engine/ImGui",
-      "../../External/imgui",
-      "../../External/netImgui/Code/ServerApp/Source/",
-      "../../External/netImgui/Code/Client/",
-      "../../External/netImgui/Code/"
-        
+      "../../Engine/Netimgui",
+      "../../External/imgui"
+   }
+
+   externalincludedirs {
+      "../Engine/Netimgui/**",
+      "../Engine/ImGui/**"
    }
 
    links { 
@@ -81,7 +82,8 @@ project "TestNetimgui"
       "bimg",
       "bx",
       "LittleCore",
-      "ImGui"
+      "ImGui",
+      "Netimgui"
    }
 
    filter "system:windows"
