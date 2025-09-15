@@ -5,6 +5,7 @@
 
 #pragma once
 #include <string>
+#include <bgfx/bgfx.h>
 
 namespace LittleCore {
 
@@ -20,7 +21,7 @@ namespace LittleCore {
 
         bool IsConnectionPending();
         bool IsConnected();
-
+        void SendTexture(bgfx::TextureHandle texture, bgfx::TextureHandle textureBlit, uint32_t width, uint32_t height);
     };
 
 

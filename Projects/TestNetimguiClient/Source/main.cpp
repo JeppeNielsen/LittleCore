@@ -49,7 +49,9 @@ struct TestNetimguiClient : IState {
     BGFXRenderer renderer;
     ResourcePathMapper resourcePathMapper;
     DefaultResourceManager resourceManager;
-
+    bgfx::FrameBufferHandle fb;
+    bgfx::TextureHandle tex;
+    bgfx::TextureHandle texCopy;
 
     TestNetimguiClient() : simulation(registry), resourceManager(resourcePathMapper) {}
 
@@ -133,74 +135,78 @@ struct TestNetimguiClient : IState {
         SDL_GetWindowSizeInPixels((SDL_Window*)mainWindow, &width, &height);
         renderer.screenSize = {width, height};
 
-        /*
-        auto cameraEntity = registry.create();
-        registry.emplace<WorldTransform>(cameraEntity);
-        registry.emplace<LocalTransform>(cameraEntity).position = {0,0,10};
-        registry.emplace<Camera>(cameraEntity);
-        registry.emplace<Hierarchy>(cameraEntity);
-*/
 
-        /*
-        auto quadEntity = registry.create();
-        registry.emplace<WorldTransform>(quadEntity);
-        registry.emplace<LocalTransform>(quadEntity);
-        registry.emplace<Hierarchy>(quadEntity);
+        const bgfx::TextureFormat::Enum kFormat = bgfx::TextureFormat::RGBA8;
+        const uint64_t kTexFlags = BGFX_TEXTURE_RT; // RT texture; sampler filtering is set when binding.
 
-        Mesh& mesh = registry.emplace<Mesh>(quadEntity);
-        mesh.vertices.push_back({{0,0,0}});
-        mesh.vertices.push_back({{1,0,0}});
-        mesh.vertices.push_back({{1,1,0}});
-        mesh.vertices.push_back({{0,1,0}});
+        tex = bgfx::createTexture2D(
+                512,
+                512,
+                false,
+                1,
+                kFormat,
+                kTexFlags
+        );
 
-        mesh.triangles.push_back(0);
-        mesh.triangles.push_back(1);
-        mesh.triangles.push_back(2);
+        fb = bgfx::createFrameBuffer(1, &tex, /* destroyTextures = */ true);
 
-        mesh.triangles.push_back(0);
-        mesh.triangles.push_back(3);
-        mesh.triangles.push_back(2);
+        texCopy = bgfx::createTexture2D(
+                512, 512, false, 1, bgfx::TextureFormat::RGBA8,
+                BGFX_TEXTURE_READ_BACK | BGFX_TEXTURE_BLIT_DST
+        );
 
-        registry.emplace<LocalBoundingBox>(quadEntity);
-        registry.emplace<WorldBoundingBox>(quadEntity);
-        registry.emplace<Renderable>(quadEntity).shader = resourceManager.Create<ShaderResource>("65886F92DEC94836A9E2FEA6C3483543");
 
-         */
+
 
     }
 
     void HandleEvent(void* event) override {
-        //gui.HandleEvent(event);
+        gui.HandleEvent(event);
         simulation.HandleEvent(event, sdlInputHandler);
     }
 
     void OnGUI() {
         ImGui::DockSpaceOverViewport();
-        ImGui::Begin("My test window");
+        ImGui::Begin("Hierarchy");
 
         if (ImGui::Button("Close")) {
             abort();
         }
+        ImGui::End();
+        ImGui::Begin("Game");
+        ImGui::Image((void*)(uintptr_t)(tex.idx), {512,512});
 
         ImGui::End();
     }
 
     void Update(float dt) override {
         simulation.Update();
+
+        bgfx::setViewFrameBuffer(0, fb);
+        const uint32_t rgba =
+                (uint32_t(1 * 255.f) << 24) |
+                (uint32_t(1 * 255.f) << 16) |
+                (uint32_t(1 * 255.f) <<  8) |
+                (uint32_t(1 * 255.f) <<  0);
+        bgfx::setViewClear(0, BGFX_CLEAR_COLOR, rgba);
+        simulation.Render(renderer);
+        bgfx::touch(0);
+        bgfx::frame();
+        bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
+
+        netimguiClient.SendTexture(tex, texCopy, 512, 512);
     }
 
     void Render() override {
 
-        simulation.Render(renderer);
-        bgfx::touch(0);
 
-        //gui.Render();
+        gui.Render();
 
     }
 };
 
 int main() {
-    Engine e({"Netimgui Client", true});
+    Engine e({"Netimgui Client", false});
     e.Start<TestNetimguiClient>();
     return 0;
 }
