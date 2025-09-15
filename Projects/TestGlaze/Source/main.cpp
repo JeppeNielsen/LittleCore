@@ -60,7 +60,8 @@ struct TexturableSerializer : ComponentSerializerBase<Texturable, SerializableTe
 
 using DefaultRegistrySerializer = RegistrySerializer<Renderable, Transform, TexturableSerializer>;
 
-int main() {
+
+int main_old() {
 
     entt::registry registry;
     auto entity = registry.create();
