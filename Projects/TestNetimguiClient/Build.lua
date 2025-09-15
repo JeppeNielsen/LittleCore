@@ -68,7 +68,8 @@ project "TestNetimguiClient"
       "../../External/bx/include",
       "../../External/entt/single_include",
       "../../Engine/ImGui",
-      "../../External/imgui"
+      "../../External/imgui",
+      "../../External/glm"
    }
 
    links { 
@@ -77,7 +78,8 @@ project "TestNetimguiClient"
       "bimg",
       "bx",
       "LittleCore",
-      "ImGui"
+      "ImGui",
+      "ShaderCompiler"
    }
 
    filter "system:windows"
