@@ -5,6 +5,12 @@
 #include "ImGuiController.hpp"
 #include "NetimguiController.hpp"
 #include <iostream>
+#include <spawn.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
 
 using namespace LittleCore;
 
@@ -29,9 +35,76 @@ struct ImguiTest : IState {
         gui.HandleEvent(event);
     }
 
+    void StartProgram() {
+
+        pid_t pid = fork();
+        if (pid == -1) {
+            std::perror("fork");
+            return;
+        }
+
+        if (pid == 0) { // Child
+
+
+            const char *path = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Build/bin/ARM64/Debug/TestNetimguiClient";
+            system(path);
+
+
+/*
+            char *argv[] = { (char*)path,
+                             const_cast<char*>("-g"), // do not activate
+                             const_cast<char*>("-j"), // launch hidden
+                             const_cast<char*>("-a"),
+                             nullptr };
+
+            execvp(path, argv);
+            // If execvp returns, it failed:
+            std::perror("execvp");
+            _exit(127);
+            */
+        }
+
+
+    }
+
+    void StartProgram2() {
+        /*pid_t pid = fork();
+        if (pid == -1) {
+            std::perror("fork");
+            return;
+        }
+         */
+
+        //if (pid == 0) { // Child
+
+
+            char *path = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Build/bin/ARM64/Debug/TestNetimguiClient";
+
+            pid_t pid;
+            char *argv[] = {
+                    const_cast<char*>("open"),
+                    const_cast<char*>("-g"), // do not activate
+                    const_cast<char*>("-j"), // launch hidden
+                    const_cast<char*>("-a"),
+                    const_cast<char*>(path),
+                    nullptr
+            };
+
+            extern char **environ;
+            int rc = posix_spawn(&pid, "/usr/bin/open", nullptr, nullptr, argv, environ);
+        //}
+
+
+    }
+
     void OnGUI() {
         ImGui::DockSpaceOverViewport();
         ImGui::Begin("My test window");
+
+        if (ImGui::Button("Start process")) {
+            StartProgram();
+        }
+
         ImGui::End();
         netimguiController.Draw();
     }
