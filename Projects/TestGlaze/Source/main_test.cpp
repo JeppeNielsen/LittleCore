@@ -4,10 +4,12 @@
 #include <utility>
 #include "TupleHelper.hpp"
 #include <concepts>
+#include "TypeUtility.hpp"
 
 struct Child {
     std::string name;
     int age;
+    int yearBorn=1995;
 };
 
 struct User {
@@ -16,6 +18,7 @@ struct User {
     double score{};
     std::vector<int> indices;
     std::vector<Child> children;
+    Child root;
 };
 
 template <typename T>
@@ -39,6 +42,9 @@ void IterateMembers(T&& object, Callable&& callable) {
 
         if constexpr (StringLike<valueType>) {
             callable(fieldNames.keys[memberIndex], value);
+
+        } else if constexpr (SimpleType<valueType>) {
+            callable(fieldNames.keys[memberIndex], value);
         } else if constexpr (glz::detail::vector_like<valueType>) {
 
             for(auto& v : value) {
@@ -53,6 +59,7 @@ void IterateMembers(T&& object, Callable&& callable) {
 
         } else {
             callable(fieldNames.keys[memberIndex], value);
+            IterateMembers(value, callable);
         }
         memberIndex++;
     });
@@ -65,7 +72,10 @@ int main() {
     u.children = {{"Jeppe", 43}, {"Ella", 9}, {"Aksel", 5}};
 
     IterateMembers(u, [](const auto& fieldName, auto& value) {
-        std::cout << fieldName << " -> "<< value << "\n";
+        //std::cout << fieldName << " -> "<< value << " " << LittleCore::TypeUtility::GetClassName<decltype(value)>() <<  "\n";
+        using type = std::remove_cvref_t<decltype(value)>;
+
+        std::cout << fieldName << " -> "<< LittleCore::TypeUtility::GetClassName<type>() <<  "\n";
     });
 
 }
