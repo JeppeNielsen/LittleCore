@@ -69,7 +69,8 @@ project "TestNetimguiClient"
       "../../External/entt/single_include",
       "../../Engine/ImGui",
       "../../External/imgui",
-      "../../External/glm"
+      "../../External/glm",
+      "../../External/glaze/include"
    }
 
    links { 

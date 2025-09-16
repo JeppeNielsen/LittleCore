@@ -21,7 +21,7 @@ namespace LittleCore {
 
         bool IsConnectionPending();
         bool IsConnected();
-        void SendTexture(bgfx::TextureHandle texture, bgfx::TextureHandle textureBlit, uint32_t width, uint32_t height);
+        void SendTexture(bgfx::TextureHandle texture, bgfx::TextureHandle textureBlit, uint32_t width, uint32_t height, std::vector<uint8_t>& pixels);
     };
 
 

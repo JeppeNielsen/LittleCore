@@ -32,22 +32,17 @@ NetimguiClient::~NetimguiClient() {
     NetImgui::Shutdown();
 }
 
-void NetimguiClient::SendTexture(bgfx::TextureHandle texture, bgfx::TextureHandle textureBlit, uint32_t width, uint32_t height) {
+void NetimguiClient::SendTexture(bgfx::TextureHandle texture, bgfx::TextureHandle textureBlit, uint32_t width, uint32_t height, std::vector<uint8_t>& pixels) {
 
     const bgfx::ViewId kCopyView = 250;
     bgfx::blit(kCopyView, textureBlit, 0, 0, texture);
-
-    std::vector<uint8_t> pixels;
-    pixels.resize(width * height * 4);
     uint32_t readyFrame = bgfx::readTexture(textureBlit, pixels.data());
 
     while (bgfx::frame(false)< readyFrame) {
 
     }
 
-    //if (bgfx::frame(false) >= readyFrame) {
-        NetImgui::SendDataTexture((ImTextureID) (uintptr_t) texture.idx, pixels.data(), width, height,
-                                  NetImgui::eTexFormat::kTexFmtRGBA8);
-    //}
+    NetImgui::SendDataTexture((ImTextureID) (uintptr_t) texture.idx, pixels.data(), width, height,
+                              NetImgui::eTexFormat::kTexFmtRGBA8);
 }
 

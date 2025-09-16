@@ -12,12 +12,19 @@
 #include "SDLInputHandler.hpp"
 #include "BgfxRenderer.hpp"
 #include "DefaultResourceManager.hpp"
+#include "ObjectGuiDrawer.hpp"
 
 using namespace LittleCore;
 
 struct Rotatable {
     float speed = 0.01f;
+    float speedY = 0.01f;
+};
 
+struct Player {
+    std::string name;
+    int age = 12;
+    float percentage = 0.5f;
 };
 
 struct RotationSystem  {
@@ -32,7 +39,9 @@ struct RotationSystem  {
         auto view = registry.view<const Rotatable, LocalTransform>();
         for(auto[entity, rotatable, transform] : view.each()) {
             auto roll = glm::roll(transform.rotation);
-            transform.rotation = glm::quat({0,0,roll + rotatable.speed});
+            auto yaw = glm::yaw(transform.rotation);
+
+            transform.rotation = glm::quat({0, yaw + rotatable.speedY,roll + rotatable.speed});
             registry.patch<LocalTransform>(entity);
         }
     }
@@ -52,6 +61,9 @@ struct TestNetimguiClient : IState {
     bgfx::FrameBufferHandle fb;
     bgfx::TextureHandle tex;
     bgfx::TextureHandle texCopy;
+    std::vector<uint8_t> pixels;
+    Player player;
+    entt::entity quad;
 
     TestNetimguiClient() : simulation(registry), resourceManager(resourcePathMapper) {}
 
@@ -125,10 +137,10 @@ struct TestNetimguiClient : IState {
                                {1.0f, 1.0f}};
         }
 
-        auto quad1 = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
-        registry.emplace<Rotatable>(quad1);
+        quad = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
+        registry.emplace<Rotatable>(quad);
 
-        auto child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad1);
+        auto child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
 
         int width;
         int height;
@@ -155,7 +167,7 @@ struct TestNetimguiClient : IState {
                 BGFX_TEXTURE_READ_BACK | BGFX_TEXTURE_BLIT_DST
         );
 
-
+        pixels.resize(512*512*4);
 
 
     }
@@ -177,6 +189,23 @@ struct TestNetimguiClient : IState {
         ImGui::Image((void*)(uintptr_t)(tex.idx), {512,512});
 
         ImGui::End();
+
+        ImGui::Begin("Inspector");
+
+        GuiHelper::DrawHeader("Player");
+
+        ObjectGuiDrawer::Draw(player);
+
+        auto& rotatable = registry.get<Rotatable>(quad);
+
+        GuiHelper::DrawHeader("Rotatable");
+        ObjectGuiDrawer::Draw(rotatable);
+
+
+
+        ImGui::End();
+
+
     }
 
     void Update(float dt) override {
@@ -194,7 +223,7 @@ struct TestNetimguiClient : IState {
         bgfx::frame();
         bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
 
-        netimguiClient.SendTexture(tex, texCopy, 512, 512);
+        netimguiClient.SendTexture(tex, texCopy, 512, 512, pixels);
     }
 
     void Render() override {
