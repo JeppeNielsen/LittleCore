@@ -13,18 +13,42 @@
 #include "BgfxRenderer.hpp"
 #include "DefaultResourceManager.hpp"
 #include "ObjectGuiDrawer.hpp"
+#include <glm/glm.hpp>
 
 using namespace LittleCore;
 
+template<>
+struct glz::meta<glm::vec<3, float>> {
+    //using T = glm::vec<3, float>;
+    // reflect as an array [x, y, z]
+    /*static constexpr auto value = glz::object(
+            "x", &T::x,
+            "y", &T::y,
+            "z", &T::z
+    );
+     */
+
+    static constexpr auto value = glz::object(
+
+    );
+};
+
+template<>
+struct glz::meta<glm::quat> {
+    static constexpr auto value = glz::object();
+};
+
+
 struct Rotatable {
-    float speed = 0.01f;
-    float speedY = 0.01f;
+    float speed = 0.0f;
+    float speedY = 0.0f;
 };
 
 struct Player {
     std::string name;
     int age = 12;
     float percentage = 0.5f;
+    glm::vec3 position = {0,0,0};
 };
 
 struct RotationSystem  {
@@ -64,6 +88,7 @@ struct TestNetimguiClient : IState {
     std::vector<uint8_t> pixels;
     Player player;
     entt::entity quad;
+    entt::entity child;
 
     TestNetimguiClient() : simulation(registry), resourceManager(resourcePathMapper) {}
 
@@ -119,7 +144,7 @@ struct TestNetimguiClient : IState {
             std::cout << "couldn't connect\n";
         }
 
-        resourcePathMapper.RefreshFromRootPath("/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source");
+        resourcePathMapper.RefreshFromRootPath("/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Assets");
         resourceManager.CreateLoaderFactory<ShaderResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
 
@@ -140,7 +165,7 @@ struct TestNetimguiClient : IState {
         quad = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
         registry.emplace<Rotatable>(quad);
 
-        auto child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
+        child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
 
         int width;
         int height;
@@ -196,16 +221,31 @@ struct TestNetimguiClient : IState {
 
         ObjectGuiDrawer::Draw(player);
 
-        auto& rotatable = registry.get<Rotatable>(quad);
-
-        GuiHelper::DrawHeader("Rotatable");
-        ObjectGuiDrawer::Draw(rotatable);
-
-
+        DrawEntity(quad);
+        DrawEntity(child);
 
         ImGui::End();
 
 
+    }
+
+    void DrawEntity(entt::entity e) {
+
+        ImGui::PushID((int)e);
+        if (registry.all_of<Rotatable>(e)) {
+            auto& rotatable = registry.get<Rotatable>(e);
+
+            GuiHelper::DrawHeader("Rotatable");
+            ObjectGuiDrawer::Draw(rotatable);
+
+        }
+
+        auto& transform = registry.get<LocalTransform>(e);
+
+        GuiHelper::DrawHeader("Transform");
+        ObjectGuiDrawer::Draw(transform);
+
+        ImGui::PopID();
     }
 
     void Update(float dt) override {
@@ -235,7 +275,7 @@ struct TestNetimguiClient : IState {
 };
 
 int main() {
-    Engine e({"Netimgui Client", false});
+    Engine e({"Netimgui Client", true});
     e.Start<TestNetimguiClient>();
     return 0;
 }
