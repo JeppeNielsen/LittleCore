@@ -10,6 +10,7 @@ include "../Libs/Build_bgfx.lua"
 include "../Libs/Build_ShaderCompiler.lua"
 include "../Libs/Build_LittleCore.lua"
 include "../Libs/Build_ImGui.lua"
+include "../Libs/Build_Netimgui.lua"
 
 solution "LittleCore"
    configurations { "Release", "Debug" }
@@ -70,7 +71,8 @@ project "TestNetimguiClient"
       "../../Engine/ImGui",
       "../../External/imgui",
       "../../External/glm",
-      "../../External/glaze/include"
+      "../../External/glaze/include",
+      "../../Engine/Netimgui"
    }
 
    links { 
@@ -80,7 +82,8 @@ project "TestNetimguiClient"
       "bx",
       "LittleCore",
       "ImGui",
-      "ShaderCompiler"
+      "ShaderCompiler",
+      "Netimgui"
    }
 
    filter "system:windows"

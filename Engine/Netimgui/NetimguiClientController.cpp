@@ -5,34 +5,34 @@
 #define NETIMGUI_IMPLEMENTATION
 #include <NetImgui_Api.h>
 
-#include "NetimguiClient.hpp"
+#include "NetimguiClientController.hpp"
 using namespace LittleCore;
 
-bool NetimguiClient::Start() {
+bool NetimguiClientController::Start() {
     return NetImgui::Startup();
 }
 
-void NetimguiClient::ShutDown() {
+void NetimguiClientController::ShutDown() {
     NetImgui::Shutdown();
 }
 
-void NetimguiClient::Connect(const std::string& name, const std::string& serverHost) {
+void NetimguiClientController::Connect(const std::string& name, const std::string& serverHost) {
     NetImgui::ConnectToApp(name.c_str(), serverHost.c_str());
 }
 
-bool NetimguiClient::IsConnectionPending() {
+bool NetimguiClientController::IsConnectionPending() {
     return NetImgui::IsConnectionPending();
 }
 
-bool NetimguiClient::IsConnected() {
+bool NetimguiClientController::IsConnected() {
     return NetImgui::IsConnected();
 }
 
-NetimguiClient::~NetimguiClient() {
+NetimguiClientController::~NetimguiClientController() {
     NetImgui::Shutdown();
 }
 
-void NetimguiClient::SendTexture(bgfx::TextureHandle texture, bgfx::TextureHandle textureBlit, uint32_t width, uint32_t height, std::vector<uint8_t>& pixels) {
+void NetimguiClientController::SendTexture(bgfx::TextureHandle texture, bgfx::TextureHandle textureBlit, uint32_t width, uint32_t height, std::vector<uint8_t>& pixels) {
 
     const bgfx::ViewId kCopyView = 250;
     bgfx::blit(kCopyView, textureBlit, 0, 0, texture);

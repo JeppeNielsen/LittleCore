@@ -4,7 +4,7 @@
 #include "Engine.hpp"
 #include "ImGuiController.hpp"
 #include <iostream>
-#include "NetimguiClient.hpp"
+#include "NetimguiClientController.hpp"
 #include <thread>
 #include <SDL3/SDL.h>
 #include <entt/entt.hpp>
@@ -80,7 +80,7 @@ struct RotationSystem  {
 
 struct TestNetimguiClient : IState {
     ImGuiController gui;
-    NetimguiClient netimguiClient;
+    NetimguiClientController netimguiClientController;
 
     entt::registry registry;
     CustomSimulation<RotationSystem> simulation;
@@ -140,13 +140,13 @@ struct TestNetimguiClient : IState {
 
         gui.LoadFont("/Users/jeppe/Jeppes/LittleCore/Projects/TestImGui/Source/Fonts/LucidaG.ttf", 12);
 
-        netimguiClient.Start();
-        netimguiClient.Connect("Test client", "localhost");
+        netimguiClientController.Start();
+        netimguiClientController.Connect("Test client", "localhost");
 
-        while (netimguiClient.IsConnectionPending()) {
+        while (netimguiClientController.IsConnectionPending()) {
             std::this_thread::sleep_for(std::chrono::milliseconds (16));
         }
-        if (!netimguiClient.IsConnected()) {
+        if (!netimguiClientController.IsConnected()) {
             std::cout << "couldn't connect\n";
         }
 
@@ -270,7 +270,7 @@ struct TestNetimguiClient : IState {
         bgfx::frame();
         bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
 
-        netimguiClient.SendTexture(tex, texCopy, 512, 512, pixels);
+        netimguiClientController.SendTexture(tex, texCopy, 512, 512, pixels);
     }
 
     void Render() override {
@@ -282,7 +282,7 @@ struct TestNetimguiClient : IState {
 };
 
 int main() {
-    Engine e({"Netimgui Client", false});
+    Engine e({"Netimgui Client", true});
     e.Start<TestNetimguiClient>();
     return 0;
 }
