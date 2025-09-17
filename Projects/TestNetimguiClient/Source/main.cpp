@@ -14,6 +14,7 @@
 #include "DefaultResourceManager.hpp"
 #include "ObjectGuiDrawer.hpp"
 #include <glm/glm.hpp>
+#include "ResizableFrameBuffer.hpp"
 
 using namespace LittleCore;
 
@@ -88,10 +89,9 @@ struct TestNetimguiClient : IState {
     BGFXRenderer renderer;
     ResourcePathMapper resourcePathMapper;
     DefaultResourceManager resourceManager;
-    bgfx::FrameBufferHandle fb;
-    bgfx::TextureHandle tex;
-    bgfx::TextureHandle texCopy;
-    std::vector<uint8_t> pixels;
+    ResizableFrameBuffer frameBuffer;
+    ImVec2 gameSize;
+
     Player player;
     entt::entity quad;
     entt::entity child;
@@ -177,30 +177,6 @@ struct TestNetimguiClient : IState {
         int width;
         int height;
         SDL_GetWindowSizeInPixels((SDL_Window*)mainWindow, &width, &height);
-        renderer.screenSize = {width, height};
-
-
-        const bgfx::TextureFormat::Enum kFormat = bgfx::TextureFormat::RGBA8;
-        const uint64_t kTexFlags = BGFX_TEXTURE_RT; // RT texture; sampler filtering is set when binding.
-
-        tex = bgfx::createTexture2D(
-                512,
-                512,
-                false,
-                1,
-                kFormat,
-                kTexFlags
-        );
-
-        fb = bgfx::createFrameBuffer(1, &tex, /* destroyTextures = */ true);
-
-        texCopy = bgfx::createTexture2D(
-                512, 512, false, 1, bgfx::TextureFormat::RGBA8,
-                BGFX_TEXTURE_READ_BACK | BGFX_TEXTURE_BLIT_DST
-        );
-
-        pixels.resize(512*512*4);
-
 
     }
 
@@ -218,7 +194,10 @@ struct TestNetimguiClient : IState {
         }
         ImGui::End();
         ImGui::Begin("Game");
-        ImGui::Image((void*)(uintptr_t)(tex.idx), {512,512});
+
+        gameSize = ImGui::GetContentRegionAvail();
+
+        ImGui::Image((void*)(uintptr_t)(frameBuffer.texture.idx), gameSize);
 
         ImGui::End();
 
@@ -258,31 +237,24 @@ struct TestNetimguiClient : IState {
     void Update(float dt) override {
         simulation.Update();
 
-        bgfx::setViewFrameBuffer(0, fb);
-        const uint32_t rgba =
-                (uint32_t(1 * 255.f) << 24) |
-                (uint32_t(1 * 255.f) << 16) |
-                (uint32_t(1 * 255.f) <<  8) |
-                (uint32_t(1 * 255.f) <<  0);
-        bgfx::setViewClear(0, BGFX_CLEAR_COLOR, rgba);
-        simulation.Render(renderer);
-        bgfx::touch(0);
-        bgfx::frame();
-        bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
-
-        netimguiClientController.SendTexture(tex, texCopy, 512, 512, pixels);
+        renderer.screenSize = {gameSize.x, gameSize.y};
+        if (gameSize.x>32 && gameSize.y>32) {
+            frameBuffer.Render((int) gameSize.x, (int) gameSize.y, [this]() {
+                simulation.Render(renderer);
+                bgfx::touch(0);
+                bgfx::frame();
+            });
+            netimguiClientController.SendTexture(frameBuffer.texture,  frameBuffer.width, frameBuffer.height);
+        }
     }
 
     void Render() override {
-
-
         gui.Render();
-
     }
 };
 
 int main() {
-    Engine e({"Netimgui Client", true});
+    Engine e({"Netimgui Client", false});
     e.Start<TestNetimguiClient>();
     return 0;
 }
