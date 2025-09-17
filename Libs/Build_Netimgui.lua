@@ -23,7 +23,8 @@ project "Netimgui"
       "../External/imgui/backends",
       "../External/netImgui/Code/ServerApp/Source/",
       "../External/netImgui/Code/Client/",
-      "../External/netImgui/Code/"
+      "../External/netImgui/Code/",
+      "../Engine/LittleCore/Fibers/"
    }
 
    externalincludedirs {

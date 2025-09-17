@@ -32,17 +32,17 @@ NetimguiClientController::~NetimguiClientController() {
     NetImgui::Shutdown();
 }
 
-void NetimguiClientController::SendTexture(bgfx::TextureHandle texture, bgfx::TextureHandle textureBlit, uint32_t width, uint32_t height, std::vector<uint8_t>& pixels) {
+void NetimguiClientController::SendTexture(bgfx::TextureHandle texture, uint32_t width, uint32_t height) {
+    textureSender.SendTexture(texture, width, height);
+}
 
-    const bgfx::ViewId kCopyView = 250;
-    bgfx::blit(kCopyView, textureBlit, 0, 0, texture);
-    uint32_t readyFrame = bgfx::readTexture(textureBlit, pixels.data());
+Fiber NetimguiClientController::ConnectFlow(const std::string& clientName, const std::string& serverHost, bool& didConnect) {
 
-    while (bgfx::frame(false)< readyFrame) {
-
+    while (IsConnectionPending()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds (16));
+        co_yield 0;
     }
 
-    NetImgui::SendDataTexture((ImTextureID) (uintptr_t) texture.idx, pixels.data(), width, height,
-                              NetImgui::eTexFormat::kTexFmtRGBA8);
+    didConnect = IsConnected();
 }
 

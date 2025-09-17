@@ -6,6 +6,8 @@
 #pragma once
 #include <string>
 #include <bgfx/bgfx.h>
+#include "Fiber.hpp"
+#include "NetimguiTextureSender.hpp"
 
 namespace LittleCore {
 
@@ -21,8 +23,12 @@ namespace LittleCore {
 
         bool IsConnectionPending();
         bool IsConnected();
-        void SendTexture(bgfx::TextureHandle texture, bgfx::TextureHandle textureBlit, uint32_t width, uint32_t height, std::vector<uint8_t>& pixels);
+        void SendTexture(bgfx::TextureHandle texture, uint32_t width, uint32_t height);
 
+        Fiber ConnectFlow(const std::string& clientName, const std::string& serverHost, bool& didConnect);
+
+    private:
+        NetimguiTextureSender textureSender;
     };
 
 
