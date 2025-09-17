@@ -7,10 +7,10 @@
 #include "ImGuiController.hpp"
 
 namespace LittleCore {
-    class NetimguiController {
+    class NetimguiServerController {
     public:
-        NetimguiController(ImGuiController& guiController);
-        ~NetimguiController();
+        NetimguiServerController(ImGuiController& guiController);
+        ~NetimguiServerController();
         bool Start();
         void Update();
         void Draw();

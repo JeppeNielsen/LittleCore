@@ -3,7 +3,7 @@
 //
 #include "Engine.hpp"
 #include "ImGuiController.hpp"
-#include "NetimguiController.hpp"
+#include "NetimguiServerController.hpp"
 #include <iostream>
 #include <spawn.h>
 #include <sys/wait.h>
@@ -16,7 +16,7 @@ using namespace LittleCore;
 
 struct ImguiTest : IState {
     ImGuiController gui;
-    NetimguiController netimguiController;
+    NetimguiServerController netimguiController;
 
     ImguiTest() : netimguiController(gui) {}
 

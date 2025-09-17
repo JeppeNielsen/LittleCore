@@ -2,7 +2,7 @@
 // Created by Jeppe Nielsen on 13/09/2025.
 //
 
-#include "NetimguiController.hpp"
+#include "NetimguiServerController.hpp"
 #include "NetImguiServer_App.h"
 #include "NetImguiServer_UI.h"
 #include "NetImguiServer_RemoteClient.h"
@@ -221,24 +221,24 @@ namespace NetImguiServer {
 
 
 
-NetimguiController::NetimguiController(ImGuiController& guiController) : guiController(guiController) {
+NetimguiServerController::NetimguiServerController(ImGuiController& guiController) : guiController(guiController) {
     staticUIController = &guiController;
 }
 
-bool NetimguiController::Start() {
+bool NetimguiServerController::Start() {
     std::string cmdArgs;
     return NetImguiServer::App::Startup(cmdArgs.c_str());
 }
 
-void NetimguiController::Update() {
+void NetimguiServerController::Update() {
     NetImguiServer::App::UpdateRemoteContent();
 }
 
-void NetimguiController::Draw() {
+void NetimguiServerController::Draw() {
     NetImguiServer::UI::DrawImguiContent();
 }
 
-NetimguiController::~NetimguiController() {
+NetimguiServerController::~NetimguiServerController() {
     NetImguiServer::App::Shutdown();
     staticUIController = nullptr;
 }
