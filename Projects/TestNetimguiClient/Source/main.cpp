@@ -38,6 +38,11 @@ struct glz::meta<glm::quat> {
     static constexpr auto value = glz::object();
 };
 
+template<>
+struct glz::meta<glm::vec2> {
+    static constexpr auto value = glz::object();
+};
+
 
 struct Rotatable {
     float speed = 0.0f;
@@ -49,6 +54,7 @@ struct Player {
     int age = 12;
     float percentage = 0.5f;
     glm::vec3 position = {0,0,0};
+    glm::vec2 size = {1,1};
 };
 
 struct RotationSystem  {
@@ -144,7 +150,7 @@ struct TestNetimguiClient : IState {
             std::cout << "couldn't connect\n";
         }
 
-        resourcePathMapper.RefreshFromRootPath("/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Assets");
+        resourcePathMapper.RefreshFromRootPath("/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets/");
         resourceManager.CreateLoaderFactory<ShaderResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
 
@@ -166,6 +172,7 @@ struct TestNetimguiClient : IState {
         registry.emplace<Rotatable>(quad);
 
         child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
+        registry.emplace<Rotatable>(child);
 
         int width;
         int height;
@@ -275,7 +282,7 @@ struct TestNetimguiClient : IState {
 };
 
 int main() {
-    Engine e({"Netimgui Client", true});
+    Engine e({"Netimgui Client", false});
     e.Start<TestNetimguiClient>();
     return 0;
 }
