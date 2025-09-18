@@ -15,35 +15,9 @@
 #include "ObjectGuiDrawer.hpp"
 #include <glm/glm.hpp>
 #include "ResizableFrameBuffer.hpp"
+#include "MathReflection.hpp"
 
 using namespace LittleCore;
-
-template<>
-struct glz::meta<glm::vec<3, float>> {
-    //using T = glm::vec<3, float>;
-    // reflect as an array [x, y, z]
-    /*static constexpr auto value = glz::object(
-            "x", &T::x,
-            "y", &T::y,
-            "z", &T::z
-    );
-     */
-
-    static constexpr auto value = glz::object(
-
-    );
-};
-
-template<>
-struct glz::meta<glm::quat> {
-    static constexpr auto value = glz::object();
-};
-
-template<>
-struct glz::meta<glm::vec2> {
-    static constexpr auto value = glz::object();
-};
-
 
 struct Rotatable {
     float speed = 0.0f;
@@ -54,8 +28,10 @@ struct Player {
     std::string name;
     int age = 12;
     float percentage = 0.5f;
-    glm::vec3 position = {0,0,0};
+    glm::vec3 position = {2,1,0};
     glm::vec2 size = {1,1};
+    glm::quat rotation = glm::quat({0,0,0});
+    LittleCore::Rect viewPort;
 };
 
 struct RotationSystem  {
@@ -174,10 +150,10 @@ struct TestNetimguiClient : IState {
         child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
         registry.emplace<Rotatable>(child);
 
-        int width;
-        int height;
-        SDL_GetWindowSizeInPixels((SDL_Window*)mainWindow, &width, &height);
+        std::string playerJson;
+        auto error = glz::write<glz::opts{.prettify = true}>(player, playerJson);
 
+        std::cout << playerJson << "\n";
     }
 
     void HandleEvent(void* event) override {
@@ -211,6 +187,7 @@ struct TestNetimguiClient : IState {
         DrawEntity(child);
 
         ImGui::End();
+
 
 
     }
@@ -254,7 +231,7 @@ struct TestNetimguiClient : IState {
 };
 
 int main() {
-    Engine e({"Netimgui Client", false});
+    Engine e({"Netimgui Client", true});
     e.Start<TestNetimguiClient>();
     return 0;
 }

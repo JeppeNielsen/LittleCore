@@ -50,8 +50,10 @@ namespace LittleCore {
                     }
 
                 } else {
-                    callable(fieldNames.keys[memberIndex], value);
-                    IterateMembers(value, callable);
+                    bool recurse = callable(fieldNames.keys[memberIndex], value);
+                    if (recurse) {
+                        IterateMembers(value, callable);
+                    }
                 }
                 memberIndex++;
             });

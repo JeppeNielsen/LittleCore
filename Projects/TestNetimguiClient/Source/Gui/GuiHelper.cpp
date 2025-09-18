@@ -37,62 +37,12 @@ void GuiHelper::DrawColor(bool& didChange, const std::string& name, uint32_t& co
     didChange |= ImGui::IsItemEdited();
 }
 
-template<>
-void GuiHelper::Draw<bool>(bool& didChange, const std::string &name, bool& value) {
-    ImGui::Checkbox(name.c_str(), &value);
-    didChange |= ImGui::IsItemEdited();
-}
 
-template<>
-void GuiHelper::Draw<float>(bool& didChange, const std::string &name, float &value) {
-    ImGui::InputFloat(name.c_str(), &value);
-    didChange |= ImGui::IsItemEdited();
-}
-
-template<>
-void GuiHelper::Draw<vec2>(bool& didChange, const std::string &name, vec2 &value) {
-    ImGui::InputFloat2(name.c_str(), &value.x);
-    didChange |= ImGui::IsItemEdited();
-}
-
-template<>
-void GuiHelper::Draw<vec3>(bool& didChange, const std::string &name, vec3 &value) {
-    ImGui::InputFloat3(name.c_str(), &value.x);
-    didChange |= ImGui::IsItemEdited();
-}
-
-template<>
-void GuiHelper::Draw<quat>(bool& didChange, const std::string &name, quat &value) {
-    vec3 euler = glm::eulerAngles(value);
-    vec3 degrees = glm::degrees(euler);
-    ImGui::InputFloat3(name.c_str(), &degrees.x);
-    vec3 radians = glm::radians(degrees);
-    value = glm::quat(radians);
-
-    didChange |= ImGui::IsItemEdited();
-}
-
-template<>
-void GuiHelper::Draw<Rect>(bool& didChange, const std::string& name, Rect& value) {
-    Draw(didChange, "min", value.min);
-    Draw(didChange, "max", value.max);
-}
 
 void GuiHelper::DrawLabel(const std::string& label) {
     ImGui::LabelText(label.c_str(), "");
 }
 
-template<>
-void GuiHelper::Draw<std::string>(bool& didChange, const std::string& name, std::string& value) {
-    //ImGui::Text(value.c_str(), value.c_str());
-    didChange |= GuiHelper::InputText(name, value);
-}
-
-template<>
-void GuiHelper::Draw<int>(bool& didChange, const std::string &name, int& value) {
-    ImGui::InputInt(name.c_str(), &value);
-    didChange |= ImGui::IsItemEdited();
-}
 
 static int InputTextCallback(ImGuiInputTextCallbackData* data) {
     if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {
