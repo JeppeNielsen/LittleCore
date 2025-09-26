@@ -17,7 +17,9 @@ public:
         LittleCore::ReflectionUtility::IterateMembers(object, [&options](const std::string_view& name, auto& value) {
             std::string nameValue(name);
             options.recurse = false;
+            ImGui::PushID(&value);
             GuiHelper::Draw(options, nameValue, value);
+            ImGui::PopID();
             return options.recurse;
         });
 
