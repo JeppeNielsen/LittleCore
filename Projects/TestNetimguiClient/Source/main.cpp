@@ -40,33 +40,49 @@ struct Player {
     LittleCore::Rect viewPort;
 };
 
-struct RotationSystem  {
+struct RotationSystem : UpdateSystem {
 
-    entt::registry& registry;
-
-    RotationSystem(entt::registry& registry) : registry(registry) {}
-
-
-    void Update() {
+    void Update(float dt) {
 
         auto view = registry.view<const Rotatable, LocalTransform>();
         for(auto[entity, rotatable, transform] : view.each()) {
             auto roll = glm::roll(transform.rotation);
             auto yaw = glm::yaw(transform.rotation);
 
-            transform.rotation = glm::quat({0, yaw + rotatable.speedY,roll + rotatable.speed});
+            transform.rotation = glm::quat({0, yaw + rotatable.speedY * dt,roll + rotatable.speed * dt});
             registry.patch<LocalTransform>(entity);
         }
     }
 
 };
 
+struct Wobbler {
+    float speed = 0;
+    vec3 direction = vec3(0,1,0);
+    float position = 0;
+};
+
+
+
+struct WobblerSystem : UpdateSystem {
+
+    void Update(float dt) {
+        auto view = registry.view<LocalTransform, Wobbler>();
+        for(auto[entity, transform, wobbler] : view.each()) {
+            transform.position = vec3(0,0,0) + wobbler.direction * sin(wobbler.position);
+            wobbler.position += wobbler.speed * dt;
+        }
+    }
+
+};
+
+
 struct TestNetimguiClient : IState {
     ImGuiController gui;
     NetimguiClientController netimguiClientController;
 
     entt::registry registry;
-    CustomSimulation<RotationSystem> simulation;
+    CustomSimulation<RotationSystem, WobblerSystem> simulation;
     SDLInputHandler sdlInputHandler;
     BGFXRenderer renderer;
     ResourcePathMapper resourcePathMapper;
@@ -157,6 +173,8 @@ struct TestNetimguiClient : IState {
         child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
         registry.emplace<Rotatable>(child);
 
+        registry.emplace<Wobbler>(quad);
+
         std::string playerJson;
         auto error = glz::write<glz::opts{.prettify = true}>(player, playerJson);
 
@@ -206,7 +224,7 @@ struct TestNetimguiClient : IState {
     }
 
     void Update(float dt) override {
-        simulation.Update();
+        simulation.Update(dt);
 
         renderer.screenSize = {gameSize.x, gameSize.y};
         if (gameSize.x>32 && gameSize.y>32) {
