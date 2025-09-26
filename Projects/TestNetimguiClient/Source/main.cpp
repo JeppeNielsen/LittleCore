@@ -7,7 +7,7 @@
 #include "NetimguiClientController.hpp"
 #include <thread>
 #include <SDL3/SDL.h>
-#include <entt/entt.hpp>
+#include "StorageFactory.hpp"
 #include "DefaultSimulation.hpp"
 #include "SDLInputHandler.hpp"
 #include "BgfxRenderer.hpp"
@@ -16,15 +16,21 @@
 #include <glm/glm.hpp>
 #include "ResizableFrameBuffer.hpp"
 #include "MathReflection.hpp"
+#include "EntityGuiDrawer.hpp"
 
 using namespace LittleCore;
+
 
 struct Rotatable {
     float speed = 0.0f;
     float speedY = 0.0f;
+    float speedX = 0;
 };
 
 struct Player {
+    void Start() {
+        age++;
+    }
     std::string name;
     int age = 12;
     float percentage = 0.5f;
@@ -67,6 +73,7 @@ struct TestNetimguiClient : IState {
     DefaultResourceManager resourceManager;
     ResizableFrameBuffer frameBuffer;
     ImVec2 gameSize;
+    EntityGuiDrawer drawer;
 
     Player player;
     entt::entity quad;
@@ -179,12 +186,16 @@ struct TestNetimguiClient : IState {
 
         ImGui::Begin("Inspector");
 
-        GuiHelper::DrawHeader("Player");
+        //GuiHelper::DrawHeader("Player");
 
-        ObjectGuiDrawer::Draw(player);
+        //ObjectGuiDrawer::Draw(player);
 
-        DrawEntity(quad);
-        DrawEntity(child);
+        auto &storage = registry.storage<entt::entity>();
+        for (auto entity : storage) {
+            if (registry.valid(entity)) {
+                DrawEntity(entity);
+            }
+        }
 
         ImGui::End();
 
@@ -195,7 +206,9 @@ struct TestNetimguiClient : IState {
     void DrawEntity(entt::entity e) {
 
         ImGui::PushID((int)e);
-        if (registry.all_of<Rotatable>(e)) {
+
+
+        /*if (registry.all_of<Rotatable>(e)) {
             auto& rotatable = registry.get<Rotatable>(e);
 
             GuiHelper::DrawHeader("Rotatable");
@@ -207,6 +220,10 @@ struct TestNetimguiClient : IState {
 
         GuiHelper::DrawHeader("Transform");
         ObjectGuiDrawer::Draw(transform);
+         */
+
+        GuiHelper::DrawHeader("Entity:");
+        drawer.Draw(registry, e);
 
         ImGui::PopID();
     }
