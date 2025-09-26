@@ -185,11 +185,6 @@ struct TestNetimguiClient : IState {
         ImGui::End();
 
         ImGui::Begin("Inspector");
-
-        //GuiHelper::DrawHeader("Player");
-
-        //ObjectGuiDrawer::Draw(player);
-
         auto &storage = registry.storage<entt::entity>();
         for (auto entity : storage) {
             if (registry.valid(entity)) {
@@ -198,29 +193,11 @@ struct TestNetimguiClient : IState {
         }
 
         ImGui::End();
-
-
-
     }
 
     void DrawEntity(entt::entity e) {
 
         ImGui::PushID((int)e);
-
-
-        /*if (registry.all_of<Rotatable>(e)) {
-            auto& rotatable = registry.get<Rotatable>(e);
-
-            GuiHelper::DrawHeader("Rotatable");
-            ObjectGuiDrawer::Draw(rotatable);
-
-        }
-
-        auto& transform = registry.get<LocalTransform>(e);
-
-        GuiHelper::DrawHeader("Transform");
-        ObjectGuiDrawer::Draw(transform);
-         */
 
         GuiHelper::DrawHeader("Entity:");
         drawer.Draw(registry, e);

@@ -7,7 +7,6 @@
 #include <iostream>
 #include "StorageFactory.hpp"
 
-
 using namespace LittleCore;
 
 
