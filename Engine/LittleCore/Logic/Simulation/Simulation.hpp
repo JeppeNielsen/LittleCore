@@ -12,6 +12,17 @@
 #include <iostream>
 #include "TypeUtility.hpp"
 
+
+namespace LittleCore {
+    struct UpdateSystem {
+        entt::registry& registry;
+        UpdateSystem(entt::registry& registry) : registry(registry) {}
+    };
+}
+
+template <typename T>
+concept UpdateSystemWithDeltaTime = std::derived_from<T, LittleCore::UpdateSystem>;
+
 namespace LittleCore {
 
     template<typename ...T>
@@ -64,13 +75,21 @@ namespace LittleCore {
             });
         }
 
-        void Update() {
+        void Update(float dt) {
             TupleHelper::for_each(inputSystems.systems, [] (auto& inputSystem) {
                 inputSystem.Update();
             });
-            TupleHelper::for_each(updateSystems.systems, [] (auto& updateSystem) {
+            TupleHelper::for_each(updateSystems.systems, [dt] (auto& updateSystem) {
+                using updateSystemType = std::remove_cvref_t<decltype(updateSystem)>;
+
+                if constexpr (UpdateSystemWithDeltaTime<updateSystemType>) {
+                    updateSystem.Update(dt);
+                } else {
+                    updateSystem.Update();
+                }
+
                //std::cout << "Begin " << TypeUtility::GetClassName< decltype(updateSystem)>() << "\n";
-               updateSystem.Update();
+
                //std::cout << "End" << TypeUtility::GetClassName< decltype(updateSystem)>() << "\n";
             });
             TupleHelper::for_each(renderSystems.systems, [] (auto& renderSystem) {
