@@ -65,7 +65,7 @@ project "TestNetimgui"
       "../../External/sdl/include",
       "../../External/bgfx/include",
       "../../External/bx/include",
-      "../../External/entt/single_include",
+      "../../External/entt/src",
       "../../Engine/ImGui",
       "../../Engine/Netimgui",
       "../../External/imgui"
