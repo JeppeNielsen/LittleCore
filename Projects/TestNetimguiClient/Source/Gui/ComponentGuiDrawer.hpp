@@ -16,7 +16,7 @@ namespace LittleCore {
 
         }
 
-        virtual void Draw(entt::registry& registry, entt::entity entity) = 0;
+        virtual bool Draw(entt::registry& registry, entt::entity entity) = 0;
 
     };
 
@@ -27,10 +27,14 @@ namespace LittleCore {
 
         ~ComponentGuiDrawer() override { }
 
-        void Draw(entt::registry& registry, entt::entity entity) override {
+        bool Draw(entt::registry& registry, entt::entity entity) override {
             GuiHelper::DrawHeader(name);
             T& component = registry.get<T>(entity);
-            ObjectGuiDrawer::Draw(component);
+            bool didChange = ObjectGuiDrawer::Draw(component);
+            if (didChange) {
+                registry.patch<T>(entity);
+            }
+            return didChange;
         }
 
     };
