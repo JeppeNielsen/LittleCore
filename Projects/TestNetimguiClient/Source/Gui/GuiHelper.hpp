@@ -33,19 +33,19 @@ public:
 
     template<>
     void Draw<float>(DrawOptions& options, const std::string &name, float &value) {
-        ImGui::InputFloat(name.c_str(), &value);
+        ImGui::InputFloat(name.c_str(), &value,0.0f,0.0f, "%.4f");
         options.didChange |= ImGui::IsItemEdited();
     }
 
     template<>
     void Draw<vec2>(DrawOptions& options, const std::string &name, vec2 &value) {
-        ImGui::InputFloat2(name.c_str(), &value.x);
+        ImGui::InputFloat2(name.c_str(), &value.x, "%.4f");
         options.didChange |= ImGui::IsItemEdited();
     }
 
     template<>
     void Draw<vec3>(DrawOptions& options, const std::string &name, vec3 &value) {
-        ImGui::InputFloat3(name.c_str(), &value.x);
+        ImGui::InputFloat3(name.c_str(), &value.x, "%.4f");
         options.didChange |= ImGui::IsItemEdited();
     }
 
