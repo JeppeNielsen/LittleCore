@@ -6,32 +6,31 @@
 #include "Input.hpp"
 #include "Movable.hpp"
 #include "LocalTransform.hpp"
+#include "WorldTransform.hpp"
 
 using namespace LittleCore;
 
-void MovableSystem::Update() {
-    for(auto e : registry.view<Input, Movable, LocalTransform>()) {
-        auto& input = registry.get<Input>(e);
-        auto& movable = registry.get<Movable>(e);
-
+void MovableSystem::Update(float dt) {
+    auto view = registry.view<const Input, Movable, LocalTransform, const WorldTransform>();
+    for(auto[entity, input, movable, localTransform, worldTransform] : view.each()) {
+        bool hasChanged = false;
         for(auto& movementKey : movable.keys){
 
-            if (input.IsKeyDown(movementKey.key)) {
+            if (!movementKey.isActive && input.IsKeyDown(movementKey.key)) {
                 movementKey.isActive = true;
-            }
-
-            if (input.IsKeyUp(movementKey.key)) {
+            } else if (movementKey.isActive && input.IsKeyUp(movementKey.key)) {
                 movementKey.isActive = false;
             }
 
             if (movementKey.isActive) {
-                auto& transform = registry.patch<LocalTransform>(e);
-                transform.position +=  movementKey.direction * 0.02f;
+                vec3 worldForward = worldTransform.world * vec4(movementKey.direction, 0.0f);
+                localTransform.position += worldForward * movable.speed * dt;
+                hasChanged = true;
             }
         }
+
+        if (hasChanged) {
+            registry.patch<LocalTransform>(entity);
+        }
     }
-}
-
-MovableSystem::MovableSystem(entt::registry &registry) : registry(registry) {
-
 }

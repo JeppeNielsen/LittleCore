@@ -4,15 +4,12 @@
 
 
 #pragma once
-#include <entt/entt.hpp>
+#include "SystemBase.hpp"
+#include "Movable.hpp"
 
 namespace LittleCore {
-    class MovableSystem {
-    public:
-        MovableSystem(entt::registry &registry);
-        void Update();
-    private:
-        entt::registry& registry;
+    struct MovableSystem : SystemBase {
+        void Update(float dt);
     };
 }
 

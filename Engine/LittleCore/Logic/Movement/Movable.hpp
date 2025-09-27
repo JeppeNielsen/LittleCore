@@ -16,6 +16,7 @@ namespace LittleCore {
     };
 
     struct Movable {
+        float speed = 1.0f;
         std::vector<MovementKey> keys;
     };
 }
