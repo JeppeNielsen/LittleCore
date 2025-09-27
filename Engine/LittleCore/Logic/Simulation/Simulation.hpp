@@ -12,14 +12,6 @@
 #include <iostream>
 #include "TypeUtility.hpp"
 
-
-namespace LittleCore {
-    struct SystemBase {
-        entt::registry& registry;
-        SystemBase(entt::registry& registry) : registry(registry) {}
-    };
-}
-
 template <typename T>
 concept HasUpdateFunction = requires(T t) {
     { t.Update() } -> std::same_as<void>;
@@ -88,16 +80,11 @@ namespace LittleCore {
             });
             TupleHelper::for_each(updateSystems.systems, [dt] (auto& updateSystem) {
                 using updateSystemType = std::remove_cvref_t<decltype(updateSystem)>;
-
                 if constexpr (HasUpdateFunctionWithDelta<updateSystemType>) {
                     updateSystem.Update(dt);
                 } else if constexpr (HasUpdateFunction<updateSystemType>){
                     updateSystem.Update();
                 }
-
-               //std::cout << "Begin " << TypeUtility::GetClassName< decltype(updateSystem)>() << "\n";
-
-               //std::cout << "End" << TypeUtility::GetClassName< decltype(updateSystem)>() << "\n";
             });
             TupleHelper::for_each(renderSystems.systems, [] (auto& renderSystem) {
                 renderSystem.Update();
