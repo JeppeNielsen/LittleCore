@@ -20,6 +20,7 @@
 #include "SystemBase.hpp"
 #include "InputRotationSystem.hpp"
 #include "MovableSystem.hpp"
+#include "ImGuizmo.h"
 
 using namespace LittleCore;
 
@@ -76,6 +77,8 @@ struct TestNetimguiClient : IState {
     ResizableFrameBuffer frameBuffer;
     ImVec2 gameSize;
     EntityGuiDrawer drawer;
+    entt::entity cameraObject;
+    entt::entity quadObject;
 
     TestNetimguiClient() : simulation(registry), resourceManager(resourcePathMapper) {}
 
@@ -136,7 +139,7 @@ struct TestNetimguiClient : IState {
         resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
 
         {
-            auto cameraObject = registry.create();
+            cameraObject = registry.create();
             registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -10};
             registry.emplace<WorldTransform>(cameraObject);
             registry.emplace<Hierarchy>(cameraObject);
@@ -172,12 +175,13 @@ struct TestNetimguiClient : IState {
 
         auto quad = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
         registry.emplace<Rotatable>(quad);
+        quadObject = quad;
 
         auto child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
         registry.emplace<Rotatable>(child);
 
         //registry.emplace<Wobbler>(child);
-        registry.emplace<Wobbler>(quad);
+        //registry.emplace<Wobbler>(quad);
 
         auto floor = CreateQuadNew(registry, {0,0,0}, {10,10,1});
         auto rot = glm::radians(vec3(90,0,0));
@@ -203,6 +207,34 @@ struct TestNetimguiClient : IState {
         gameSize = ImGui::GetContentRegionAvail();
 
         ImGui::Image((void*)(uintptr_t)(frameBuffer.texture.idx), gameSize);
+
+        static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+
+        ImGuizmo::BeginFrame();
+
+        // Set up ImGuizmo context (normally inside your ImGui window/draw code)
+        ImGuizmo::SetDrawlist();
+
+        ImGuizmo::SetRect(0, 0, gameSize.x, gameSize.y);
+
+        auto& camera = registry.get<Camera>(cameraObject);
+        auto& cameraWorldTransform = registry.get<WorldTransform>(cameraObject);
+        auto& quadWorldTransform = registry.get<WorldTransform>(quadObject);
+
+        ImGuizmo::Manipulate(glm::value_ptr(cameraWorldTransform.worldInverse), glm::value_ptr(camera.GetProjection(gameSize.x/gameSize.y)), mCurrentGizmoOperation, ImGuizmo::MODE::LOCAL, glm::value_ptr(quadWorldTransform.world));
+
+        float translation[3], rotationDeg[3], scale[3];
+        {
+            float m[16];
+            memcpy(m, glm::value_ptr(quadWorldTransform.world), sizeof(m));
+            ImGuizmo::DecomposeMatrixToComponents(m, translation, rotationDeg, scale);
+
+            auto& quadLocalTransform = registry.get<LocalTransform>(quadObject);
+            quadLocalTransform.position = vec3(translation[0], translation[1], translation[2]);
+            quadLocalTransform.rotation = quat({rotationDeg[0], rotationDeg[1], rotationDeg[2]});
+            quadLocalTransform.scale = vec3(scale[0], scale[1], scale[2]);
+            registry.patch<LocalTransform>(quadObject);
+        }
 
         ImGui::End();
 
