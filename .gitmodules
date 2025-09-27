@@ -32,3 +32,6 @@
 [submodule "External/netImgui"]
 	path = External/netImgui
 	url = https://github.com/sammyfreg/netImgui
+[submodule "External/ImGuizmo"]
+	path = External/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git
