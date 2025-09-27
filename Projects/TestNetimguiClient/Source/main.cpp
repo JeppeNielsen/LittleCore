@@ -17,6 +17,9 @@
 #include "ResizableFrameBuffer.hpp"
 #include "MathReflection.hpp"
 #include "EntityGuiDrawer.hpp"
+#include "SystemBase.hpp"
+#include "InputRotationSystem.hpp"
+#include "MovableSystem.hpp"
 
 using namespace LittleCore;
 
@@ -58,89 +61,14 @@ struct WobblerSystem : SystemBase {
             wobbler.position += wobbler.speed * dt;
         }
     }
-
 };
-
-struct CameraMovementKey {
-    InputKey key;
-    vec3 movement;
-    bool isMoving = false;
-};
-
-struct CameraMovement {
-    float forwardSpeed = 1.0f;
-    float rotationSpeed = 0.0005f;
-
-    std::vector<CameraMovementKey> movementKeys;
-
-    bool isRotating;
-
-    quat startingRotation;
-    vec2 touchPosition;
-};
-
-struct CameraMovementSystem : SystemBase {
-
-    void Update(float dt) {
-        auto view = registry.view<LocalTransform, const WorldTransform, const Input, CameraMovement>();
-
-        for(auto[entity, transform, worldTransform, input, movement] : view.each()) {
-
-            for(auto& key : movement.movementKeys) {
-                if (!key.isMoving && input.IsKeyDown(key.key)) {
-                    key.isMoving = true;
-                } else if (key.isMoving && input.IsKeyUp(key.key)) {
-                    key.isMoving = false;
-                }
-
-                if (key.isMoving) {
-                    vec3 worldForward = worldTransform.world * vec4(key.movement, 0.0f);
-                    transform.position += worldForward * dt * movement.forwardSpeed;
-                    registry.patch<LocalTransform>(entity);
-                }
-            }
-
-            if (!movement.isRotating && input.IsTouchDown({0})) {
-                movement.isRotating = true;
-                movement.startingRotation = transform.rotation;
-                movement.touchPosition = input.touchPosition[0].position;
-            } else if (movement.isRotating && input.IsTouchUp({0})) {
-                movement.isRotating = false;
-            }
-
-            if (movement.isRotating) {
-
-                vec2 delta = movement.touchPosition - input.touchPosition[0].position;
-
-                auto pitch = glm::pitch(movement.startingRotation);
-                auto yaw = glm::yaw(movement.startingRotation);
-                yaw -= delta.x * movement.rotationSpeed;
-                pitch -= delta.y * movement.rotationSpeed;
-
-                const float piHalf = glm::pi<float>() * 0.5f;
-
-                if (pitch<-piHalf) {
-                    pitch = -piHalf;
-                } else if (pitch>piHalf) {
-                    pitch = piHalf;
-                }
-
-                transform.rotation = glm::quat({pitch, yaw, 0});
-                registry.patch<LocalTransform>(entity);
-            }
-        }
-    }
-
-};
-
-
 
 struct TestNetimguiClient : IState {
     ImGuiController gui;
     NetimguiClientController netimguiClientController;
 
     entt::registry registry;
-    CustomSimulation<RotationSystem, WobblerSystem, CameraMovementSystem> simulation;
+    CustomSimulation<RotationSystem, WobblerSystem, MovableSystem, InputRotationSystem> simulation;
     SDLInputHandler sdlInputHandler;
     BGFXRenderer renderer;
     ResourcePathMapper resourcePathMapper;
@@ -220,24 +148,26 @@ struct TestNetimguiClient : IState {
             camera.viewRect = {{0,    0},
                                {1.0f, 1.0f}};
 
-            auto& movement = registry.emplace<CameraMovement>(cameraObject);
-            movement.movementKeys.push_back({
+            auto& movable = registry.emplace<Movable>(cameraObject);
+            movable.keys.push_back({
                 InputKey::A,
                 vec3(-1,0,0)
             });
-            movement.movementKeys.push_back({
+            movable.keys.push_back({
                                                     InputKey::D,
                                                     vec3(1,0,0)
                                             });
-            movement.movementKeys.push_back({
+            movable.keys.push_back({
                                                     InputKey::W,
                                                     vec3(0,0,1)
                                             });
-            movement.movementKeys.push_back({
+            movable.keys.push_back({
                                                     InputKey::S,
                                                     vec3(0,0,-1)
                                             });
             registry.emplace<Input>(cameraObject);
+
+            auto& inputRotation = registry.emplace<InputRotation>(cameraObject);
         }
 
         auto quad = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
