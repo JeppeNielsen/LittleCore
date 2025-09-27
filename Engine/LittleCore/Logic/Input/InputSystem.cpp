@@ -21,5 +21,5 @@ void InputSystem::Update() {
     for(auto& entity : view) {
         registry.patch<Input>(entity) = currentInput;
     }
-    currentInput = {};
+    currentInput.Clear();
 }

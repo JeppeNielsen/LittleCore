@@ -21,6 +21,15 @@ void SDLInputHandler::HandleInput(void *eventPtr, LittleCore::Input &input) {
         case SDL_EVENT_KEY_DOWN:
             input.keysDown.push_back(InputKeyMapper::FromId(event.key.keysym.scancode));
             break;
+        case SDL_EVENT_MOUSE_MOTION:
+            input.touchPosition[0].position = vec2(event.motion.x, event.motion.y);
+            break;
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            input.touchesDown.push_back({0});
+            break;
+        case SDL_EVENT_MOUSE_BUTTON_UP:
+            input.touchesUp.push_back({0});
+            break;
     }
 }
 

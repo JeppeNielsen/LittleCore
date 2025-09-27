@@ -29,7 +29,7 @@ namespace LittleCore {
         KeyCollection keysDown;
         KeyCollection keysUp;
 
-        bool KeyIsInCollection(KeyCollection& keyCollection, InputKey key) {
+        bool KeyIsInCollection(const KeyCollection& keyCollection, InputKey key) const {
             for(auto k : keyCollection) {
                 if (k == key) {
                     return true;
@@ -38,12 +38,36 @@ namespace LittleCore {
             return false;
         }
 
-        bool IsKeyDown(InputKey key) {
+        bool IsKeyDown(InputKey key) const {
             return KeyIsInCollection(keysDown, key);
         }
 
-        bool IsKeyUp(InputKey key) {
+        bool IsKeyUp(InputKey key) const {
             return KeyIsInCollection(keysUp, key);
+        }
+
+        bool TouchIsInCollection(const TouchCollection& touchCollection, InputTouch touch) const {
+            for(auto t : touchCollection) {
+                if (t.index == touch.index) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        bool IsTouchDown(InputTouch touch) const {
+            return TouchIsInCollection(touchesDown, touch);
+        }
+
+        bool IsTouchUp(InputTouch touch) const {
+            return TouchIsInCollection(touchesUp, touch);
+        }
+
+        void Clear() {
+            touchesDown.clear();
+            touchesUp.clear();
+            keysDown.clear();
+            keysUp.clear();
         }
 
     };
