@@ -5,6 +5,7 @@
 #include <glaze/glaze.hpp>
 #include "BoundingBox.hpp"
 #include "ResourceHandle.hpp"
+#include "Input.hpp"
 
 template<>
 struct glz::meta<glm::vec3> {
@@ -61,5 +62,12 @@ template<typename TResource>
 struct glz::meta<LittleCore::ResourceHandle<TResource>> {
     using T = LittleCore::ResourceHandle<TResource>;
     static constexpr auto value = glz::object(
+    );
+};
+
+template<>
+struct glz::meta<LittleCore::Input> {
+    static constexpr auto value = glz::object(
+
     );
 };
