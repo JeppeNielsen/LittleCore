@@ -117,25 +117,19 @@ struct CameraMovementSystem : SystemBase {
                 yaw -= delta.x * movement.rotationSpeed;
                 pitch -= delta.y * movement.rotationSpeed;
 
-                if (pitch<-89) {
-                    pitch = -89;
-                } else if (pitch>89) {
-                    pitch = 89;
+                const float piHalf = glm::pi<float>() * 0.5f;
+
+                if (pitch<-piHalf) {
+                    pitch = -piHalf;
+                } else if (pitch>piHalf) {
+                    pitch = piHalf;
                 }
 
                 transform.rotation = glm::quat({pitch, yaw, 0});
                 registry.patch<LocalTransform>(entity);
             }
-
-
-
         }
-
-
-
     }
-
-
 
 };
 
@@ -256,7 +250,8 @@ struct TestNetimguiClient : IState {
         registry.emplace<Wobbler>(quad);
 
         auto floor = CreateQuadNew(registry, {0,0,0}, {10,10,1});
-        registry.get<LocalTransform>(floor).rotation = quat({-90,0,0});
+        auto rot = glm::radians(vec3(90,0,0));
+        registry.get<LocalTransform>(floor).rotation = quat(rot);
 
     }
 
