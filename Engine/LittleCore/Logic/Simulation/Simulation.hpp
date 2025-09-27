@@ -14,14 +14,21 @@
 
 
 namespace LittleCore {
-    struct UpdateSystem {
+    struct SystemBase {
         entt::registry& registry;
-        UpdateSystem(entt::registry& registry) : registry(registry) {}
+        SystemBase(entt::registry& registry) : registry(registry) {}
     };
 }
 
 template <typename T>
-concept UpdateSystemWithDeltaTime = std::derived_from<T, LittleCore::UpdateSystem>;
+concept HasUpdateFunction = requires(T t) {
+    { t.Update() } -> std::same_as<void>;
+};
+
+template <typename T>
+concept HasUpdateFunctionWithDelta = requires(T t, float dt) {
+    { t.Update(dt) } -> std::same_as<void>;
+};
 
 namespace LittleCore {
 
@@ -82,9 +89,9 @@ namespace LittleCore {
             TupleHelper::for_each(updateSystems.systems, [dt] (auto& updateSystem) {
                 using updateSystemType = std::remove_cvref_t<decltype(updateSystem)>;
 
-                if constexpr (UpdateSystemWithDeltaTime<updateSystemType>) {
+                if constexpr (HasUpdateFunctionWithDelta<updateSystemType>) {
                     updateSystem.Update(dt);
-                } else {
+                } else if constexpr (HasUpdateFunction<updateSystemType>){
                     updateSystem.Update();
                 }
 
