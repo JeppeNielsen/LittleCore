@@ -8,6 +8,9 @@
 namespace LittleCore {
     struct InputHandler {
 
+        bool handleDownEvents = false;
+        bool handleKeys = false;
+
         virtual ~InputHandler() {};
 
         virtual void HandleInput(void* event, Input& input) = 0;

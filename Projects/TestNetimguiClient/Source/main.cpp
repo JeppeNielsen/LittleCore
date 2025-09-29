@@ -197,7 +197,7 @@ struct TestNetimguiClient : IState {
     void HandleEvent(void* event) override {
         gui.HandleEvent(event);
 
-        simulation.HandleEvent(event, true, sdlInputHandler);
+        simulation.HandleEvent(event, sdlInputHandler);
     }
 
     void OnGUI() {
