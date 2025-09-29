@@ -21,6 +21,7 @@
 #include "InputRotationSystem.hpp"
 #include "MovableSystem.hpp"
 #include "ImGuizmo.h"
+#include "GizmoDrawer.hpp"
 
 using namespace LittleCore;
 
@@ -79,6 +80,7 @@ struct TestNetimguiClient : IState {
     EntityGuiDrawer drawer;
     entt::entity cameraObject;
     entt::entity quadObject;
+    GizmoDrawer gizmoDrawer;
 
     TestNetimguiClient() : simulation(registry), resourceManager(resourcePathMapper) {}
 
@@ -94,7 +96,7 @@ struct TestNetimguiClient : IState {
         mesh.vertices.push_back({{-1,-1,0}, 0xFFFFFF , {0,0}});
         mesh.vertices.push_back({{1,-1,0}, 0xFFFFFF , {0,1} });
         mesh.vertices.push_back({{1,1,0}, 0xFFFFFF, {1,1}});
-        mesh.vertices.push_back({{-1,1,0}, 0xFFFFFF,{1,0}});
+        mesh.vertices.push_back({{-1,1,0}, 0x00FFFF,{1,0}});
         mesh.triangles.push_back(0);
         mesh.triangles.push_back(1);
         mesh.triangles.push_back(2);
@@ -147,11 +149,12 @@ struct TestNetimguiClient : IState {
             auto &camera = registry.emplace<Camera>(cameraObject);
             camera.fieldOfView = 30.0f;
             camera.near = 1;
-            camera.far = 20;
+            camera.far = 200;
             camera.viewRect = {{0,    0},
                                {1.0f, 1.0f}};
 
             auto& movable = registry.emplace<Movable>(cameraObject);
+            movable.speed = 10.0f;
             movable.keys.push_back({
                 InputKey::A,
                 vec3(-1,0,0)
@@ -174,11 +177,13 @@ struct TestNetimguiClient : IState {
         }
 
         auto quad = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
-        registry.emplace<Rotatable>(quad);
-        quadObject = quad;
+        //registry.emplace<Rotatable>(quad);
+
 
         auto child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
-        registry.emplace<Rotatable>(child);
+        //registry.emplace<Rotatable>(child);
+
+        quadObject = quad;
 
         //registry.emplace<Wobbler>(child);
         //registry.emplace<Wobbler>(quad);
@@ -191,49 +196,39 @@ struct TestNetimguiClient : IState {
 
     void HandleEvent(void* event) override {
         gui.HandleEvent(event);
-        simulation.HandleEvent(event, sdlInputHandler);
+
+        simulation.HandleEvent(event, true, sdlInputHandler);
     }
 
     void OnGUI() {
+        sdlInputHandler.handleDownEvents = true;
         ImGui::DockSpaceOverViewport();
         ImGui::Begin("Hierarchy");
 
         if (ImGui::Button("Close")) {
             abort();
         }
+
         ImGui::End();
-        ImGui::Begin("Game");
+        bool clicked = ImGui::Begin("Game");
+
+        if (!ImGui::IsWindowFocused() || !clicked) {
+            sdlInputHandler.handleDownEvents = false;
+        }
 
         gameSize = ImGui::GetContentRegionAvail();
 
         ImGui::Image((void*)(uintptr_t)(frameBuffer.texture.idx), gameSize);
 
-        static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+        gizmoDrawer.DrawGizmo(registry, cameraObject, quadObject, ImGuizmo::OPERATION::TRANSLATE);
 
-        ImGuizmo::BeginFrame();
+        bool gizmoOver  = ImGuizmo::IsOver();
+        bool gizmoUsing = ImGuizmo::IsUsing();
 
-        // Set up ImGuizmo context (normally inside your ImGui window/draw code)
-        ImGuizmo::SetDrawlist();
+        bool gizmoClickStarted = gizmoOver && ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 
-        ImGuizmo::SetRect(0, 0, gameSize.x, gameSize.y);
-
-        auto& camera = registry.get<Camera>(cameraObject);
-        auto& cameraWorldTransform = registry.get<WorldTransform>(cameraObject);
-        auto& quadWorldTransform = registry.get<WorldTransform>(quadObject);
-
-        ImGuizmo::Manipulate(glm::value_ptr(cameraWorldTransform.worldInverse), glm::value_ptr(camera.GetProjection(gameSize.x/gameSize.y)), mCurrentGizmoOperation, ImGuizmo::MODE::LOCAL, glm::value_ptr(quadWorldTransform.world));
-
-        float translation[3], rotationDeg[3], scale[3];
-        {
-            float m[16];
-            memcpy(m, glm::value_ptr(quadWorldTransform.world), sizeof(m));
-            ImGuizmo::DecomposeMatrixToComponents(m, translation, rotationDeg, scale);
-
-            auto& quadLocalTransform = registry.get<LocalTransform>(quadObject);
-            quadLocalTransform.position = vec3(translation[0], translation[1], translation[2]);
-            quadLocalTransform.rotation = quat({rotationDeg[0], rotationDeg[1], rotationDeg[2]});
-            quadLocalTransform.scale = vec3(scale[0], scale[1], scale[2]);
-            registry.patch<LocalTransform>(quadObject);
+        if (gizmoOver || gizmoUsing || gizmoClickStarted) {
+            sdlInputHandler.handleDownEvents = false;
         }
 
         ImGui::End();
@@ -247,6 +242,8 @@ struct TestNetimguiClient : IState {
         }
 
         ImGui::End();
+
+        sdlInputHandler.handleKeys = !ImGui::GetIO().WantTextInput;
     }
 
     void DrawEntity(entt::entity e) {
