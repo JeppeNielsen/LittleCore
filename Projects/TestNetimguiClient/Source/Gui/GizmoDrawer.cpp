@@ -19,7 +19,7 @@ void GizmoDrawer::Begin() {
     ImGuizmo::SetRect(min.x, min.y, max.x - min.x, max.y - min.y);
 }
 
-bool GizmoDrawer::DrawGizmo(entt::registry& registry, entt::entity cameraEntity, entt::entity objectEntity, ImGuizmo::OPERATION operation) {
+void GizmoDrawer::DrawGizmo(GizmoDrawerContext& context, entt::registry& registry, entt::entity cameraEntity, entt::entity objectEntity, ImGuizmo::OPERATION operation) {
     ImVec2 size = {max.x - min.x, max.y - min.y};
 
     ImGuizmo::PushID((int)objectEntity);
@@ -31,10 +31,12 @@ bool GizmoDrawer::DrawGizmo(entt::registry& registry, entt::entity cameraEntity,
     auto viewPtr = glm::value_ptr(cameraWorldTransform.worldInverse);
     auto projectionPtr = glm::value_ptr(camera.GetProjection(size.x/size.y));
     auto model = glm::value_ptr(quadWorldTransform.world);
-    bool isUsing = ImGuizmo::Manipulate(viewPtr, projectionPtr, operation, ImGuizmo::MODE::LOCAL, model);
+    ImGuizmo::Manipulate(viewPtr, projectionPtr, operation, ImGuizmo::MODE::LOCAL, model);
 
+    bool isUsing = ImGuizmo::IsUsing();
 
-    //bool isUsing = ImGuizmo::IsUsing();
+    context.wasActive |= isUsing;
+    context.wasHovered |= ImGuizmo::IsOver();
 
     if (isUsing) {
         auto& quadLocalTransform = registry.get<LocalTransform>(objectEntity);
@@ -56,6 +58,4 @@ bool GizmoDrawer::DrawGizmo(entt::registry& registry, entt::entity cameraEntity,
     }
 
     ImGuizmo::PopID();
-
-    return isUsing;
 }
