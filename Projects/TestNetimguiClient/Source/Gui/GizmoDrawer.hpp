@@ -12,7 +12,11 @@ namespace LittleCore {
     class GizmoDrawer {
     public:
 
-        void DrawGizmo(entt::registry& registry, entt::entity cameraEntity, entt::entity objectEntity, ImGuizmo::OPERATION operation);
+        void Begin();
+        bool DrawGizmo(entt::registry& registry, entt::entity cameraEntity, entt::entity objectEntity, ImGuizmo::OPERATION operation);
+    private:
+        ImVec2 min;
+        ImVec2 max;
 
     };
 }

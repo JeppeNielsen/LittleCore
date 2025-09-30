@@ -80,6 +80,8 @@ struct TestNetimguiClient : IState {
     EntityGuiDrawer drawer;
     entt::entity cameraObject;
     entt::entity quadObject;
+    entt::entity childObject;
+
     GizmoDrawer gizmoDrawer;
 
     TestNetimguiClient() : simulation(registry), resourceManager(resourcePathMapper) {}
@@ -185,6 +187,8 @@ struct TestNetimguiClient : IState {
 
         quadObject = quad;
 
+        childObject = child;
+
         //registry.emplace<Wobbler>(child);
         //registry.emplace<Wobbler>(quad);
 
@@ -220,14 +224,20 @@ struct TestNetimguiClient : IState {
 
         ImGui::Image((void*)(uintptr_t)(frameBuffer.texture.idx), gameSize);
 
-        gizmoDrawer.DrawGizmo(registry, cameraObject, quadObject, ImGuizmo::OPERATION::TRANSLATE);
+
+        gizmoDrawer.Begin();
+
+        bool gizmoBeingUsed = false;
+
+        gizmoBeingUsed |= gizmoDrawer.DrawGizmo(registry, cameraObject, quadObject, ImGuizmo::OPERATION::TRANSLATE);
+
+        gizmoBeingUsed |= gizmoDrawer.DrawGizmo(registry, cameraObject, childObject, ImGuizmo::OPERATION::TRANSLATE);
 
         bool gizmoOver  = ImGuizmo::IsOver();
-        bool gizmoUsing = ImGuizmo::IsUsing();
 
         bool gizmoClickStarted = gizmoOver && ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 
-        if (gizmoOver || gizmoUsing || gizmoClickStarted) {
+        if (gizmoOver || gizmoBeingUsed || gizmoClickStarted) {
             sdlInputHandler.handleDownEvents = false;
         }
 
