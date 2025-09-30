@@ -22,6 +22,7 @@
 #include "MovableSystem.hpp"
 #include "ImGuizmo.h"
 #include "GizmoDrawer.hpp"
+#include "PickingSystem.hpp"
 
 using namespace LittleCore;
 
@@ -79,12 +80,14 @@ struct TestNetimguiClient : IState {
     ImVec2 gameSize;
     EntityGuiDrawer drawer;
     entt::entity cameraObject;
-    entt::entity quadObject;
-    entt::entity childObject;
-
     GizmoDrawer gizmoDrawer;
+    PickingSystem<> pickingSystem;
+    entt::entity clickingEntity;
+    std::vector<entt::entity> selectedEntities;
+    ImVec2 gameViewMin;
+    ImVec2 gameViewMax;
 
-    TestNetimguiClient() : simulation(registry), resourceManager(resourcePathMapper) {}
+    TestNetimguiClient() : simulation(registry), pickingSystem(registry), resourceManager(resourcePathMapper) {}
 
     entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, glm::vec3 scale, entt::entity parent = entt::null) {
 
@@ -185,16 +188,16 @@ struct TestNetimguiClient : IState {
         auto child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
         //registry.emplace<Rotatable>(child);
 
-        quadObject = quad;
-
-        childObject = child;
-
         //registry.emplace<Wobbler>(child);
         //registry.emplace<Wobbler>(quad);
 
         auto floor = CreateQuadNew(registry, {0,0,0}, {10,10,1});
         auto rot = glm::radians(vec3(90,0,0));
         registry.get<LocalTransform>(floor).rotation = quat(rot);
+
+
+        clickingEntity = registry.create();
+        registry.emplace<Input>(clickingEntity);
 
     }
 
@@ -224,20 +227,21 @@ struct TestNetimguiClient : IState {
 
         ImGui::Image((void*)(uintptr_t)(frameBuffer.texture.idx), gameSize);
 
+        gameViewMin = ImGui::GetItemRectMin();
+        gameViewMax = ImGui::GetItemRectMax();
 
         gizmoDrawer.Begin();
 
-        bool gizmoBeingUsed = false;
 
-        gizmoBeingUsed |= gizmoDrawer.DrawGizmo(registry, cameraObject, quadObject, ImGuizmo::OPERATION::TRANSLATE);
+        GizmoDrawerContext gizmoDrawerContext;
 
-        gizmoBeingUsed |= gizmoDrawer.DrawGizmo(registry, cameraObject, childObject, ImGuizmo::OPERATION::TRANSLATE);
+        for(auto selectedEntity : selectedEntities) {
+            gizmoDrawer.DrawGizmo(gizmoDrawerContext,registry, cameraObject, selectedEntity, ImGuizmo::OPERATION::TRANSLATE);
+        }
 
-        bool gizmoOver  = ImGuizmo::IsOver();
+        bool gizmoClickStarted = gizmoDrawerContext.wasHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 
-        bool gizmoClickStarted = gizmoOver && ImGui::IsMouseClicked(ImGuiMouseButton_Left);
-
-        if (gizmoOver || gizmoBeingUsed || gizmoClickStarted) {
+        if (gizmoDrawerContext.wasHovered || gizmoDrawerContext.wasActive || gizmoClickStarted) {
             sdlInputHandler.handleDownEvents = false;
         }
 
@@ -278,6 +282,26 @@ struct TestNetimguiClient : IState {
             });
             netimguiClientController.SendTexture(frameBuffer.texture,  frameBuffer.width, frameBuffer.height);
         }
+
+        pickingSystem.Update();
+
+        auto& input = registry.get<Input>(clickingEntity);
+
+        if (input.IsTouchDown({0})) {
+
+
+            ivec2 screenSize = {(int)gameViewMax.x - gameViewMin.x, (int)gameViewMax.y - gameViewMin.y};
+            ivec2 screenPos = {(int)input.touchPosition[0].position.x - gameViewMin.x, (int)input.touchPosition[0].position.y - gameViewMin.y};
+
+            auto& world = registry.get<WorldTransform>(cameraObject);
+            auto& camera = registry.get<Camera>(cameraObject);
+            auto ray = camera.GetRay(world, screenSize, screenPos);
+
+            selectedEntities = pickingSystem.Pick(ray);
+
+        }
+
+
     }
 
     void Render() override {

@@ -21,8 +21,10 @@ void EntityGuiDrawer::Draw(entt::registry& registry, entt::entity entity) {
             void* ptr = it.second.CreateFactory(&context);
 
             LittleCore::IComponentGuiDrawer* componentGuiDrawer = reinterpret_cast<LittleCore::IComponentGuiDrawer*>(ptr);
-            componentGuiDrawer->Draw(registry, entity);
-            delete componentGuiDrawer;
+            if (componentGuiDrawer) {
+                componentGuiDrawer->Draw(registry, entity);
+                delete componentGuiDrawer;
+            }
         }
     }
 
