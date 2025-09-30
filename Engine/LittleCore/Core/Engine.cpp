@@ -22,7 +22,7 @@ void Engine::MainLoop(const std::function<void()>& gfxInitialized) {
 
     SDL_Init(0);
 
-    SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+    SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_MAXIMIZED;
 
     if (!settings.showWindow) {
         flags |= SDL_WINDOW_HIDDEN;
