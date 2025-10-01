@@ -15,7 +15,7 @@ namespace LittleCore {
 		void Normalize();
 		void Flip();
     
-        bool IntersectsRay(const Ray& ray, float* distance) const;
+        bool IntersectsRay(const Ray& ray, float& distance) const;
 
 		vec3 normal;
 		float d;

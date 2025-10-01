@@ -39,10 +39,10 @@ void Plane::Flip() {
 	d=-d;
 }
 
-bool Plane::IntersectsRay(const Ray &ray, float *distance) const {
+bool Plane::IntersectsRay(const Ray &ray, float& distance) const {
     float dot = glm::dot(normal, ray.direction);
     if (dot>0.0001f) return false;
-    *distance = (d - glm::dot(normal, ray.position)) / dot;
+    distance = (d - glm::dot(normal, ray.position)) / dot;
     return true;
 }
 
