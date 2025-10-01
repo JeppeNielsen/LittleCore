@@ -39,8 +39,9 @@ mat4x4 Camera::GetProjection(float aspect) const {
     return glm::make_mat4x4(proj);
 }
 
+/*
 Ray Camera::GetRay(const WorldTransform &transform, const ivec2& screenSize, const ivec2& screenPosition) const {
-    
+
     const ivec2 center = screenSize / 2;
     
     vec2 fromCenter = screenPosition - center;
@@ -56,6 +57,31 @@ Ray Camera::GetRay(const WorldTransform &transform, const ivec2& screenSize, con
     rayEndPosition = viewProjection * rayEndPosition;
     
     return Ray(rayStartPosition, rayEndPosition - rayStartPosition);
+}
+ */
+
+
+Ray Camera::GetRay(const WorldTransform& transform,
+                   const ivec2& screenSize,
+                   const ivec2& screenPos) const
+{
+    float ndcX = ((screenPos.x + 0.5f) / (float)screenSize.x) * 2.0f - 1.0f;
+    float ndcY = ((screenPos.y + 0.5f) / (float)screenSize.y) * 2.0f - 1.0f;
+    ndcY = -ndcY;
+
+    mat4 viewProjection = GetProjection((float)screenSize.x / (float)screenSize.y) * transform.worldInverse;
+    mat4 inverseViewProjection = inverse(viewProjection);
+
+    vec4 pNear = vec4(ndcX, ndcY, -1.0f, 1.0f);
+    vec4 pFar  = vec4(ndcX, ndcY,  1.0f, 1.0f);
+
+    pNear = inverseViewProjection * pNear; pNear /= pNear.w;
+    pFar  = inverseViewProjection * pFar; pFar  /= pFar.w;
+
+    vec3 origin = vec3(pNear);
+    //vec3 dir = normalize(vec3(pFar - pNear));
+    vec3 dir = vec3(pFar - pNear);
+    return Ray(origin, dir);
 }
 
 bool Camera::IsOrthographic() const {
