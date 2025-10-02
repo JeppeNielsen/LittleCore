@@ -46,7 +46,9 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
     renderOctreeSystem.Query(frustum, entities);
 
     std::sort(entities.begin(), entities.end(), [this] (entt::entity entityA, entt::entity entityB) {
-        return registry.get<Renderable>(entityA).shader==registry.get<Renderable>(entityB).shader;
+        const auto& renderableA = registry.get<Renderable>(entityA);
+        const auto& renderableB = registry.get<Renderable>(entityB);
+        return renderableA.shader<renderableB.shader;
     });
 
     bgfx::ProgramHandle currentShaderProgram = BGFX_INVALID_HANDLE;
