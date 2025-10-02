@@ -10,6 +10,8 @@ void NetimguiTexture::Resize(uint16_t width, uint16_t height) {
     if (this->width == width && this->height == height) {
         return;
     }
+    this->width = width;
+    this->height = height;
 
     pixels.resize(width * height * 4);
 
