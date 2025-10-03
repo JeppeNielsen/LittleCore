@@ -23,6 +23,7 @@
 #include "ImGuizmo.h"
 #include "GizmoDrawer.hpp"
 #include "PickingSystem.hpp"
+#include "HierarchyWindow.hpp"
 
 using namespace LittleCore;
 
@@ -86,6 +87,7 @@ struct TestNetimguiClient : IState {
     std::vector<entt::entity> selectedEntities;
     ImVec2 gameViewMin;
     ImVec2 gameViewMax;
+    HierarchyWindow hierarchyWindow;
 
     TestNetimguiClient() : simulation(registry), pickingSystem(registry), resourceManager(resourcePathMapper) {}
 
@@ -210,13 +212,7 @@ struct TestNetimguiClient : IState {
     void OnGUI() {
         sdlInputHandler.handleDownEvents = true;
         ImGui::DockSpaceOverViewport();
-        ImGui::Begin("Hierarchy");
 
-        if (ImGui::Button("Close")) {
-            abort();
-        }
-
-        ImGui::End();
         bool clicked = ImGui::Begin("Game");
 
         if (!ImGui::IsWindowFocused() || !clicked) {
@@ -230,20 +226,14 @@ struct TestNetimguiClient : IState {
         gameViewMin = ImGui::GetItemRectMin();
         gameViewMax = ImGui::GetItemRectMax();
 
-        ImVec2 winPos = ImGui::GetWindowPos();
-
-        //gameViewMin.x -= winPos.x;
-        //gameViewMin.y -= winPos.y;
-
-        //gameViewMax.x -= winPos.x;
-        //gameViewMax.y -= winPos.y;
-
         gizmoDrawer.Begin();
-
 
         GizmoDrawerContext gizmoDrawerContext;
 
         for(auto selectedEntity : selectedEntities) {
+            if (!registry.valid(selectedEntity)) {
+                continue;
+            }
             gizmoDrawer.DrawGizmo(gizmoDrawerContext,registry, cameraObject, selectedEntity, ImGuizmo::OPERATION::TRANSLATE);
         }
 
@@ -264,6 +254,8 @@ struct TestNetimguiClient : IState {
         }
 
         ImGui::End();
+
+        hierarchyWindow.Draw(registry);
 
         sdlInputHandler.handleKeys = !ImGui::GetIO().WantTextInput;
     }
