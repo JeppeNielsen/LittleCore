@@ -2,7 +2,6 @@
 // Created by Jeppe Nielsen on 13/04/2024.
 //
 
-#include "StorageFactory.hpp"
 #include "Engine.hpp"
 #include "ImGuiController.hpp"
 #include <iostream>
@@ -62,6 +61,7 @@ struct WobblerSystem : SystemBase {
         for(auto[entity, transform, wobbler] : view.each()) {
             transform.position = vec3(0,0,0) + wobbler.direction * sin(wobbler.position);
             wobbler.position += wobbler.speed * dt;
+            registry.patch<LocalTransform>(entity);
         }
     }
 };
@@ -78,7 +78,7 @@ struct TestNetimguiClient : IState {
     DefaultResourceManager resourceManager;
     ResizableFrameBuffer frameBuffer;
     ImVec2 gameSize;
-    EntityGuiDrawer<LocalTransform> drawer;
+    EntityGuiDrawer<LocalTransform, Wobbler, Camera> drawer;
     entt::entity cameraObject;
     GizmoDrawer gizmoDrawer;
     PickingSystem<> pickingSystem;
@@ -295,12 +295,16 @@ struct TestNetimguiClient : IState {
 
         auto& input = registry.get<Input>(clickingEntity);
 
-        if (input.IsTouchDown({0}) && sdlInputHandler.handleDownEvents) {
+        ImVec2 mousePosition = ImGui::GetMousePos();
 
-            ImVec2 mousePosition = ImGui::GetMousePos();
+        if (input.IsTouchDown({0}) &&
+        sdlInputHandler.handleDownEvents &&
+        mousePosition.x>=gameViewMin.x && mousePosition.y>=gameViewMin.y &&
+        mousePosition.x<=gameViewMax.x && mousePosition.y<=gameViewMax.y) {
 
-            ivec2 screenSize = {(int)gameViewMax.x - gameViewMin.x, (int)gameViewMax.y - gameViewMin.y};
-            ivec2 screenPos = {(int)mousePosition.x - gameViewMin.x, (int)mousePosition.y -  gameViewMin.y};
+
+            ivec2 screenSize = {(int) gameViewMax.x - gameViewMin.x, (int) gameViewMax.y - gameViewMin.y};
+            ivec2 screenPos = {(int) mousePosition.x - gameViewMin.x, (int) mousePosition.y - gameViewMin.y};
 
             auto& world = registry.get<WorldTransform>(cameraObject);
             auto& camera = registry.get<Camera>(cameraObject);
@@ -323,6 +327,14 @@ struct TestNetimguiClient : IState {
             }
 
 
+        }
+
+
+        if (input.IsKeyDown(InputKey::BACKSPACE)) {
+            for(auto e : selectedEntities) {
+                registry.destroy(e);
+            }
+            selectedEntities.clear();
         }
 
 

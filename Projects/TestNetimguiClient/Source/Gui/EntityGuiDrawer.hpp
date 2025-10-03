@@ -35,6 +35,11 @@ namespace LittleCore {
             bool didChange = false;
             TupleHelper::for_each(componentTypes, [&didChange, &registry, entity](auto componentPtr) {
                 using ComponentType = typename std::remove_pointer_t<decltype(componentPtr)>;
+
+                if (!registry.all_of<ComponentType>(entity)) {
+                    return;
+                }
+
                 std::string name = TypeUtility::GetClassName<ComponentType>();
                 didChange |= DrawComponent<ComponentType>(name, registry, entity);
             });
