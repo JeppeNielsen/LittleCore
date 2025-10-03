@@ -10,22 +10,3 @@
 using namespace LittleCore;
 
 
-void EntityGuiDrawer::Draw(entt::registry& registry, entt::entity entity) {
-
-    FactoryContext context;
-    context.kind = 23;
-
-    for(auto it : registry.storage()) {
-        if (it.second.contains(entity)) {
-            context.name = it.second.type().name();
-            void* ptr = it.second.CreateFactory(&context);
-
-            LittleCore::IComponentGuiDrawer* componentGuiDrawer = reinterpret_cast<LittleCore::IComponentGuiDrawer*>(ptr);
-            if (componentGuiDrawer) {
-                componentGuiDrawer->Draw(registry, entity);
-                delete componentGuiDrawer;
-            }
-        }
-    }
-
-}

@@ -1,13 +1,14 @@
 //
 // Created by Jeppe Nielsen on 13/04/2024.
 //
+
+#include "StorageFactory.hpp"
 #include "Engine.hpp"
 #include "ImGuiController.hpp"
 #include <iostream>
 #include "NetimguiClientController.hpp"
 #include <thread>
 #include <SDL3/SDL.h>
-#include "StorageFactory.hpp"
 #include "DefaultSimulation.hpp"
 #include "SDLInputHandler.hpp"
 #include "BgfxRenderer.hpp"
@@ -25,7 +26,6 @@
 #include "PickingSystem.hpp"
 
 using namespace LittleCore;
-
 
 struct Rotatable {
     float speed = 0.0f;
@@ -78,7 +78,7 @@ struct TestNetimguiClient : IState {
     DefaultResourceManager resourceManager;
     ResizableFrameBuffer frameBuffer;
     ImVec2 gameSize;
-    EntityGuiDrawer drawer;
+    EntityGuiDrawer<LocalTransform> drawer;
     entt::entity cameraObject;
     GizmoDrawer gizmoDrawer;
     PickingSystem<> pickingSystem;
@@ -188,7 +188,7 @@ struct TestNetimguiClient : IState {
         auto child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
         //registry.emplace<Rotatable>(child);
 
-        //registry.emplace<Wobbler>(child);
+        registry.emplace<Wobbler>(child);
         //registry.emplace<Wobbler>(quad);
 
         auto floor = CreateQuadNew(registry, {0,0,0}, {10,10,1});
@@ -230,6 +230,14 @@ struct TestNetimguiClient : IState {
         gameViewMin = ImGui::GetItemRectMin();
         gameViewMax = ImGui::GetItemRectMax();
 
+        ImVec2 winPos = ImGui::GetWindowPos();
+
+        //gameViewMin.x -= winPos.x;
+        //gameViewMin.y -= winPos.y;
+
+        //gameViewMax.x -= winPos.x;
+        //gameViewMax.y -= winPos.y;
+
         gizmoDrawer.Begin();
 
 
@@ -248,8 +256,8 @@ struct TestNetimguiClient : IState {
         ImGui::End();
 
         ImGui::Begin("Inspector");
-        auto &storage = registry.storage<entt::entity>();
-        for (auto entity : storage) {
+        //auto &storage = registry.storage<entt::entity>();
+        for (auto entity : selectedEntities) {
             if (registry.valid(entity)) {
                 DrawEntity(entity);
             }
@@ -287,17 +295,33 @@ struct TestNetimguiClient : IState {
 
         auto& input = registry.get<Input>(clickingEntity);
 
-        if (input.IsTouchDown({0})) {
+        if (input.IsTouchDown({0}) && sdlInputHandler.handleDownEvents) {
 
+            ImVec2 mousePosition = ImGui::GetMousePos();
 
             ivec2 screenSize = {(int)gameViewMax.x - gameViewMin.x, (int)gameViewMax.y - gameViewMin.y};
-            ivec2 screenPos = {(int)input.touchPosition[0].position.x - gameViewMin.x, (int)input.touchPosition[0].position.y - gameViewMin.y};
+            ivec2 screenPos = {(int)mousePosition.x - gameViewMin.x, (int)mousePosition.y -  gameViewMin.y};
 
             auto& world = registry.get<WorldTransform>(cameraObject);
             auto& camera = registry.get<Camera>(cameraObject);
             auto ray = camera.GetRay(world, screenSize, screenPos);
 
+            bool wasEmpty = selectedEntities.empty();
+
             selectedEntities = pickingSystem.Pick(ray);
+
+            if (wasEmpty && selectedEntities.empty()) {
+                Plane plane;
+                plane.d = 0;
+                plane.normal = {0, 0, -1};
+
+                float distance;
+                if (plane.IntersectsRay(ray, distance)) {
+                    vec3 pos = ray.position + ray.direction * distance;
+                    CreateQuadNew(registry, pos, {0.1f, 0.1f, 0.1f});
+                }
+            }
+
 
         }
 
