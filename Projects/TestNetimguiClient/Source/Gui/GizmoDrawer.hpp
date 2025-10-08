@@ -27,7 +27,7 @@ namespace LittleCore {
         ImGuizmo::OPERATION DrawOperationUI(ImGuizmo::OPERATION currentOperation);
 
         void DrawCameraFrustum(entt::registry& cameraRegistry, entt::entity cameraEntity,
-                               entt::registry& objectRegistry, entt::entity objectEntity,
+                               entt::registry& objectRegistry, entt::entity objectEntity, float aspect,
                                ImU32 color = IM_COL32(255,255,255,255),
                                float thickness = 1.0f,
                                bool depthZeroToOne = true);

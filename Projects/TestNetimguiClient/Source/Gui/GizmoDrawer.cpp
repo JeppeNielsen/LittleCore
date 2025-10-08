@@ -111,10 +111,11 @@ static bool ClipSegmentHomogeneous(glm::vec4& a, glm::vec4& b, bool depthZeroToO
 
 
 void GizmoDrawer::DrawCameraFrustum(entt::registry& cameraRegistry, entt::entity cameraEntity,
-                                    entt::registry& objectRegistry, entt::entity objectEntity
-                                    , ImU32 color,
-                          float thickness,
-                          bool depthZeroToOne)
+                                    entt::registry& objectRegistry, entt::entity objectEntity,
+                                    float aspect,
+                                    ImU32 color,
+                                    float thickness,
+                                    bool depthZeroToOne)
 
 {
     const float zn = depthZeroToOne ? 0.0f : -1.0f;  // near  z in NDC
@@ -140,7 +141,7 @@ void GizmoDrawer::DrawCameraFrustum(entt::registry& cameraRegistry, entt::entity
     const glm::mat4& cameraVP        = cameraProj * cameraView;
 
     const glm::mat4& objectView      = objectCameraWorldTransform.worldInverse;
-    const glm::mat4& objectProj      = objectCamera.GetProjection(size.x / size.y);
+    const glm::mat4& objectProj      = objectCamera.GetProjection(aspect);
     const glm::mat4& objectVP        = objectProj * objectView;
     const glm::mat4& invObjectVP     = glm::inverse(objectVP);
 
@@ -198,8 +199,6 @@ void GizmoDrawer::DrawCameraFrustum(entt::registry& cameraRegistry, entt::entity
         dl->AddLine(p0, p1, color, thickness);
     };
 
-
-
     dl->PushClipRect(min, max, true);
     auto line = [&](int a, int b) {
         //dl->AddLine(screen[a], screen[b], color, thickness);
@@ -214,94 +213,4 @@ void GizmoDrawer::DrawCameraFrustum(entt::registry& cameraRegistry, entt::entity
     line(0,4); line(1,5); line(2,6); line(3,7);
 
     dl->PopClipRect();
-
 }
-
-
-
-
-
-
-
-/*
-void GizmoDrawer::DrawCameraFrustum(entt::registry& cameraRegistry, entt::entity cameraEntity,
-                                    entt::registry& objectRegistry, entt::entity objectEntity
-        , ImU32 color,
-                                    float thickness,
-                                    bool depthZeroToOne)
-
-{
-    const float zn = depthZeroToOne ? 0.0f : -1.0f;  // near  z in NDC
-    const float zf = 1.0f;                           // far   z in NDC
-
-    std::array<glm::vec4, 8> ndc = {
-            glm::vec4(-1.f, -1.f, zn, 1.f), glm::vec4(+1.f, -1.f, zn, 1.f),
-            glm::vec4(+1.f, +1.f, zn, 1.f), glm::vec4(-1.f, +1.f, zn, 1.f),
-            glm::vec4(-1.f, -1.f, zf, 1.f), glm::vec4(+1.f, -1.f, zf, 1.f),
-            glm::vec4(+1.f, +1.f, zf, 1.f), glm::vec4(-1.f, +1.f, zf, 1.f)
-    };
-
-    ImVec2 size = {max.x - min.x, max.y - min.y};
-
-    auto& camera = cameraRegistry.get<Camera>(cameraEntity);
-    auto& cameraWorldTransform = cameraRegistry.get<WorldTransform>(cameraEntity);
-
-    auto cameraView = cameraWorldTransform.worldInverse;
-    auto cameraProj = camera.GetProjection(size.x/size.y);
-
-    const glm::mat4 cameraViewProjection = cameraView * cameraProj;
-    const glm::mat4 cameraViewProjectionInverse = glm::inverse(cameraViewProjection);
-
-    auto& objectCamera = objectRegistry.get<Camera>(objectEntity);
-    auto& objectCameraWorldTransform = objectRegistry.get<WorldTransform>(objectEntity);
-
-    auto objectCameraView = objectCameraWorldTransform.worldInverse;
-    auto objectCameraProj = objectCamera.GetProjection(size.x/size.y);
-
-    const glm::mat4 objectCameraViewProjection = objectCameraView * objectCameraProj;
-    const glm::mat4 objectCameraViewProjectionInverse = glm::inverse(objectCameraViewProjection);
-
-    std::array<glm::vec4, 8> world;
-    for (int i = 0; i < 8; ++i) {
-        glm::vec4 w = objectCameraViewProjectionInverse * ndc[i];
-        world[i] = w / w.w;
-    }
-
-    // Project back to clip -> NDC for the on-screen 2D line drawing
-    auto worldToNDC = [&](const glm::vec4& w) -> glm::vec3 {
-        glm::vec4 c = cameraViewProjection * w;
-        c /= c.w;
-        return glm::vec3(c); // x,y,z in [-1..1] (or z in [0..1] if depthZeroToOne)
-    };
-
-    auto ndcToScreen = [&](const glm::vec3& p) -> ImVec2 {
-        float sx = min.x + (p.x * 0.5f + 0.5f) * size.x;
-        float sy = min.y + (1.0f - (p.y * 0.5f + 0.5f)) * size.y; // flip Y
-        return ImVec2(sx, sy);
-    };
-
-    std::array<ImVec2, 8> screen;
-    for (int i = 0; i < 8; ++i) {
-        screen[i] = ndcToScreen(worldToNDC(world[i]));
-    }
-
-    auto* dl = ImGui::GetForegroundDrawList();
-    auto line = [&](int a, int b) {
-        dl->AddLine(screen[a], screen[b], color, thickness);
-    };
-
-    // Near rectangle
-    line(0,1); line(1,2); line(2,3); line(3,0);
-    // Far rectangle
-    line(4,5); line(5,6); line(6,7); line(7,4);
-    // Connect near/far
-    line(0,4); line(1,5); line(2,6); line(3,7);
-
-    for (int i = 0; i < 8; ++i)
-        printf("%d: %f %f \n", i, screen[i].x, screen[i].y);
-
-}
-
-*/
-
-

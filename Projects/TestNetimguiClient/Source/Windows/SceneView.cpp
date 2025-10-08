@@ -58,7 +58,7 @@ void SceneView::DrawCamera(EditorSimulation& simulation, EditorCamera& camera) {
         gizmoDrawer.DrawGizmo(gizmoDrawerContext, camera.registry, camera.cameraEntity, simulation.simulation.registry, selectedEntity, operation);
 
         if (simulation.simulation.registry.all_of<Camera>(selectedEntity)) {
-            gizmoDrawer.DrawCameraFrustum(camera.registry, camera.cameraEntity, simulation.simulation.registry, selectedEntity);
+            gizmoDrawer.DrawCameraFrustum(camera.registry, camera.cameraEntity, simulation.simulation.registry, selectedEntity, gameSize.x /gameSize.y);
         }
     }
 
