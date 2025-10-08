@@ -11,6 +11,7 @@
 #include "InputHandler.hpp"
 #include <iostream>
 #include "TypeUtility.hpp"
+#include <functional>
 
 template <typename T>
 concept HasUpdateFunction = requires(T t) {
@@ -58,12 +59,26 @@ namespace LittleCore {
     template <typename ...System>
     using RenderSystems = SimulationSystemList<System...>;
 
+
+    struct SimulationBase {
+        using SimulationCreatedFunction = std::function<void(SimulationBase& simulation)>;
+
+        static SimulationCreatedFunction SimulationCreated;
+        static SimulationCreatedFunction SimulationDestroyed;
+
+        SimulationBase();
+        ~SimulationBase();
+
+        virtual void Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer);
+
+        entt::registry registry;
+    };
+
     template<typename InputSystems, typename UpdateSystems, typename RenderSystems>
-    class Simulation {
+    class Simulation : public SimulationBase {
     public:
 
-        Simulation(entt::registry& registry)
-                : registry(registry),
+        Simulation() :
                   inputSystems(registry),
                   updateSystems(registry),
                   renderSystems(registry) {}
@@ -97,14 +112,12 @@ namespace LittleCore {
             });
         }
 
-        void Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer) {
+        void Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer) override {
             TupleHelper::for_each(renderSystems.systems, [&] (auto& renderSystem) {
                 renderSystem.Render(viewId, cameraTransform, camera, renderer);
             });
         }
-
     private:
-        entt::registry& registry;
         InputSystems inputSystems;
         UpdateSystems updateSystems;
         RenderSystems renderSystems;

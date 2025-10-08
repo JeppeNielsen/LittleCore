@@ -8,6 +8,7 @@
 #include <string>
 #include <LocalTransform.hpp>
 #include <WorldTransform.hpp>
+#include "../EditorSimulations/EditorSimulation.hpp"
 
 using namespace LittleCore;
 
@@ -45,7 +46,8 @@ bool IsParentAllowed(entt::registry& registry, entt::entity entity, entt::entity
     return true;
 }
 
-void HierarchyWindow::DrawEntity(entt::registry& registry, entt::entity entity, entt::entity parent) {
+void HierarchyWindow::DrawEntity(EditorSimulation& simulation, entt::entity entity, entt::entity parent) {
+    auto& registry = simulation.simulation.registry;
     std::string name = GetEntityName(entity);
 
     Hierarchy& hierarchy = registry.get<Hierarchy>(entity);
@@ -56,7 +58,7 @@ void HierarchyWindow::DrawEntity(entt::registry& registry, entt::entity entity, 
         nodeFlags |= ImGuiTreeNodeFlags_Leaf;
     }
 
-    if (selectedEntity == entity) {
+    if (simulation.selection.IsSelected(entity)) {
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
     }
 
@@ -68,7 +70,8 @@ void HierarchyWindow::DrawEntity(entt::registry& registry, entt::entity entity, 
     bool isUnfolded = ImGui::TreeNodeEx(name.c_str(), nodeFlags);
 
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-        selectedEntity = entity;
+        simulation.selection.Clear();
+        simulation.selection.Select(entity);
     }
 
     if (ImGui::BeginPopupContextItem(("RightClickMenu" + std::to_string((int)entity)).c_str())) {
@@ -107,7 +110,7 @@ void HierarchyWindow::DrawEntity(entt::registry& registry, entt::entity entity, 
     }
 
     for(auto child : hierarchy.children) {
-        DrawEntity(registry, child, entity);
+        DrawEntity(simulation, child, entity);
     }
 
     ImGui::TreePop();
@@ -115,8 +118,10 @@ void HierarchyWindow::DrawEntity(entt::registry& registry, entt::entity entity, 
 
 
 
-void HierarchyWindow::Draw(entt::registry& registry) {
+void HierarchyWindow::Draw(EditorSimulation& simulation) {
     ImGui::Begin("Hierarchy");
+
+    auto& registry = simulation.simulation.registry;
 
     const auto& view = registry.view<Hierarchy>();
 
@@ -144,7 +149,7 @@ void HierarchyWindow::Draw(entt::registry& registry) {
 
         for (auto [entity, hierarchy]: view.each()) {
             if (hierarchy.parent == entt::null) {
-                DrawEntity(registry, entity, entt::null);
+                DrawEntity(simulation, entity, entt::null);
             }
         }
 

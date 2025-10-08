@@ -3,6 +3,7 @@
 //
 
 #include "Engine.hpp"
+#include "EditorSimulations/EditorSimulationRegistry.hpp"
 #include "ImGuiController.hpp"
 #include <iostream>
 #include "NetimguiClientController.hpp"
@@ -31,18 +32,20 @@ struct Rotatable {
     float speed = 0.0f;
     float speedY = 0.0f;
     float speedX = 0;
+    float yaw =0;
 };
 
 struct RotationSystem : SystemBase {
 
     void Update(float dt) {
 
-        auto view = registry.view<const Rotatable, LocalTransform>();
+        auto view = registry.view<Rotatable, LocalTransform>();
         for(auto[entity, rotatable, transform] : view.each()) {
-            auto roll = glm::roll(transform.rotation);
-            auto yaw = glm::yaw(transform.rotation);
+            //auto roll = glm::roll(transform.rotation);
+            //auto yaw = glm::yaw(transform.rotation);
+            rotatable.yaw += dt * rotatable.speedY;
 
-            transform.rotation = glm::quat({0, yaw + rotatable.speedY * dt,roll + rotatable.speed * dt});
+            transform.rotation = glm::quat({0, rotatable.yaw,0});
             registry.patch<LocalTransform>(entity);
         }
     }
@@ -68,18 +71,20 @@ struct WobblerSystem : SystemBase {
 };
 
 struct TestNetimguiClient : IState {
+    BGFXRenderer renderer;
+    EditorSimulationContext editorSimulationContext;
+    EditorSimulationRegistry editorSimulationRegistry;
     ImGuiController gui;
     NetimguiClientController netimguiClientController;
 
-    entt::registry registry;
     CustomSimulation<RotationSystem, WobblerSystem, MovableSystem, InputRotationSystem> simulation;
     SDLInputHandler sdlInputHandler;
-    BGFXRenderer renderer;
+
     ResourcePathMapper resourcePathMapper;
     DefaultResourceManager resourceManager;
     ResizableFrameBuffer frameBuffer;
     ImVec2 gameSize;
-    EntityGuiDrawer<LocalTransform, Wobbler, Camera> drawer;
+    EntityGuiDrawer<LocalTransform, Wobbler, Camera, Rotatable> drawer;
     entt::entity cameraObject;
     GizmoDrawer gizmoDrawer;
     PickingSystem<> pickingSystem;
@@ -87,9 +92,8 @@ struct TestNetimguiClient : IState {
     std::vector<entt::entity> selectedEntities;
     ImVec2 gameViewMin;
     ImVec2 gameViewMax;
-    HierarchyWindow hierarchyWindow;
 
-    TestNetimguiClient() : simulation(registry), pickingSystem(registry), resourceManager(resourcePathMapper) {}
+    TestNetimguiClient() : editorSimulationContext(renderer, netimguiClientController, drawer), editorSimulationRegistry(editorSimulationContext), pickingSystem(simulation.registry), resourceManager(resourcePathMapper) {}
 
     entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, glm::vec3 scale, entt::entity parent = entt::null) {
 
@@ -147,6 +151,7 @@ struct TestNetimguiClient : IState {
         resourceManager.CreateLoaderFactory<ShaderResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
 
+        auto& registry = simulation.registry;
         {
             cameraObject = registry.create();
             registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -10};
@@ -160,6 +165,7 @@ struct TestNetimguiClient : IState {
             camera.viewRect = {{0,    0},
                                {1.0f, 1.0f}};
 
+            /*
             auto& movable = registry.emplace<Movable>(cameraObject);
             movable.speed = 10.0f;
             movable.keys.push_back({
@@ -181,6 +187,9 @@ struct TestNetimguiClient : IState {
             registry.emplace<Input>(cameraObject);
 
             auto& inputRotation = registry.emplace<InputRotation>(cameraObject);
+             */
+
+            registry.emplace<Rotatable>(cameraObject).speedY = 4;
         }
 
         auto quad = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
@@ -201,6 +210,8 @@ struct TestNetimguiClient : IState {
         clickingEntity = registry.create();
         registry.emplace<Input>(clickingEntity);
 
+        selectedEntities.emplace_back(quad);
+
     }
 
     void HandleEvent(void* event) override {
@@ -213,65 +224,10 @@ struct TestNetimguiClient : IState {
         sdlInputHandler.handleDownEvents = true;
         ImGui::DockSpaceOverViewport();
 
-        bool clicked = ImGui::Begin("Game");
-
-        if (!ImGui::IsWindowFocused() || !clicked) {
-            sdlInputHandler.handleDownEvents = false;
-        }
+        ImGui::Begin("Game");
 
         gameSize = ImGui::GetContentRegionAvail();
 
-        ImGui::Image((void*)(uintptr_t)(frameBuffer.texture.idx), gameSize);
-
-        gameViewMin = ImGui::GetItemRectMin();
-        gameViewMax = ImGui::GetItemRectMax();
-
-        gizmoDrawer.Begin();
-
-        GizmoDrawerContext gizmoDrawerContext;
-
-        for(auto selectedEntity : selectedEntities) {
-            if (!registry.valid(selectedEntity)) {
-                continue;
-            }
-            gizmoDrawer.DrawGizmo(gizmoDrawerContext,registry, cameraObject, selectedEntity, ImGuizmo::OPERATION::TRANSLATE);
-        }
-
-        bool gizmoClickStarted = gizmoDrawerContext.wasHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left);
-
-        if (gizmoDrawerContext.wasHovered || gizmoDrawerContext.wasActive || gizmoClickStarted) {
-            sdlInputHandler.handleDownEvents = false;
-        }
-
-        ImGui::End();
-
-        ImGui::Begin("Inspector");
-        //auto &storage = registry.storage<entt::entity>();
-        for (auto entity : selectedEntities) {
-            if (registry.valid(entity)) {
-                DrawEntity(entity);
-            }
-        }
-
-        ImGui::End();
-
-        hierarchyWindow.Draw(registry);
-
-        sdlInputHandler.handleKeys = !ImGui::GetIO().WantTextInput;
-    }
-
-    void DrawEntity(entt::entity e) {
-
-        ImGui::PushID((int)e);
-
-        GuiHelper::DrawHeader("Entity:");
-        drawer.Draw(registry, e);
-
-        ImGui::PopID();
-    }
-
-    void Update(float dt) override {
-        simulation.Update(dt);
 
         renderer.screenSize = {gameSize.x, gameSize.y};
         if (gameSize.x>32 && gameSize.y>32) {
@@ -283,9 +239,40 @@ struct TestNetimguiClient : IState {
             netimguiClientController.SendTexture(frameBuffer.texture,  frameBuffer.width, frameBuffer.height);
         }
 
+
+        ImGui::Image((void*)(uintptr_t)(frameBuffer.texture.idx), gameSize);
+
+        ImGui::End();
+
+
+
+        EditorSimulation* currentSimulation;
+        if (editorSimulationRegistry.TryGetFirst(&currentSimulation)) {
+            currentSimulation->DrawGUI();
+        }
+
+        sdlInputHandler.handleKeys = !ImGui::GetIO().WantTextInput;
+    }
+
+    void DrawEntity(entt::entity e) {
+
+        ImGui::PushID((int)e);
+
+        GuiHelper::DrawHeader("Entity:");
+        drawer.Draw(simulation.registry, e);
+
+        ImGui::PopID();
+    }
+
+    void Update(float dt) override {
+        simulation.Update(dt);
+
+
+
+        /*
         pickingSystem.Update();
 
-        auto& input = registry.get<Input>(clickingEntity);
+        auto& input = simulation.registry.get<Input>(clickingEntity);
 
         ImVec2 mousePosition = ImGui::GetMousePos();
 
@@ -298,8 +285,8 @@ struct TestNetimguiClient : IState {
             ivec2 screenSize = {(int) gameViewMax.x - gameViewMin.x, (int) gameViewMax.y - gameViewMin.y};
             ivec2 screenPos = {(int) mousePosition.x - gameViewMin.x, (int) mousePosition.y - gameViewMin.y};
 
-            auto& world = registry.get<WorldTransform>(cameraObject);
-            auto& camera = registry.get<Camera>(cameraObject);
+            auto& world = simulation.registry.get<WorldTransform>(cameraObject);
+            auto& camera = simulation.registry.get<Camera>(cameraObject);
             auto ray = camera.GetRay(world, screenSize, screenPos);
 
             bool wasEmpty = selectedEntities.empty();
@@ -314,7 +301,7 @@ struct TestNetimguiClient : IState {
                 float distance;
                 if (plane.IntersectsRay(ray, distance)) {
                     vec3 pos = ray.position + ray.direction * distance;
-                    CreateQuadNew(registry, pos, {0.1f, 0.1f, 0.1f});
+                    CreateQuadNew(simulation.registry, pos, {0.1f, 0.1f, 0.1f});
                 }
             }
 
@@ -324,11 +311,11 @@ struct TestNetimguiClient : IState {
 
         if (input.IsKeyDown(InputKey::BACKSPACE)) {
             for(auto e : selectedEntities) {
-                registry.destroy(e);
+                simulation.registry.destroy(e);
             }
             selectedEntities.clear();
         }
-
+        */
 
     }
 

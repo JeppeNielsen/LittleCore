@@ -73,7 +73,8 @@ project "TestNetimguiClient"
       "../../External/glm",
       "../../External/glaze/include",
       "../../Engine/Netimgui",
-      "../../External/ImGuizmo"
+      "../../External/ImGuizmo",
+      "Source/EditorSimulations"
    }
 
    links { 
