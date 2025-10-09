@@ -11,3 +11,9 @@ using namespace LittleCore;
 void EditorCameraController::CreateCamera() {
     cameras.push_back(std::make_unique<EditorCamera>());
 }
+
+void EditorCameraController::Update(float dt) {
+    for(auto& camera : cameras) {
+        camera->simulation.Update(dt);
+    }
+}

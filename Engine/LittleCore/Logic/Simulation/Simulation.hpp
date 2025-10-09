@@ -69,6 +69,8 @@ namespace LittleCore {
         SimulationBase();
         ~SimulationBase();
 
+        virtual void HandleEvent(void* event, InputHandler& inputHandler);
+        virtual void Render(Renderer& renderer);
         virtual void Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer);
 
         entt::registry registry;
@@ -83,7 +85,7 @@ namespace LittleCore {
                   updateSystems(registry),
                   renderSystems(registry) {}
 
-        void HandleEvent(void* event, InputHandler& inputHandler) {
+        void HandleEvent(void* event, InputHandler& inputHandler) override {
             TupleHelper::for_each(inputSystems.systems, [=, &inputHandler] (auto& inputSystem) {
                 inputSystem.HandleEvent(event, inputHandler);
             });
@@ -106,7 +108,7 @@ namespace LittleCore {
             });
         }
 
-        void Render(Renderer& renderer) {
+        void Render(Renderer& renderer) override {
             TupleHelper::for_each(renderSystems.systems, [&renderer] (auto& renderSystem) {
                 renderSystem.Render(&renderer);
             });

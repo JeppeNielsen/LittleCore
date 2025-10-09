@@ -11,15 +11,17 @@
 #include "EditorCameraController.hpp"
 #include "Renderer.hpp"
 #include "HierarchyWindow.hpp"
-#include "SceneView.hpp"
+#include "SceneWindow.hpp"
 #include "InspectorWindow.hpp"
 #include "NetimguiServerController.hpp"
+#include "GameWindow.hpp"
 
 namespace LittleCore {
     struct EditorSimulation {
         EditorSimulation(EditorSimulationContext& context, SimulationBase& simulation);
 
         void DrawGUI();
+        void Update(float dt);
 
         EditorSimulationContext& context;
         SimulationBase& simulation;
@@ -28,8 +30,10 @@ namespace LittleCore {
         EditorCameraController cameraController;
 
     private:
+        GameWindow gameWindow;
         HierarchyWindow hierarchyWindow;
-        SceneView sceneView;
+        SceneWindow sceneView;
         InspectorWindow inspectorWindow;
+
     };
 }

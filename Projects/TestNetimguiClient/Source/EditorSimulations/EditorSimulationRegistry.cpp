@@ -8,17 +8,19 @@
 using namespace LittleCore;
 
 EditorSimulationRegistry::EditorSimulationRegistry(EditorSimulationContext& context) : context(context) {
-    SimulationBase::SimulationCreated = [this](SimulationBase& simulation) {
+    /*SimulationBase::SimulationCreated = [this](SimulationBase& simulation) {
         AddSimulation(simulation);
     };
     SimulationBase::SimulationDestroyed = [this](SimulationBase& simulation) {
         RemoveSimulation(simulation);
     };
+     */
 }
 
 EditorSimulationRegistry::~EditorSimulationRegistry() {
-    SimulationBase::SimulationCreated = nullptr;
+    /*SimulationBase::SimulationCreated = nullptr;
     SimulationBase::SimulationDestroyed = nullptr;
+     */
 }
 
 void EditorSimulationRegistry::AddSimulation(SimulationBase& simulation) {

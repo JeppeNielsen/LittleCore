@@ -4,9 +4,12 @@
 
 
 #pragma once
+
+#include "MovableSystem.hpp"
+#include "InputRotationSystem.hpp"
 #include "entt/entt.hpp"
 #include "ResizableFrameBuffer.hpp"
-
+#include "DefaultSimulation.hpp"
 
 namespace LittleCore {
     class EditorCamera {
@@ -14,8 +17,9 @@ namespace LittleCore {
 
         EditorCamera();
 
-        entt::registry registry;
         entt::entity cameraEntity;
         ResizableFrameBuffer frameBuffer;
+        CustomSimulation<MovableSystem, InputRotationSystem> simulation;
+
     };
 }

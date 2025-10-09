@@ -14,19 +14,18 @@
 namespace LittleCore {
     class EditorSimulationRegistry {
     public:
-        EditorSimulationRegistry(EditorSimulationContext& contett);
+        EditorSimulationRegistry(EditorSimulationContext& context);
         ~EditorSimulationRegistry();
 
         bool TryGetFirst(EditorSimulation** editorSimulation);
+
+        void AddSimulation(SimulationBase& simulation);
+        void RemoveSimulation(SimulationBase& simulation);
 
     private:
 
         using Simulations = std::vector<std::unique_ptr<EditorSimulation>>;
         Simulations simulations;
-
-        void AddSimulation(SimulationBase& simulation);
-        void RemoveSimulation(SimulationBase& simulation);
-
         EditorSimulationContext& context;
     };
 }

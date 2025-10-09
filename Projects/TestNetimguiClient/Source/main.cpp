@@ -165,7 +165,7 @@ struct TestNetimguiClient : IState {
             camera.viewRect = {{0,    0},
                                {1.0f, 1.0f}};
 
-            /*
+
             auto& movable = registry.emplace<Movable>(cameraObject);
             movable.speed = 10.0f;
             movable.keys.push_back({
@@ -187,9 +187,10 @@ struct TestNetimguiClient : IState {
             registry.emplace<Input>(cameraObject);
 
             auto& inputRotation = registry.emplace<InputRotation>(cameraObject);
-             */
 
-            registry.emplace<Rotatable>(cameraObject).speedY = 4;
+
+            editorSimulationRegistry.AddSimulation(simulation);
+            //registry.emplace<Rotatable>(cameraObject).speedY = 4;
         }
 
         auto quad = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
@@ -217,13 +218,14 @@ struct TestNetimguiClient : IState {
     void HandleEvent(void* event) override {
         gui.HandleEvent(event);
 
-        simulation.HandleEvent(event, sdlInputHandler);
+        //simulation.HandleEvent(event, sdlInputHandler);
     }
 
     void OnGUI() {
         sdlInputHandler.handleDownEvents = true;
         ImGui::DockSpaceOverViewport();
 
+        /*
         ImGui::Begin("Game");
 
         gameSize = ImGui::GetContentRegionAvail();
@@ -243,7 +245,7 @@ struct TestNetimguiClient : IState {
         ImGui::Image((void*)(uintptr_t)(frameBuffer.texture.idx), gameSize);
 
         ImGui::End();
-
+        */
 
 
         EditorSimulation* currentSimulation;
@@ -265,6 +267,12 @@ struct TestNetimguiClient : IState {
     }
 
     void Update(float dt) override {
+
+        EditorSimulation* currentSimulation;
+        if (editorSimulationRegistry.TryGetFirst(&currentSimulation)) {
+            currentSimulation->Update(dt);
+        }
+
         simulation.Update(dt);
 
 

@@ -16,5 +16,7 @@ namespace LittleCore {
         Cameras cameras;
 
         void CreateCamera();
+
+        void Update(float dt);
     };
 }

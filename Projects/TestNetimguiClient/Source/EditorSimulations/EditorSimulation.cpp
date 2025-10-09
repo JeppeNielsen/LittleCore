@@ -7,7 +7,11 @@
 using namespace LittleCore;
 
 EditorSimulation::EditorSimulation(EditorSimulationContext& context, SimulationBase& simulation)
-: context(context), simulation(simulation), sceneView(context.netimguiClientController) {
+:
+context(context),
+simulation(simulation),
+gameWindow(context.netimguiClientController),
+sceneView(context.netimguiClientController, gameWindow) {
     cameraController.CreateCamera();
 }
 
@@ -16,5 +20,10 @@ void EditorSimulation::DrawGUI() {
     hierarchyWindow.Draw(*this);
     sceneView.Draw(*this);
     inspectorWindow.Draw(*this);
+    gameWindow.Draw(*this);
 
+}
+
+void EditorSimulation::Update(float dt) {
+    cameraController.Update(dt);
 }

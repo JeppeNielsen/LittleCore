@@ -7,15 +7,16 @@
 
 #include "GizmoDrawer.hpp"
 #include "NetimguiClientController.hpp"
+#include "GameWindow.hpp"
 
 namespace LittleCore {
 
     class EditorSimulation;
     class EditorCamera;
 
-    class SceneView {
+    class SceneWindow {
     public:
-        SceneView(NetimguiClientController& netimguiClientController);
+        SceneWindow(NetimguiClientController& netimguiClientController, GameWindow& gameWindow);
 
         void Draw(EditorSimulation& simulation);
         void DrawCamera(EditorSimulation& simulation, EditorCamera& camera);
@@ -24,5 +25,7 @@ namespace LittleCore {
 
     private:
         NetimguiClientController& netimguiClientController;
+        GameWindow& gameWindow;
+        GuiWindowInputController guiWindowInputController;
     };
 }

@@ -17,7 +17,16 @@ SimulationBase::~SimulationBase() {
     }
 }
 
+void SimulationBase::HandleEvent(void* event, InputHandler& inputHandler) {
+    /*empty*/
+}
+
+void SimulationBase::Render(Renderer& renderer) {
+    /*empty*/
+}
+
 void SimulationBase::Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera,
                             Renderer* renderer) {
     /*empty*/
 }
+
