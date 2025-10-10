@@ -15,11 +15,11 @@ void InputRotationSystem::Update(float dt) {
 
     for(auto[entity, transform, input, movement] : view.each()) {
 
-        if (!movement.isRotating && input.IsTouchDown({0})) {
+        if (!movement.isRotating && input.IsTouchDown({movement.touchIndex})) {
             movement.isRotating = true;
             movement.startingRotation = transform.rotation;
             movement.touchPosition = input.touchPosition[0].position;
-        } else if (movement.isRotating && input.IsTouchUp({0})) {
+        } else if (movement.isRotating && input.IsTouchUp({movement.touchIndex})) {
             movement.isRotating = false;
         }
 

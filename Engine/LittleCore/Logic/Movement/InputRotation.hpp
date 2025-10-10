@@ -7,11 +7,12 @@
 
 namespace LittleCore {
     struct InputRotation {
-        int touchIndex = 0;
+        int touchIndex = 1;
         float rotationSpeed = 0.001f;
         bool isRotating = false;
 
         quat startingRotation;
         vec2 touchPosition;
+
     };
 }
