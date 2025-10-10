@@ -17,6 +17,8 @@ ImguiInputHandler::~ImguiInputHandler() {
 }
 
 void ImguiInputHandler::HandleInput(void* event, Input& input) {
+    input.screenSize = {(int)width, (int)height};
+
     Input prev = input;
 
     input.Clear();

@@ -15,6 +15,8 @@ namespace LittleCore {
         bool isMouseInWindow;
         float mouseX;
         float mouseY;
+        float width;
+        float height;
         void HandleInput(void* event, Input& input) override;
     };
 }

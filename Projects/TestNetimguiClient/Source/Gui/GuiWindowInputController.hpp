@@ -9,8 +9,14 @@
 namespace LittleCore {
     class GuiWindowInputController {
     public:
-
+        void Begin();
         void RunforSimulation(SimulationBase& simulation);
+    private:
+        float gameViewMinX;
+        float gameViewMinY;
+        float width;
+        float height;
 
+        bool wasWindowFocused;
     };
 }
