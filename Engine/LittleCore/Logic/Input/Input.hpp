@@ -23,6 +23,7 @@ namespace LittleCore {
     using KeyCollection = std::vector<InputKey>;
 
     struct Input {
+        ivec2 screenSize;
         TouchPosition touchPosition[10];
         TouchCollection touchesDown;
         TouchCollection touchesUp;
