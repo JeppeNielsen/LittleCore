@@ -5,10 +5,11 @@
 #include "LocalTransform.hpp"
 #include "Camera.hpp"
 #include "EditorCamera.hpp"
+#include "CameraPicker.hpp"
 
 using namespace LittleCore;
 
-EditorCamera::EditorCamera()  {
+EditorCamera::EditorCamera(PickingSystem<>& pickingSystem) : cameraPickerSystem(simulation.registry, pickingSystem) {
 
     auto& registry = simulation.registry;
 
@@ -19,9 +20,7 @@ EditorCamera::EditorCamera()  {
     auto localPosition = registry.emplace<LocalTransform>(cameraEntity);
     localPosition.position = {-5,5,-40};
 
-    WorldTransform& worldTransform = registry.emplace<WorldTransform>(cameraEntity);
-    worldTransform.world = localPosition.GetLocalToParent();
-    worldTransform.worldInverse = glm::inverse(worldTransform.world);
+    registry.emplace<WorldTransform>(cameraEntity);
 
     auto &camera = registry.emplace<Camera>(cameraEntity);
     camera.fieldOfView = 30.0f;
@@ -51,5 +50,11 @@ EditorCamera::EditorCamera()  {
     registry.emplace<Input>(cameraEntity);
 
     auto& inputRotation = registry.emplace<InputRotation>(cameraEntity);
+    registry.emplace<CameraPicker>(cameraEntity);
 
+}
+
+void EditorCamera::Update(float dt) {
+    simulation.Update(dt);
+    cameraPickerSystem.Update();
 }

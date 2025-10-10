@@ -11,8 +11,9 @@ EditorSimulation::EditorSimulation(EditorSimulationContext& context, SimulationB
 context(context),
 simulation(simulation),
 gameWindow(context.netimguiClientController),
-sceneView(context.netimguiClientController, gameWindow) {
-    cameraController.CreateCamera();
+sceneView(context.netimguiClientController, gameWindow),
+pickingSystem(simulation.registry){
+    cameraController.CreateCamera(pickingSystem);
 }
 
 void EditorSimulation::DrawGUI() {
@@ -25,5 +26,6 @@ void EditorSimulation::DrawGUI() {
 }
 
 void EditorSimulation::Update(float dt) {
+    pickingSystem.Update();
     cameraController.Update(dt);
 }

@@ -8,12 +8,12 @@
 
 using namespace LittleCore;
 
-void EditorCameraController::CreateCamera() {
-    cameras.push_back(std::make_unique<EditorCamera>());
+void EditorCameraController::CreateCamera(PickingSystem<>& pickingSystem) {
+    cameras.push_back(std::make_unique<EditorCamera>(pickingSystem));
 }
 
 void EditorCameraController::Update(float dt) {
     for(auto& camera : cameras) {
-        camera->simulation.Update(dt);
+        camera->Update(dt);
     }
 }

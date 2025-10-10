@@ -5,14 +5,15 @@
 #include "SceneWindow.hpp"
 #include "../EditorSimulations/EditorSimulation.hpp"
 #include "../EditorSimulations/EditorCamera.hpp"
-
 #include "imgui.h"
+#include "CameraPicker.hpp"
 
 using namespace LittleCore;
 
 SceneWindow::SceneWindow(NetimguiClientController& netimguiClientController, GameWindow& gameWindow) :
 netimguiClientController(netimguiClientController),
-gameWindow(gameWindow) {}
+gameWindow(gameWindow)
+{}
 
 void SceneWindow::Draw(EditorSimulation& simulation) {
     for(auto& camera : simulation.cameraController.cameras) {
@@ -21,19 +22,22 @@ void SceneWindow::Draw(EditorSimulation& simulation) {
 }
 
 void SceneWindow::DrawCamera(EditorSimulation& simulation, EditorCamera& camera) {
-    ImGui::Begin("Scene");
+    bool isVisible = ImGui::Begin("Scene");
+
+    if (!isVisible) {
+        ImGui::End();
+        return;
+    }
+
+    guiWindowInputController.Begin();
 
 
-    guiWindowInputController.RunforSimulation(camera.simulation);
 
     ImVec2 windowSize = ImGui::GetContentRegionAvail();
 
     LocalTransform& localTransform = camera.simulation.registry.get<LocalTransform>(camera.cameraEntity);
     WorldTransform& cameraTransform = camera.simulation.registry.get<WorldTransform>(camera.cameraEntity);
     Camera& worldCamera = camera.simulation.registry.get<Camera>(camera.cameraEntity);
-
-    glm::vec3 position = glm::vec3(cameraTransform.world[3]);
-    std::cout << "x: " << position.x << ", y: " << position.y  << ", z: " << position.z  << "\n";
 
     simulation.context.renderer.screenSize = {windowSize.x, windowSize.y};
     if (windowSize.x > 32 && windowSize.y > 32) {
@@ -71,10 +75,19 @@ void SceneWindow::DrawCamera(EditorSimulation& simulation, EditorCamera& camera)
 
     bool gizmoClickStarted = gizmoDrawerContext.wasHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 
-    /*if (gizmoDrawerContext.wasHovered || gizmoDrawerContext.wasActive || gizmoClickStarted) {
-        sdlInputHandler.handleDownEvents = false;
+    if (!gizmoDrawerContext.wasActive) {
+        guiWindowInputController.RunforSimulation(camera.simulation);
+
+        for(auto[entity, cameraPicker] : camera.simulation.registry.view<CameraPicker>().each()) {
+            if (cameraPicker.hasPicked) {
+                simulation.selection.Clear();
+                for (auto e: cameraPicker.pickedEntities) {
+                    simulation.selection.Select(e);
+                }
+            }
+        }
+
     }
-     */
 
     ImGui::End();
 

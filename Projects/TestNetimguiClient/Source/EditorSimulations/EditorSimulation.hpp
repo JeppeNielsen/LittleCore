@@ -15,6 +15,7 @@
 #include "InspectorWindow.hpp"
 #include "NetimguiServerController.hpp"
 #include "GameWindow.hpp"
+#include "CameraPickerSystem.hpp"
 
 namespace LittleCore {
     struct EditorSimulation {
@@ -34,6 +35,6 @@ namespace LittleCore {
         HierarchyWindow hierarchyWindow;
         SceneWindow sceneView;
         InspectorWindow inspectorWindow;
-
+        PickingSystem<> pickingSystem;
     };
 }

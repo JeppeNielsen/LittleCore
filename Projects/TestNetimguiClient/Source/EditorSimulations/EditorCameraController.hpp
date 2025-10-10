@@ -7,6 +7,7 @@
 #include "entt/entt.hpp"
 #include <memory>
 #include "EditorCamera.hpp"
+#include "PickingSystem.hpp"
 
 namespace LittleCore {
     class EditorCameraController {
@@ -15,7 +16,7 @@ namespace LittleCore {
 
         Cameras cameras;
 
-        void CreateCamera();
+        void CreateCamera(PickingSystem<>& pickingSystem);
 
         void Update(float dt);
     };

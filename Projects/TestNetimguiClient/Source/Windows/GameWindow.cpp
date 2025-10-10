@@ -16,6 +16,7 @@ void GameWindow::Draw(EditorSimulation& simulation) {
 
     ImGui::Begin("Game");
 
+    guiWindowInputController.Begin();
     guiWindowInputController.RunforSimulation(simulation.simulation);
 
     ImVec2 gameSize = ImGui::GetContentRegionAvail();

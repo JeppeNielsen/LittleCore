@@ -131,6 +131,8 @@ struct TestNetimguiClient : IState {
 
     void Initialize() override {
 
+        editorSimulationRegistry.AddSimulation(simulation);
+
         gui.Initialize(mainWindow, [this]() {
             OnGUI();
         });
@@ -189,7 +191,7 @@ struct TestNetimguiClient : IState {
             auto& inputRotation = registry.emplace<InputRotation>(cameraObject);
 
 
-            editorSimulationRegistry.AddSimulation(simulation);
+
             //registry.emplace<Rotatable>(cameraObject).speedY = 4;
         }
 
