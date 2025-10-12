@@ -74,8 +74,8 @@ struct TestNetimguiClient : IState {
     BGFXRenderer renderer;
     EditorSimulationContext editorSimulationContext;
     EditorSimulationRegistry editorSimulationRegistry;
-    ImGuiController gui;
     NetimguiClientController netimguiClientController;
+    ImGuiController gui;
 
     CustomSimulation<RotationSystem, WobblerSystem, MovableSystem, InputRotationSystem> simulation;
     SDLInputHandler sdlInputHandler;
@@ -86,14 +86,11 @@ struct TestNetimguiClient : IState {
     ImVec2 gameSize;
     EntityGuiDrawer<LocalTransform, Wobbler, Camera, Rotatable> drawer;
     entt::entity cameraObject;
-    GizmoDrawer gizmoDrawer;
-    PickingSystem<> pickingSystem;
-    entt::entity clickingEntity;
-    std::vector<entt::entity> selectedEntities;
-    ImVec2 gameViewMin;
-    ImVec2 gameViewMax;
 
-    TestNetimguiClient() : editorSimulationContext(renderer, netimguiClientController, drawer), editorSimulationRegistry(editorSimulationContext), pickingSystem(simulation.registry), resourceManager(resourcePathMapper) {}
+    TestNetimguiClient() :
+    editorSimulationContext(renderer, netimguiClientController, drawer),
+    editorSimulationRegistry(editorSimulationContext),
+    resourceManager(resourcePathMapper) {}
 
     entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, glm::vec3 scale, entt::entity parent = entt::null) {
 
@@ -124,10 +121,8 @@ struct TestNetimguiClient : IState {
         registry.get<Renderable>(quad).shader = resourceManager.Create<ShaderResource>("65886F92DEC94836A9E2FEA6C3483543");
         registry.get<Texturable>(quad).texture = resourceManager.Create<TextureResource>("020CDC91085545C0AB724CC5C3645F3B");
 
-
         return quad;
     }
-
 
     void Initialize() override {
 
@@ -190,143 +185,37 @@ struct TestNetimguiClient : IState {
 
             auto& inputRotation = registry.emplace<InputRotation>(cameraObject);
 
-
-
-            //registry.emplace<Rotatable>(cameraObject).speedY = 4;
         }
 
         auto quad = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
-        //registry.emplace<Rotatable>(quad);
-
-
         auto child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
-        //registry.emplace<Rotatable>(child);
 
         registry.emplace<Wobbler>(child);
-        //registry.emplace<Wobbler>(quad);
 
         auto floor = CreateQuadNew(registry, {0,0,0}, {10,10,1});
         auto rot = glm::radians(vec3(90,0,0));
         registry.get<LocalTransform>(floor).rotation = quat(rot);
-
-
-        clickingEntity = registry.create();
-        registry.emplace<Input>(clickingEntity);
-
-        selectedEntities.emplace_back(quad);
-
     }
 
     void HandleEvent(void* event) override {
         gui.HandleEvent(event);
-
-        //simulation.HandleEvent(event, sdlInputHandler);
     }
 
     void OnGUI() {
-        sdlInputHandler.handleDownEvents = true;
         ImGui::DockSpaceOverViewport();
-
-        /*
-        ImGui::Begin("Game");
-
-        gameSize = ImGui::GetContentRegionAvail();
-
-
-        renderer.screenSize = {gameSize.x, gameSize.y};
-        if (gameSize.x>32 && gameSize.y>32) {
-            frameBuffer.Render((int) gameSize.x, (int) gameSize.y, [this]() {
-                simulation.Render(renderer);
-                bgfx::touch(0);
-                bgfx::frame();
-            });
-            netimguiClientController.SendTexture(frameBuffer.texture,  frameBuffer.width, frameBuffer.height);
-        }
-
-
-        ImGui::Image((void*)(uintptr_t)(frameBuffer.texture.idx), gameSize);
-
-        ImGui::End();
-        */
-
 
         EditorSimulation* currentSimulation;
         if (editorSimulationRegistry.TryGetFirst(&currentSimulation)) {
             currentSimulation->DrawGUI();
         }
-
-        sdlInputHandler.handleKeys = !ImGui::GetIO().WantTextInput;
-    }
-
-    void DrawEntity(entt::entity e) {
-
-        ImGui::PushID((int)e);
-
-        GuiHelper::DrawHeader("Entity:");
-        drawer.Draw(simulation.registry, e);
-
-        ImGui::PopID();
     }
 
     void Update(float dt) override {
-
         EditorSimulation* currentSimulation;
         if (editorSimulationRegistry.TryGetFirst(&currentSimulation)) {
             currentSimulation->Update(dt);
         }
-
         simulation.Update(dt);
-
-
-
-        /*
-        pickingSystem.Update();
-
-        auto& input = simulation.registry.get<Input>(clickingEntity);
-
-        ImVec2 mousePosition = ImGui::GetMousePos();
-
-        if (input.IsTouchDown({0}) &&
-        sdlInputHandler.handleDownEvents &&
-        mousePosition.x>=gameViewMin.x && mousePosition.y>=gameViewMin.y &&
-        mousePosition.x<=gameViewMax.x && mousePosition.y<=gameViewMax.y) {
-
-
-            ivec2 screenSize = {(int) gameViewMax.x - gameViewMin.x, (int) gameViewMax.y - gameViewMin.y};
-            ivec2 screenPos = {(int) mousePosition.x - gameViewMin.x, (int) mousePosition.y - gameViewMin.y};
-
-            auto& world = simulation.registry.get<WorldTransform>(cameraObject);
-            auto& camera = simulation.registry.get<Camera>(cameraObject);
-            auto ray = camera.GetRay(world, screenSize, screenPos);
-
-            bool wasEmpty = selectedEntities.empty();
-
-            selectedEntities = pickingSystem.Pick(ray);
-
-            if (wasEmpty && selectedEntities.empty()) {
-                Plane plane;
-                plane.d = 0;
-                plane.normal = {0, 0, -1};
-
-                float distance;
-                if (plane.IntersectsRay(ray, distance)) {
-                    vec3 pos = ray.position + ray.direction * distance;
-                    CreateQuadNew(simulation.registry, pos, {0.1f, 0.1f, 0.1f});
-                }
-            }
-
-
-        }
-
-
-        if (input.IsKeyDown(InputKey::BACKSPACE)) {
-            for(auto e : selectedEntities) {
-                simulation.registry.destroy(e);
-            }
-            selectedEntities.clear();
-        }
-        */
-
     }
 
     void Render() override {
