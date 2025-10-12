@@ -17,7 +17,7 @@ EditorCamera::EditorCamera(PickingSystem<>& pickingSystem) : cameraPickerSystem(
 
     registry.emplace<Hierarchy>(cameraEntity);
 
-    auto localPosition = registry.emplace<LocalTransform>(cameraEntity);
+    auto& localPosition = registry.emplace<LocalTransform>(cameraEntity);
     localPosition.position = {-5,5,-40};
 
     registry.emplace<WorldTransform>(cameraEntity);
