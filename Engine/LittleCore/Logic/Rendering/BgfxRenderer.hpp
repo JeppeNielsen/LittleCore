@@ -19,8 +19,8 @@ namespace LittleCore {
         int currentVertex = 0;
         int currentTriangle = 0;
 
-        int startBatchVertex;
-        int startBatchIndex;
+        int startBatchVertex = 0;
+        int startBatchIndex = 0;
 
         bgfx::VertexLayout vertexLayout;
 
