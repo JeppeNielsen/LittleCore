@@ -10,13 +10,19 @@
 #include "GuiHelper.hpp"
 #include "ObjectGuiDrawer.hpp"
 #include "TypeUtility.hpp"
+#include "EntityGuiDrawerContext.hpp"
 
 namespace LittleCore {
 
     struct EntityGuiDrawerBase {
+
+        EntityGuiDrawerBase(EntityGuiDrawerContext& context) : context(context) {}
+
         ~EntityGuiDrawerBase() = default;
         virtual bool Draw(entt::registry& registry, entt::entity entity) = 0;
         virtual bool DrawComponentMenu(entt::registry& registry, entt::entity entity) = 0;
+
+        EntityGuiDrawerContext& context;
     };
 
     template <typename ...T>
@@ -26,8 +32,10 @@ namespace LittleCore {
         ComponentTypes componentTypes;
     public:
 
+        EntityGuiDrawer(EntityGuiDrawerContext& context) : EntityGuiDrawerBase(context) {}
+
         template<typename TComponent>
-        static bool DrawComponent(const std::string& name, entt::registry& registry, entt::entity entity)  {
+        bool DrawComponent(const std::string& name, entt::registry& registry, entt::entity entity)  {
             GuiHelper::DrawHeader(name);
 
             ImVec2 gameViewMin = ImGui::GetItemRectMin();
@@ -50,7 +58,7 @@ namespace LittleCore {
             }
 
             TComponent& component = registry.get<TComponent>(entity);
-            bool didChange = ObjectGuiDrawer::Draw(component);
+            bool didChange = ObjectGuiDrawer::Draw(context, component);
             if (didChange) {
                 registry.patch<TComponent>(entity);
             }
@@ -59,7 +67,7 @@ namespace LittleCore {
 
         bool Draw(entt::registry& registry, entt::entity entity) {
             bool didChange = false;
-            TupleHelper::for_each(componentTypes, [&didChange, &registry, entity](auto componentPtr) {
+            TupleHelper::for_each(componentTypes, [&didChange, &registry, entity, this](auto componentPtr) {
                 using ComponentType = typename std::remove_pointer_t<decltype(componentPtr)>;
 
                 if (!registry.all_of<ComponentType>(entity)) {

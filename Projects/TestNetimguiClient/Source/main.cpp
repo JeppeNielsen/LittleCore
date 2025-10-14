@@ -13,18 +13,16 @@
 #include "SDLInputHandler.hpp"
 #include "BgfxRenderer.hpp"
 #include "DefaultResourceManager.hpp"
-#include "ObjectGuiDrawer.hpp"
 #include <glm/glm.hpp>
-#include "ResizableFrameBuffer.hpp"
 #include "MathReflection.hpp"
 #include "EntityGuiDrawer.hpp"
 #include "SystemBase.hpp"
 #include "InputRotationSystem.hpp"
 #include "MovableSystem.hpp"
-#include "ImGuizmo.h"
-#include "GizmoDrawer.hpp"
 #include "PickingSystem.hpp"
-#include "HierarchyWindow.hpp"
+#include "Project.hpp"
+#include "ProjectWindow.hpp"
+#include "GuiResourceDrawers.hpp"
 
 using namespace LittleCore;
 
@@ -76,21 +74,22 @@ struct TestNetimguiClient : IState {
     EditorSimulationRegistry editorSimulationRegistry;
     NetimguiClientController netimguiClientController;
     ImGuiController gui;
+    Project project;
+    ProjectWindow projectWindow;
 
     CustomSimulation<RotationSystem, WobblerSystem, MovableSystem, InputRotationSystem> simulation;
     SDLInputHandler sdlInputHandler;
 
-    ResourcePathMapper resourcePathMapper;
     DefaultResourceManager resourceManager;
-    ResizableFrameBuffer frameBuffer;
-    ImVec2 gameSize;
-    EntityGuiDrawer<LocalTransform, Wobbler, Camera, Rotatable> drawer;
-    entt::entity cameraObject;
+    EntityGuiDrawerContext drawerContext;
+    EntityGuiDrawer<LocalTransform, Wobbler, Camera, Rotatable, Texturable> drawer;
 
     TestNetimguiClient() :
+            drawerContext(resourceManager),
+            drawer(drawerContext),
     editorSimulationContext(renderer, netimguiClientController, drawer),
     editorSimulationRegistry(editorSimulationContext),
-    resourceManager(resourcePathMapper) {}
+    resourceManager(project.resourcePathMapper) {}
 
     entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, glm::vec3 scale, entt::entity parent = entt::null) {
 
@@ -144,13 +143,15 @@ struct TestNetimguiClient : IState {
             std::cout << "couldn't connect\n";
         }
 
-        resourcePathMapper.RefreshFromRootPath("/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets/");
+        project.rootPath = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets/";
+        project.resourcePathMapper.RefreshFromRootPath(project.rootPath);
+
         resourceManager.CreateLoaderFactory<ShaderResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
 
         auto& registry = simulation.registry;
         {
-            cameraObject = registry.create();
+            auto cameraObject = registry.create();
             registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -10};
             registry.emplace<WorldTransform>(cameraObject);
             registry.emplace<Hierarchy>(cameraObject);
@@ -208,6 +209,8 @@ struct TestNetimguiClient : IState {
         if (editorSimulationRegistry.TryGetFirst(&currentSimulation)) {
             currentSimulation->DrawGUI();
         }
+
+        projectWindow.Draw(project);
     }
 
     void Update(float dt) override {
@@ -228,4 +231,3 @@ int main() {
     e.Start<TestNetimguiClient>();
     return 0;
 }
-

@@ -11,11 +11,15 @@
 #include <imgui.h>
 #include <iostream>
 #include "Rect.hpp"
+#include "ResourceHandle.hpp"
+#include "TextureResource.hpp"
+#include "DefaultResourceManager.hpp"
 
 class GuiHelper {
 public:
 
     struct DrawOptions {
+        LittleCore::DefaultResourceManager& resourceManager;
         bool didChange = false;
         bool recurse = false;
     };
