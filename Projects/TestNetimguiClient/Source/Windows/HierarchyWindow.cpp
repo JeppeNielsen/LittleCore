@@ -164,23 +164,13 @@ void HierarchyWindow::Draw(EditorSimulation& simulation) {
     }
     reparentedEntities.clear();
 
-    /*
-    for(auto e : entitiesToCreate) {
-        //entt::entity newEntity = registry.create();
-        //registry.emplace<LocalTransform>(newEntity);
-        //registry.emplace<WorldTransform>(newEntity);
-        //registry.emplace<Hierarchy>(newEntity).parent = e;
-        //state.selectedEntity = newEntity;
-    }
-    entitiesToCreate.clear();
-     */
-
     for(auto e : entitiesToCreate) {
         entt::entity newEntity = registry.create();
-        //registry.emplace<LocalTransform>(newEntity);
-        //registry.emplace<WorldTransform>(newEntity);
-        //registry.emplace<Hierarchy>(newEntity).parent = e;
-        //state.selectedEntity = newEntity;
+        registry.emplace<LocalTransform>(newEntity);
+        registry.emplace<WorldTransform>(newEntity);
+        registry.emplace<Hierarchy>(newEntity).parent = e;
+        simulation.selection.Clear();
+        simulation.selection.Select(e);
     }
     entitiesToCreate.clear();
 
