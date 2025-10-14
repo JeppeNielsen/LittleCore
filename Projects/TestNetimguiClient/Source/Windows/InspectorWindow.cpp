@@ -25,8 +25,6 @@ void InspectorWindow::Draw(EditorSimulation& simulation) {
 
 void InspectorWindow::DrawEntity(EditorSimulation& simulation, entt::entity e) {
 
-    EntityGuiDrawer<LocalTransform, Camera> drawer;
-
     ImGui::PushID((int)e);
 
     GuiHelper::DrawHeader("Entity:");
