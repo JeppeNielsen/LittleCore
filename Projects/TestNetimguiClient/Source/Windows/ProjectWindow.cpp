@@ -114,11 +114,15 @@ void traverseTree(const Node& node, const std::string& prefix = "") {
 
 }
 
-void ProjectWindow::Draw(Project& project) {
+void ProjectWindow::Draw(Project& project, DefaultResourceManager& resourceManager) {
     ImGui::Begin("Project");
 
     if (ImGui::Button("Refresh")) {
         project.resourcePathMapper.RefreshFromRootPath(project.rootPath);
+
+        project.resourceHashMapper.IterateChangedPaths(project.resourcePathMapper, [&resourceManager](const auto& guid) {
+            resourceManager.Reload(guid);
+        });
     }
 
 

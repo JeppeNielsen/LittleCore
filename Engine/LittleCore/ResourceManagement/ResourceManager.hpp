@@ -39,6 +39,12 @@ namespace LittleCore {
             std::get<ResourceLoaderManager<TLoaderFactory>>(managers).SetFactory(std::make_unique<TLoaderFactory>(std::forward<TArgs>(args)...));
         }
 
+        void Reload(const std::string& id) {
+            TupleHelper::for_each(managers, [&id](auto& manager) {
+                manager.Reload(id);
+            });
+        }
+
     };
 
 }

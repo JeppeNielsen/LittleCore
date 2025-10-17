@@ -28,3 +28,8 @@ void TextureResourceLoader::Unload(TextureResource &resource) {
 bool TextureResourceLoader::IsLoaded() {
     return true;
 }
+
+void TextureResourceLoader::Reload(TextureResource &resource) {
+    Unload(resource);
+    Load(resource);
+}

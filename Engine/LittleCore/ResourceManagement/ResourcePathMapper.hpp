@@ -13,6 +13,7 @@ namespace LittleCore {
         using GuidToPath = Map;
         using PathToGuid = Map;
 
+        using GuidToHash = Map;
 
         void RefreshFromRootPath(const std::string& rootPath);
 

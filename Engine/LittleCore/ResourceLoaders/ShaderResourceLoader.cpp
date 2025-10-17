@@ -52,3 +52,8 @@ void ShaderResourceLoader::Unload(ShaderResource& resource) {
 bool ShaderResourceLoader::IsLoaded() {
     return true;
 }
+
+void ShaderResourceLoader::Reload(ShaderResource& resource) {
+    Unload(resource);
+    Load(resource);
+}

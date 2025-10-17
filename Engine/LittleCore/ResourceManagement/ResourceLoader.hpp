@@ -13,6 +13,7 @@ namespace LittleCore {
         virtual void Load(T &resource) = 0;
         virtual void Unload(T &resource) = 0;
         virtual bool IsLoaded() = 0;
+        virtual void Reload(T &resource) = 0;
         std::string path;
     };
 }

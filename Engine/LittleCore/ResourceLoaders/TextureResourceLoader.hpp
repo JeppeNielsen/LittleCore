@@ -12,6 +12,7 @@ namespace LittleCore {
         void Load(TextureResource& resource) override;
         void Unload(TextureResource& resource) override;
         bool IsLoaded() override;
+        void Reload(TextureResource& resource) override;
 
     };
 }

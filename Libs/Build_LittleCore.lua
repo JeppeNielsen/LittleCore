@@ -8,6 +8,7 @@ project "LittleCore"
    files { 
       "../Engine/LittleCore/**.hpp", 
       "../Engine/LittleCore/**.cpp",
+      "../External/hash-library/**.cpp"
    }
 
    includedirs {
@@ -19,7 +20,8 @@ project "LittleCore"
       "../External/glaze/include",
       "../External/glm",
       "../External/stb",
-      "../External/sdl/include"
+      "../External/sdl/include",
+      "../External/hash-library"
    }
 
    externalincludedirs {
@@ -31,7 +33,8 @@ project "LittleCore"
       "../External/glaze/include",
       "../External/glm",
       "../External/stb",
-      "../External/sdl/include"
+      "../External/sdl/include",
+      "../External/hash-library"
    }
 
    links {

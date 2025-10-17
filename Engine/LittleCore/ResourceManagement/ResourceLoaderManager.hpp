@@ -36,6 +36,14 @@ namespace LittleCore {
             return {"", "",true };
         }
 
+        void Reload(const std::string& id) {
+            auto it = storages.find(id);
+            if (it == storages.end()) {
+                return;
+            }
+            it->second.Reload();
+        }
+
         ResourceHandle<TResource> Create(const std::string& id) {
             assert(loaderFactory!= nullptr);
             ResourceStorage<TResource>* storage;

@@ -82,7 +82,7 @@ struct TestNetimguiClient : IState {
 
     DefaultResourceManager resourceManager;
     EntityGuiDrawerContext drawerContext;
-    EntityGuiDrawer<LocalTransform, Wobbler, Camera, Rotatable, Texturable> drawer;
+    EntityGuiDrawer<LocalTransform, Wobbler, Camera, Rotatable, Texturable, Renderable> drawer;
 
     TestNetimguiClient() :
             drawerContext(resourceManager),
@@ -210,7 +210,7 @@ struct TestNetimguiClient : IState {
             currentSimulation->DrawGUI();
         }
 
-        projectWindow.Draw(project);
+        projectWindow.Draw(project, resourceManager);
     }
 
     void Update(float dt) override {

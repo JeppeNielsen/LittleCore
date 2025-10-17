@@ -42,8 +42,8 @@ namespace LittleCore {
             return &resource;
         }
 
-        void Update() {
-
+        void Reload() {
+            loader->Reload(resource);
         }
 
         bool IsLoaded() {

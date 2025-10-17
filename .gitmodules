@@ -35,3 +35,9 @@
 [submodule "External/ImGuizmo"]
 	path = External/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "External/hash-library"]
+	path = External/hash-library
+	url = https://github.com/stbrumme/hash-library.git
+[submodule "External/ufbx"]
+	path = External/ufbx
+	url = https://github.com/ufbx/ufbx.git
