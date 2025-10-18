@@ -6,9 +6,10 @@
 #include "ResourceManager.hpp"
 #include "ShaderResourceLoaderFactory.hpp"
 #include "TextureResourceLoaderFactory.hpp"
+#include "MeshResourceLoaderFactory.hpp"
 
 namespace LittleCore {
 
-    using DefaultResourceManager = ResourceManager<ShaderResourceLoaderFactory, TextureResourceLoaderFactory>;
+    using DefaultResourceManager = ResourceManager<ShaderResourceLoaderFactory, TextureResourceLoaderFactory, MeshResourceLoaderFactory>;
 
 }

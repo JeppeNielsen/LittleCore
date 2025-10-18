@@ -6,6 +6,7 @@
 #include "BoundingBox.hpp"
 #include "ResourceHandle.hpp"
 #include "Input.hpp"
+#include "Mesh.hpp"
 
 template<>
 struct glz::meta<glm::vec3> {
@@ -69,5 +70,13 @@ template<>
 struct glz::meta<LittleCore::Input> {
     static constexpr auto value = glz::object(
 
+    );
+};
+
+template<>
+struct glz::meta<LittleCore::Mesh> {
+    using T = LittleCore::Mesh;
+    static constexpr auto value = glz::object(
+            "handle", &T::handle
     );
 };

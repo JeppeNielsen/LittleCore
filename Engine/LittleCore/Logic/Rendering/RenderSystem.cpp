@@ -65,8 +65,8 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
         }
 
         const WorldTransform& worldTransform = registry.get<WorldTransform>(entity);
-        const Mesh& mesh = registry.get<Mesh>(entity);
-        renderer->RenderMesh(mesh, worldTransform.world);
+        const Mesh* mesh = registry.get<Mesh>(entity)->operator->();
+        renderer->RenderMesh(*mesh, worldTransform.world);
         if (renderable.shader) {
             renderer->EndBatch(viewId, renderable.shader->handle);
         }
