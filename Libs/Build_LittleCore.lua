@@ -8,7 +8,8 @@ project "LittleCore"
    files { 
       "../Engine/LittleCore/**.hpp", 
       "../Engine/LittleCore/**.cpp",
-      "../External/hash-library/**.cpp"
+      "../External/hash-library/**.cpp",
+      "../External/ufbx/*.c",
    }
 
    includedirs {
@@ -21,7 +22,8 @@ project "LittleCore"
       "../External/glm",
       "../External/stb",
       "../External/sdl/include",
-      "../External/hash-library"
+      "../External/hash-library",
+      "../External/ufbx"
    }
 
    externalincludedirs {
@@ -34,7 +36,8 @@ project "LittleCore"
       "../External/glm",
       "../External/stb",
       "../External/sdl/include",
-      "../External/hash-library"
+      "../External/hash-library",
+      "../External/ufbx"
    }
 
    links {
