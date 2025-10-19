@@ -40,16 +40,14 @@ inline uint32_t pack_color_rgba_to_u32(float r, float g, float b, float a = 1.0f
 //------------------------------------------------------------------------------
 // Loader
 
-// Append one material part as indexed triangles (dedup within the part)
-bool append_mesh_part_16bit(ufbx_mesh *mesh,
+static bool append_mesh_part_16bit(ufbx_mesh *mesh,
                                    const ufbx_mesh_part &part,
                                    LittleCore::Mesh &dst,
-                                   bool flip_v /*=true*/)
+                                   bool flip_v,
+                                   bool flip_winding)          // <— NEW
 {
-    // Scratch for triangulation of the largest face
     std::vector<uint32_t> tri_corner_indices(mesh->max_face_triangles * 3);
 
-    // Build an expanded (non-indexed) vertex stream for this part
     std::vector<Vertex> tmp_vertices;
     tmp_vertices.reserve(part.num_triangles * 3);
 
@@ -58,22 +56,17 @@ bool append_mesh_part_16bit(ufbx_mesh *mesh,
 
     for (uint32_t face_index : part.face_indices) {
         ufbx_face face = mesh->faces[face_index];
-
-        // Triangulate this polygon into corner indices
         uint32_t num_tris = ufbx_triangulate_face(tri_corner_indices.data(),
                                                   (uint32_t)tri_corner_indices.size(),
                                                   mesh, face);
-
         for (uint32_t i = 0; i < num_tris * 3; ++i) {
             uint32_t vi = tri_corner_indices[i];
-
             Vertex v{};
             const ufbx_vec3 p = mesh->vertex_position[vi];
             v.position = { (float)p.x, (float)p.y, (float)p.z };
 
             if (has_uv) {
                 const ufbx_vec2 t = mesh->vertex_uv[vi];
-                // FBX UVs are usually in DCC space (origin top-left). Flip V for GL-like UVs.
                 v.uv = flip_v ? glm::vec2((float)t.x, 1.0f - (float)t.y)
                               : glm::vec2((float)t.x, (float)t.y);
             } else {
@@ -84,85 +77,75 @@ bool append_mesh_part_16bit(ufbx_mesh *mesh,
                 const ufbx_vec4 c = mesh->vertex_color[vi];
                 v.color = pack_color_rgba_to_u32((float)c.x, (float)c.y, (float)c.z, (float)c.w);
             } else {
-                v.color = 0xFFFFFFFFu; // white
+                v.color = 0xFFFFFFFFu;
             }
 
             tmp_vertices.push_back(v);
         }
     }
 
-    // Deduplicate the expanded stream -> index buffer (within this material part)
+    // Deduplicate
     std::vector<uint32_t> idx32(part.num_triangles * 3);
-    ufbx_vertex_stream streams[] = {
-            { tmp_vertices.data(), tmp_vertices.size(), sizeof(Vertex) }
-    };
-
-    const size_t unique = ufbx_generate_indices(streams, 1, idx32.data(), idx32.size(), nullptr, nullptr);
-    if (unique == SIZE_MAX) {
-        std::fprintf(stderr, "ufbx_generate_indices() failed\n");
-        return false;
-    }
+    ufbx_vertex_stream streams[] = { { tmp_vertices.data(), tmp_vertices.size(), sizeof(Vertex) } };
+    size_t unique = ufbx_generate_indices(streams, 1, idx32.data(), idx32.size(), nullptr, nullptr);
+    if (unique == SIZE_MAX) return false;
     tmp_vertices.resize(unique);
 
-    // 16-bit budget check
-    const size_t base = dst.vertices.size();
-    if (base + tmp_vertices.size() > 65535) {
-        std::fprintf(stderr, "Mesh exceeds 16-bit vertex limit: %zu + %zu > 65535\n",
-                     base, tmp_vertices.size());
-        return false;
-    }
+    // 16-bit budget
+    size_t base = dst.vertices.size();
+    if (base + tmp_vertices.size() > 65535) return false;
 
     // Append vertices
     dst.vertices.insert(dst.vertices.end(), tmp_vertices.begin(), tmp_vertices.end());
 
-    // Append indices (offset by base) as uint16_t
+    // Append indices with optional winding flip (swap 1 and 2)
     dst.triangles.reserve(dst.triangles.size() + idx32.size());
-    for (uint32_t i : idx32) {
-        uint32_t gi = (uint32_t)base + i;
-        dst.triangles.push_back((uint16_t)gi);
+    for (size_t t = 0; t < idx32.size(); t += 3) {
+        uint32_t i0 = (uint32_t)base + idx32[t + 0];
+        uint32_t i1 = (uint32_t)base + idx32[t + 1];
+        uint32_t i2 = (uint32_t)base + idx32[t + 2];
+
+        if (flip_winding) std::swap(i1, i2); // <— flip CW↔CCW
+
+        dst.triangles.push_back((uint16_t)i0);
+        dst.triangles.push_back((uint16_t)i1);
+        dst.triangles.push_back((uint16_t)i2);
     }
 
     return true;
 }
 
-// Public entry: load first mesh in the FBX into LittleCore::Mesh
-bool LoadFBXIntoLittleCoreMesh(const char *path, LittleCore::Mesh &out, bool flip_v = true)
+// Public entry
+bool LoadFBXIntoLittleCoreMesh(const char *path,
+                               LittleCore::Mesh &out,
+                               bool flip_v = true,
+                               bool flip_winding = false)   // <— NEW (default off)
 {
     out.vertices.clear();
     out.triangles.clear();
 
     ufbx_load_opts opts = {};
-    opts.target_axes = ufbx_axes_right_handed_y_up; // consistent coordinates
-    opts.target_unit_meters = 1.0f;                 // meters
+    opts.target_axes = ufbx_axes_right_handed_y_up;
+    opts.target_unit_meters = 1.0f;
 
     ufbx_error err = {};
     ufbx_scene *scene = ufbx_load_file(path, &opts, &err);
-    if (!scene) {
-        std::fprintf(stderr, "Failed to load FBX '%s': %s\n", path, err.description.data);
-        return false;
-    }
+    if (!scene) return false;
 
-    // Find the first node with a mesh
     ufbx_mesh *mesh = nullptr;
-    for (ufbx_node *n : scene->nodes) {
-        if (n->mesh) { mesh = n->mesh; break; }
-    }
-    if (!mesh) {
-        std::fprintf(stderr, "No mesh found in '%s'\n", path);
-        ufbx_free_scene(scene);
-        return false;
-    }
+    for (ufbx_node *n : scene->nodes) if (n->mesh) { mesh = n->mesh; break; }
+    if (!mesh) { ufbx_free_scene(scene); return false; }
 
-    // Convert all material parts (at least one exists)
     bool ok = true;
     for (ufbx_mesh_part &part : mesh->material_parts) {
-        if (!append_mesh_part_16bit(mesh, part, out, flip_v)) { ok = false; break; }
+        if (!append_mesh_part_16bit(mesh, part, out, flip_v, flip_winding)) { ok = false; break; }
     }
 
     ufbx_free_scene(scene);
     return ok;
 }
 
+
 void MeshLoader::LoadMesh(std::string path, Mesh& mesh) {
-    LoadFBXIntoLittleCoreMesh(path.c_str(), mesh);
+    LoadFBXIntoLittleCoreMesh(path.c_str(), mesh, true, true);
 }
