@@ -23,6 +23,7 @@
 #include "Project.hpp"
 #include "ProjectWindow.hpp"
 #include "GuiResourceDrawers.hpp"
+#include "MeshLoader.hpp"
 
 using namespace LittleCore;
 
@@ -82,7 +83,7 @@ struct TestNetimguiClient : IState {
 
     DefaultResourceManager resourceManager;
     EntityGuiDrawerContext drawerContext;
-    EntityGuiDrawer<LocalTransform, Wobbler, Camera, Rotatable, Texturable, Renderable> drawer;
+    EntityGuiDrawer<LocalTransform, Wobbler, Camera, Rotatable, Texturable, Renderable, Mesh> drawer;
 
     TestNetimguiClient() :
             drawerContext(resourceManager),
@@ -100,6 +101,7 @@ struct TestNetimguiClient : IState {
         registry.emplace<WorldTransform>(quad);
         registry.emplace<Hierarchy>(quad).parent = parent;
         auto& mesh = registry.emplace<Mesh>(quad);
+
         mesh.vertices.push_back({{-1,-1,0}, 0xFFFFFF , {0,0}});
         mesh.vertices.push_back({{1,-1,0}, 0xFFFFFF , {0,1} });
         mesh.vertices.push_back({{1,1,0}, 0xFFFFFF, {1,1}});
@@ -148,6 +150,7 @@ struct TestNetimguiClient : IState {
 
         resourceManager.CreateLoaderFactory<ShaderResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
+        resourceManager.CreateLoaderFactory<MeshResourceLoaderFactory>();
 
         auto& registry = simulation.registry;
         {
@@ -189,13 +192,14 @@ struct TestNetimguiClient : IState {
         }
 
         auto quad = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
-        auto child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
+        /*auto child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
 
         registry.emplace<Wobbler>(child);
 
         auto floor = CreateQuadNew(registry, {0,0,0}, {10,10,1});
         auto rot = glm::radians(vec3(90,0,0));
         registry.get<LocalTransform>(floor).rotation = quat(rot);
+         */
     }
 
     void HandleEvent(void* event) override {
