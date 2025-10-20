@@ -7,12 +7,8 @@
 #include "TextureResourceLoader.hpp"
 
 namespace LittleCore {
-
     struct TextureResourceLoaderFactory : IResourceLoaderFactory<TextureResourceLoader> {
-        Loader Create() {
-            return CreateLoader();
-        }
+        Loader Create() override;
+        bool IsPathSupported(const std::string& path);
     };
-
-
 }

@@ -7,12 +7,8 @@
 #include "ShaderResourceLoader.hpp"
 
 namespace LittleCore {
-
     struct ShaderResourceLoaderFactory : IResourceLoaderFactory<ShaderResourceLoader> {
-        Loader Create() {
-            return CreateLoader();
-        }
+        Loader Create() override;
+        bool IsPathSupported(const std::string& path);
     };
-
-
 }

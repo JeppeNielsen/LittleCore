@@ -57,6 +57,11 @@ namespace LittleCore {
             return ResourceHandle<TResource>(storage);
         }
 
+        bool IsSupported(const std::string& id) {
+            const std::string path = pathMapper->GetPath(id);
+            return loaderFactory->IsPathSupported(path);
+        }
+
 
     };
 

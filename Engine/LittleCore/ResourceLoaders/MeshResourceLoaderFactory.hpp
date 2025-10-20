@@ -7,12 +7,8 @@
 #include "MeshResourceLoader.hpp"
 
 namespace LittleCore {
-
     struct MeshResourceLoaderFactory : IResourceLoaderFactory<MeshResourceLoader> {
-        Loader Create() {
-            return CreateLoader();
-        }
+        Loader Create() override;
+        bool IsPathSupported(const std::string& path);
     };
-
-
 }

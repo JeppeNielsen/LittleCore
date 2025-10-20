@@ -45,6 +45,13 @@ namespace LittleCore {
             });
         }
 
+        template<typename TResource>
+        bool IsTypeValid(const std::string& guid) {
+            return std::get<
+                    TupleHelper::index_in_tuple<TResource, Resources>::value
+            >(managers).IsSupported(guid);
+        }
+
     };
 
 }
