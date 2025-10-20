@@ -7,74 +7,51 @@
 #include "ShaderResource.hpp"
 #include "Mesh.hpp"
 
-template<>
-void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::TextureResource>> (GuiHelper::DrawOptions& options, const std::string& name, LittleCore::ResourceHandle<LittleCore::TextureResource>& component) {
+namespace Internal {
 
-    auto info = options.resourceManager.GetInfo(component);
-
-    if (!info.isMissing) {
-        std::filesystem::path filePath = info.path;
-        ImGui::Text("Texture: %s", filePath.filename().c_str());
-    } else {
-        ImGui::Text("Missing!");
+    template<typename T>
+    void DrawResourceInfo(const std::string& name, GuiHelper::DrawOptions& options, LittleCore::ResourceHandle<T>& component) {
+        auto info = options.resourceManager.GetInfo(component);
+        if (!info.isMissing) {
+            std::filesystem::path filePath = info.path;
+            ImGui::Text("%s: %s", name.c_str(), filePath.filename().c_str());
+        } else {
+            ImGui::Text("Missing!");
+        }
     }
 
-    if (ImGui::BeginDragDropTarget()) {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ResourcePath")) {
+    template<typename T>
+    void DrawResourceDragging(GuiHelper::DrawOptions& options, LittleCore::ResourceHandle<T>& component) {
+        if (ImGui::BeginDragDropTarget()) {
+            const ImGuiPayload* payload = ImGui::GetDragDropPayload();
             std::string path(static_cast<const char*>(payload->Data), payload->DataSize);
             auto id = options.resourceManager.pathMapper.GetGuid(path);
-            component = options.resourceManager.Create<LittleCore::TextureResource>(id);
-        }
-        ImGui::EndDragDropTarget();
-    }
 
+            if (options.resourceManager.IsTypeValid<T>(id) &&
+                ImGui::AcceptDragDropPayload("ResourcePath")) {
+                component = options.resourceManager.Create<T>(id);
+            }
+            ImGui::EndDragDropTarget();
+        }
+    }
 }
 
+template<>
+void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::TextureResource>> (GuiHelper::DrawOptions& options, const std::string& name, LittleCore::ResourceHandle<LittleCore::TextureResource>& component) {
+    Internal::DrawResourceInfo("Texture", options, component);
+    Internal::DrawResourceDragging(options, component);
+}
 
 template<>
 void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::ShaderResource>> (GuiHelper::DrawOptions& options, const std::string& name, LittleCore::ResourceHandle<LittleCore::ShaderResource>& component) {
-
-    auto info = options.resourceManager.GetInfo(component);
-
-    if (!info.isMissing) {
-        std::filesystem::path filePath = info.path;
-        ImGui::Text("Shader: %s", filePath.filename().c_str());
-    } else {
-        ImGui::Text("Missing!");
-    }
-
-    if (ImGui::BeginDragDropTarget()) {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ResourcePath")) {
-            std::string path(static_cast<const char*>(payload->Data), payload->DataSize);
-            auto id = options.resourceManager.pathMapper.GetGuid(path);
-            component = options.resourceManager.Create<LittleCore::ShaderResource>(id);
-        }
-        ImGui::EndDragDropTarget();
-    }
-
+    Internal::DrawResourceInfo("Shader", options, component);
+    Internal::DrawResourceDragging(options, component);
 }
 
 template<>
 void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::Mesh>> (GuiHelper::DrawOptions& options, const std::string& name, LittleCore::ResourceHandle<LittleCore::Mesh>& component) {
-
-    auto info = options.resourceManager.GetInfo(component);
-
-    if (!info.isMissing) {
-        std::filesystem::path filePath = info.path;
-        ImGui::Text("Mesh: %s", filePath.filename().c_str());
-    } else {
-        ImGui::Text("Missing!");
-    }
-
-    if (ImGui::BeginDragDropTarget()) {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ResourcePath")) {
-            std::string path(static_cast<const char*>(payload->Data), payload->DataSize);
-            auto id = options.resourceManager.pathMapper.GetGuid(path);
-            component = options.resourceManager.Create<LittleCore::Mesh>(id);
-        }
-        ImGui::EndDragDropTarget();
-    }
-
+    Internal::DrawResourceInfo("Mesh", options, component);
+    Internal::DrawResourceDragging(options, component);
 }
 
 
