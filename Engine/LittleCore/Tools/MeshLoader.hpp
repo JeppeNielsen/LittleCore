@@ -9,7 +9,8 @@ namespace LittleCore {
 
     class MeshLoader {
     public:
-        void LoadMesh(std::string path, Mesh& mesh);
+        void LoadMesh(const std::string& path, Mesh& mesh);
+        bool IsValidMesh(const std::string& path);
 
     };
 

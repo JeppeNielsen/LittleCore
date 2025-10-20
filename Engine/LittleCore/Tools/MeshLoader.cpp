@@ -146,6 +146,24 @@ bool LoadFBXIntoLittleCoreMesh(const char *path,
 }
 
 
-void MeshLoader::LoadMesh(std::string path, Mesh& mesh) {
+void MeshLoader::LoadMesh(const std::string& path, Mesh& mesh) {
     LoadFBXIntoLittleCoreMesh(path.c_str(), mesh, true, true);
+}
+
+bool MeshLoader::IsValidMesh(const std::string& path) {
+    ufbx_load_opts opts = {};           // default
+    // Optional: speed up “just validate” by skipping heavy parts:
+    opts.ignore_geometry = true;        // don't parse mesh data
+    opts.ignore_animation = true;       // don't parse anim data
+
+    ufbx_error err = {};
+    ufbx_scene* scene = ufbx_load_file(path.c_str(), &opts, &err);
+    if (!scene) {
+        // err.type != UFBX_ERROR_NONE, err.description.data explains why
+        std::fprintf(stderr, "Not a valid/parseable FBX: %s\n",
+                     err.description.data ? err.description.data : "(no message)");
+        return false;
+    }
+    ufbx_free_scene(scene);
+    return true;
 }
