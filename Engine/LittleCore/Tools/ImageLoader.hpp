@@ -17,5 +17,7 @@ namespace LittleCore {
         static bool TryLoadImageFromData(unsigned char* data, int size, const std::function<void(unsigned char* pixels, int width, int height)>& onLoaded);
         
         static bool SaveTga(const std::string& path, unsigned char* pixels, int width, int height);
+
+        static bool IsValidImageFile(const std::string& path);
     };
 }
