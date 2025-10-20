@@ -68,3 +68,8 @@ bool ImageLoader::SaveTga(const std::string &path, unsigned char *pixels, int wi
 	o.close();
     return true;
 }
+
+bool ImageLoader::IsValidImageFile(const std::string& path) {
+    int x, y, comp;
+    return stbi_info(path.c_str(), &x, &y, &comp) != 0;
+}
