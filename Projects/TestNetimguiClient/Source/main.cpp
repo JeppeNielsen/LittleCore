@@ -22,8 +22,10 @@
 #include "PickingSystem.hpp"
 #include "Project.hpp"
 #include "ProjectWindow.hpp"
-#include "GuiResourceDrawers.hpp"
 #include "MeshLoader.hpp"
+#include "RegistrySerializer.hpp"
+#include "MetaHelper.hpp"
+#include "GuiResourceDrawers.hpp"
 
 using namespace LittleCore;
 
@@ -69,6 +71,121 @@ struct WobblerSystem : SystemBase {
     }
 };
 
+/*
+struct SerializableTexturable {
+    std::string id;
+};
+
+struct TexturableSerializer : ComponentSerializerBase<Texturable, SerializableTexturable> {
+
+    DefaultResourceManager* resourceManager;
+
+    void SetResourceManager(DefaultResourceManager& defaultResourceManager) {
+        resourceManager = &defaultResourceManager;
+    }
+
+    void Serialize(const Texturable& texturable, SerializableTexturable& serializableTexturable) {
+        auto info = resourceManager->GetInfo(texturable.texture);
+        serializableTexturable.id = info.id;
+    }
+
+    void Deserialize(const SerializableTexturable& serializableComponent, Texturable& texturable) {
+        texturable.texture = resourceManager->Create<TextureResource>(serializableComponent.id);
+    }
+
+};
+
+ */
+
+struct TexturableSerializer : ComponentSerializerBase<Texturable, std::string> {
+
+    DefaultResourceManager* resourceManager;
+
+    void SetResourceManager(DefaultResourceManager& defaultResourceManager) {
+        resourceManager = &defaultResourceManager;
+    }
+
+    void Serialize(const Texturable& texturable, std::string& id) {
+        auto info = resourceManager->GetInfo(texturable.texture);
+        id = info.id;
+    }
+
+    void Deserialize(const std::string& id, Texturable& texturable) {
+        texturable.texture = resourceManager->Create<TextureResource>(id);
+    }
+};
+
+struct RenderableSerializer : ComponentSerializerBase<Renderable, std::string> {
+
+    DefaultResourceManager* resourceManager;
+
+    void SetResourceManager(DefaultResourceManager& defaultResourceManager) {
+        resourceManager = &defaultResourceManager;
+    }
+
+    void Serialize(const Renderable& renderable, std::string& id) {
+        auto info = resourceManager->GetInfo(renderable.shader);
+        id = info.id;
+    }
+
+    void Deserialize(const std::string& id, Renderable& renderable) {
+        renderable.shader = resourceManager->Create<ShaderResource>(id);
+    }
+};
+
+struct MeshSerializer : ComponentSerializerBase<Mesh, std::string> {
+
+    DefaultResourceManager* resourceManager;
+
+    void SetResourceManager(DefaultResourceManager& defaultResourceManager) {
+        resourceManager = &defaultResourceManager;
+    }
+
+    void Serialize(const Mesh& mesh, std::string& id) {
+        auto info = resourceManager->GetInfo(mesh.handle);
+        if (info.isMissing) {
+            id = "";
+        } else {
+            id = info.id;
+        }
+    }
+
+    void Deserialize(const std::string& id, Mesh& mesh) {
+        mesh.handle = resourceManager->Create<Mesh>(id);
+    }
+};
+
+template<typename TComponent, typename TResource>
+struct ResourceSerializer : ComponentSerializerBase<TComponent, std::string> {
+
+    using GetFunction = std::function<ResourceHandle<TextureResource>&(const TComponent&)>;
+    using SetFunction = std::function<void(const TComponent&, ResourceHandle<TextureResource>&)>;
+
+    DefaultResourceManager* resourceManager;
+    GetFunction getFunction;
+    SetFunction setFunction;
+
+    void SetResourceManager(DefaultResourceManager& defaultResourceManager, GetFunction&& getFunction, SetFunction&& setFunction) {
+        resourceManager = &defaultResourceManager;
+        this->getFunction = getFunction;
+        this->setFunction = setFunction;
+    }
+
+    void Serialize(const TComponent& component, std::string& guid) {
+        auto info = resourceManager->GetInfo(getFunction(component));
+        guid = info.id;
+    }
+
+    void Deserialize(const std::string& id, TComponent& component) {
+        setFunction(component, resourceManager->Create<TextureResource>(id));
+    }
+
+};
+
+
+
+
+
 struct TestNetimguiClient : IState {
     BGFXRenderer renderer;
     EditorSimulationContext editorSimulationContext;
@@ -83,7 +200,22 @@ struct TestNetimguiClient : IState {
 
     DefaultResourceManager resourceManager;
     EntityGuiDrawerContext drawerContext;
-    EntityGuiDrawer<LocalTransform, Wobbler, Camera, Rotatable, Texturable, Renderable, Mesh> drawer;
+
+    using Components = Meta::TypeList<LocalTransform,
+            Wobbler,
+            Camera,
+            Rotatable,
+            Texturable,
+            Renderable,
+            Mesh>;
+
+    Meta::Rebind<EntityGuiDrawer, Components> drawer;
+
+    using ComponentSerializers = Meta::TypeList<TexturableSerializer, RenderableSerializer, MeshSerializer>;
+
+    using SerializerComponents = Meta::Concat<Components, ComponentSerializers>;
+
+    Meta::Rebind<RegistrySerializer, SerializerComponents > registrySerializer;
 
     TestNetimguiClient() :
             drawerContext(resourceManager),
@@ -200,6 +332,9 @@ struct TestNetimguiClient : IState {
         auto rot = glm::radians(vec3(90,0,0));
         registry.get<LocalTransform>(floor).rotation = quat(rot);
          */
+        registrySerializer.GetSerializer<TexturableSerializer>().SetResourceManager(resourceManager);
+        registrySerializer.GetSerializer<RenderableSerializer>().SetResourceManager(resourceManager);
+        registrySerializer.GetSerializer<MeshSerializer>().SetResourceManager(resourceManager);
     }
 
     void HandleEvent(void* event) override {
@@ -215,6 +350,22 @@ struct TestNetimguiClient : IState {
         }
 
         projectWindow.Draw(project, resourceManager);
+
+        ImGui::Begin("Save");
+
+        if (ImGui::Button("Save")) {
+            auto data = registrySerializer.Serialize(simulation.registry);
+            std::cout << data << std::endl;
+
+            //registrySerializer.Deserialize()
+
+        }
+
+
+
+
+        ImGui::End();
+
     }
 
     void Update(float dt) override {
