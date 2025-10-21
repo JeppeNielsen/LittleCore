@@ -2,6 +2,7 @@
 // Created by Jeppe Nielsen on 20/10/2025.
 //
 #include "ShaderResourceLoaderFactory.hpp"
+#include "FileHelper.hpp"
 
 using namespace LittleCore;
 
@@ -11,5 +12,5 @@ IResourceLoaderFactory<ShaderResourceLoader>::Loader ShaderResourceLoaderFactory
 }
 
 bool ShaderResourceLoaderFactory::IsPathSupported(const std::string& path) {
-    return true; // TODO
+    return FileHelper::HasExtension(path, "shader");
 }
