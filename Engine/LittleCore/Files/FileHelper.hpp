@@ -19,6 +19,7 @@ namespace LittleCore {
         static void IterateFilesRecursively(const std::string& path, const std::function<void(const std::string& path)>& func);
         static std::string GetExtension(const std::string& path);
         static std::string GetFilenameWithoutExtension(const std::string& path);
+        static bool HasExtension(const std::string& path, const std::string& extension);
     };
 
 }

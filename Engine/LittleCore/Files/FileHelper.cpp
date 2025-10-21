@@ -91,3 +91,10 @@ std::string FileHelper::GetExtension(const std::string &path) {
 std::string FileHelper::GetFilenameWithoutExtension(const std::string &path) {
     return std::filesystem::path(path).filename();
 }
+
+bool FileHelper::HasExtension(const std::string& path, const std::string& extension) {
+    if (path.length() >= extension.length()) {
+        return (0 == path.compare(path.length() - extension.length(), extension.length(), extension));
+    }
+    return false;
+}
