@@ -19,4 +19,7 @@ namespace LittleCore {
 
     template <typename T>
     concept CustomSerializerPredicate = std::derived_from<T, IComponentSerializerBase>;
+
+    template <typename T>
+    concept NonCustomSerializerPredicate = !CustomSerializerPredicate<T>;
 }
