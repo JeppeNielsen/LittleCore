@@ -26,6 +26,8 @@
 #include "RegistrySerializer.hpp"
 #include "MetaHelper.hpp"
 #include "GuiResourceDrawers.hpp"
+#include "FileHelper.hpp"
+#include "TupleHelper.hpp"
 
 using namespace LittleCore;
 
@@ -211,7 +213,12 @@ struct TestNetimguiClient : IState {
 
     Meta::Rebind<EntityGuiDrawer, Components> drawer;
 
-    using ComponentSerializers = Meta::TypeList<TexturableSerializer, RenderableSerializer, MeshSerializer>;
+    using ComponentSerializers = Meta::TypeList<
+            WorldTransform,
+            LocalBoundingBox,
+            WorldBoundingBox,
+            Hierarchy,
+            TexturableSerializer, RenderableSerializer, MeshSerializer>;
 
     using SerializerComponents = Meta::Concat<Components, ComponentSerializers>;
 
@@ -356,6 +363,7 @@ struct TestNetimguiClient : IState {
         if (ImGui::Button("Save")) {
             auto data = registrySerializer.Serialize(simulation.registry);
             std::cout << data << std::endl;
+            FileHelper::TryWriteAllText("Scene.json", data);
 
             //registrySerializer.Deserialize()
 
@@ -381,7 +389,26 @@ struct TestNetimguiClient : IState {
     }
 };
 
+
 int main() {
+
+    std::tuple<LittleCore::Renderable*> tuple;
+
+
+    //using Reg = ToRegistry<decltype(tuple)>::type;
+    //Reg typ;
+
+
+    /*std::tuple<LittleCore::Texturable*, LittleCore::Renderable*> allTypes;
+    std::tuple<LittleCore::Renderable*> excluding;
+
+    auto result = TupleHelper::exclude(allTypes, excluding);
+
+    static_assert(std::is_same_v<decltype(result), std::tuple<Texturable*>>);
+
+
+    return 0;
+     */
     Engine e({"Netimgui Client", true});
     e.Start<TestNetimguiClient>();
     return 0;
