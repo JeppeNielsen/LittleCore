@@ -82,7 +82,6 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
                 currentShader.idx != prevShader.idx) {
                 renderer->SetTexture("colorTexture", prevTexture);
                 renderer->EndBatch(viewId, prevShader);
-                stats.numRenderCalls++;
                 prevTexture = currentTexture;
                 prevShader = currentShader;
                 renderer->BeginBatch(viewId);
