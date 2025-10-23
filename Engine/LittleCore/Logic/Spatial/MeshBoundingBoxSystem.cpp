@@ -21,7 +21,7 @@ observer(registry, entt::collector.update<Mesh>().where<LocalBoundingBox>().grou
 void MeshBoundingBoxSystem::Update() {
     for(auto entity : observer) {
         auto& localBoundingBox = registry.get<LocalBoundingBox>(entity);
-        auto& mesh = registry.get<Mesh>(entity);
+        const Mesh& mesh = *registry.get<Mesh>(entity).operator->();
 
         if (mesh.vertices.empty()) {
             localBoundingBox.bounds.center = {0.0f,0.0f,0.0f};
