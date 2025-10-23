@@ -169,6 +169,8 @@ void HierarchyWindow::Draw(EditorSimulation& simulation) {
         registry.emplace<LocalTransform>(newEntity);
         registry.emplace<WorldTransform>(newEntity);
         registry.emplace<Hierarchy>(newEntity).parent = e;
+        registry.emplace<LocalBoundingBox>(newEntity);
+        registry.emplace<WorldBoundingBox>(newEntity);
         simulation.selection.Clear();
         simulation.selection.Select(e);
     }
