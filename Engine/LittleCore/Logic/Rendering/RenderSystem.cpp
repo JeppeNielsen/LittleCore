@@ -51,26 +51,50 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
         return renderableA.shader<renderableB.shader;
     });
 
-    bgfx::ProgramHandle currentShaderProgram = BGFX_INVALID_HANDLE;
+    bgfx::ProgramHandle prevShader = BGFX_INVALID_HANDLE;
+    bgfx::TextureHandle prevTexture = BGFX_INVALID_HANDLE;
+    bgfx::ProgramHandle currentShader = BGFX_INVALID_HANDLE;
     bgfx::TextureHandle currentTexture = BGFX_INVALID_HANDLE;
 
-    for(auto entity : entities) {
-        renderer->BeginBatch(viewId);
+    bool startedBatch = false;
+    for (int i = 0; i < entities.size(); ++i) {
+        auto entity = entities[i];
+
+        const Mesh* mesh = registry.get<Mesh>(entity)->operator->();
+        if (mesh->vertices.empty() || mesh->triangles.empty()) {
+            continue;
+        }
 
         const Renderable& renderable = registry.get<Renderable>(entity);
-        Texturable* texturable = registry.try_get<Texturable>(entity);
+        const Texturable* texturable = registry.try_get<Texturable>(entity);
 
-        if (texturable) {
-            renderer->SetTexture("colorTexture", texturable->texture->handle);
+        currentShader = renderable.shader ? (bgfx::ProgramHandle)renderable.shader->handle :  (bgfx::ProgramHandle)BGFX_INVALID_HANDLE;
+        currentTexture = (texturable && texturable->texture) ? (bgfx::TextureHandle)texturable->texture->handle : (bgfx::TextureHandle)BGFX_INVALID_HANDLE;
+
+        if (!startedBatch) {
+            renderer->BeginBatch(viewId);
+            prevShader = currentShader;
+            prevTexture = currentTexture;
+            startedBatch = true;
+        } else {
+
+            if (currentTexture.idx != prevTexture.idx ||
+                currentShader.idx != prevShader.idx) {
+                renderer->SetTexture("colorTexture", prevTexture);
+                renderer->EndBatch(viewId, prevShader);
+                stats.numRenderCalls++;
+                prevTexture = currentTexture;
+                prevShader = currentShader;
+                renderer->BeginBatch(viewId);
+            }
         }
 
         const WorldTransform& worldTransform = registry.get<WorldTransform>(entity);
-        const Mesh* mesh = registry.get<Mesh>(entity)->operator->();
         renderer->RenderMesh(*mesh, worldTransform.world);
-        if (renderable.shader) {
-            renderer->EndBatch(viewId, renderable.shader->handle);
-        }
     }
+
+    renderer->SetTexture("colorTexture", currentTexture);
+    renderer->EndBatch(viewId, currentShader);
 
     renderer->EndRender(viewId);
 }
