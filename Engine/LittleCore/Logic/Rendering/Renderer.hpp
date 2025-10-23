@@ -6,6 +6,7 @@
 #include "Mesh.hpp"
 #include <glm/mat4x4.hpp>
 #include "Camera.hpp"
+#include "RenderingStats.hpp"
 
 namespace LittleCore {
     struct Renderer {
@@ -20,6 +21,7 @@ namespace LittleCore {
         virtual void SetTexture(const std::string& id, bgfx::TextureHandle texture) = 0;
 
         vec2 screenSize;
+        RenderingStats stats;
     };
 
 

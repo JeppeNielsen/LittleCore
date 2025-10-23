@@ -6,6 +6,7 @@
 #include "Math.hpp"
 #include <bx/math.h>
 #include "Math.hpp"
+#include <iostream>
 
 using namespace LittleCore;
 
@@ -19,8 +20,7 @@ BGFXRenderer::~BGFXRenderer() {
 
 void BGFXRenderer::BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection, const Camera& camera) {
 
-    numMeshes = 0;
-    numBatches = 0;
+    stats = {};
     bgfx::setViewTransform(viewId, &view[0][0], &projection[0][0]);
 
     const auto& viewRect = camera.viewRect;
@@ -49,13 +49,11 @@ void BGFXRenderer::EndRender(bgfx::ViewId viewId) {
 }
 
 void BGFXRenderer::BeginBatch(bgfx::ViewId viewId) {
-    startBatchIndex = currentVertex;
-    startBatchIndex = currentTriangle;
+    startBatchVertex = 0;
+    startBatchIndex = 0;
 }
 
 void BGFXRenderer::RenderMesh(const Mesh& mesh, const glm::mat4x4& world) {
-
-
 
     int baseTriangleIndex = currentVertex;
     for (int i = 0; i < mesh.vertices.size(); ++i) {
@@ -76,7 +74,9 @@ void BGFXRenderer::RenderMesh(const Mesh& mesh, const glm::mat4x4& world) {
         ++currentTriangle;
     }
 
-    numMeshes++;
+    stats.numEntities++;
+    stats.numVertices+=mesh.vertices.size();
+    stats.numTriangles+=mesh.triangles.size();
 }
 
 void BGFXRenderer::EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram) {
@@ -104,10 +104,13 @@ void BGFXRenderer::EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgr
 
     bgfx::submit(viewId, shaderProgram);
 
-    numBatches++;
+    stats.numRenderCalls++;
 }
 
 void BGFXRenderer::SetTexture(const std::string& id, bgfx::TextureHandle texture) {
+    if (currentVertex == 0 || currentTriangle==0) {
+        return;
+    }
     auto textureUniform = uniformCollection.GetHandle(id, bgfx::UniformType::Sampler);
     bgfx::setTexture(0, textureUniform, texture);
 }
