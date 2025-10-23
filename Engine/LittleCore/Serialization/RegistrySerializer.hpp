@@ -53,15 +53,6 @@ namespace LittleCore {
         }
 
         template<typename S>
-        static auto FindNonCustomSerializerComponentTypes() {
-            if constexpr (NonCustomSerializerPredicate<S>) {
-                return std::tuple<S>();
-            } else {
-                return std::tuple<>();
-            }
-        }
-
-        template<typename S>
         static auto FindNonCustomSerializerComponentTypesPtr() {
             if constexpr (NonCustomSerializerPredicate<S>) {
                 return std::tuple<S*>();
@@ -76,10 +67,6 @@ namespace LittleCore {
 
         static constexpr auto GetAllCustomSerializerComponentTypesPtr() {
             return std::tuple_cat(FindCustomSerializerComponentTypesPtr<T>()...);
-        }
-
-        static constexpr auto GetAllNonCustomSerializerComponentTypes() {
-            return std::tuple_cat(FindNonCustomSerializerComponentTypes<T>()...);
         }
 
         static constexpr auto GetAllNonCustomSerializerComponentTypesPtr() {
