@@ -30,6 +30,7 @@ namespace Internal {
             if (options.resourceManager.IsTypeValid<T>(id) &&
                 ImGui::AcceptDragDropPayload("ResourcePath")) {
                 component = options.resourceManager.Create<T>(id);
+                options.didChange = true;
             }
             ImGui::EndDragDropTarget();
         }
