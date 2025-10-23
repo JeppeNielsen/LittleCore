@@ -342,6 +342,11 @@ struct TestNetimguiClient : IState {
         registrySerializer.GetSerializer<TexturableSerializer>().SetResourceManager(resourceManager);
         registrySerializer.GetSerializer<RenderableSerializer>().SetResourceManager(resourceManager);
         registrySerializer.GetSerializer<MeshSerializer>().SetResourceManager(resourceManager);
+
+        //auto data = FileHelper::ReadAllText("Scene.json");
+
+        //simulation.registry.clear();
+        //registrySerializer.Deserialize(simulation.registry, data);
     }
 
     void HandleEvent(void* event) override {
@@ -364,6 +369,17 @@ struct TestNetimguiClient : IState {
             auto data = registrySerializer.Serialize(simulation.registry);
             std::cout << data << std::endl;
             FileHelper::TryWriteAllText("Scene.json", data);
+
+            //registrySerializer.Deserialize()
+
+        }
+
+        if (ImGui::Button("Load")) {
+
+            auto data = FileHelper::ReadAllText("Scene.json");
+
+            simulation.registry.clear();
+            registrySerializer.Deserialize(simulation.registry, data);
 
             //registrySerializer.Deserialize()
 
