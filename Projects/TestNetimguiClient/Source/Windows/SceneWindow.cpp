@@ -21,6 +21,10 @@ void SceneWindow::Draw(EditorSimulation& simulation) {
     }
 }
 
+void RenderStats(RenderingStats& stats) {
+    ImGui::Text("Entities: %i, DrawCalls: %i, Vertices: %i, Triangles: %i", stats.numEntities, stats.numRenderCalls, stats.numVertices, stats.numTriangles / 3);
+}
+
 void SceneWindow::DrawCamera(EditorSimulation& simulation, EditorCamera& camera) {
     bool isVisible = ImGui::Begin("Scene");
 
@@ -88,6 +92,8 @@ void SceneWindow::DrawCamera(EditorSimulation& simulation, EditorCamera& camera)
         }
 
     }
+
+    RenderStats(simulation.context.renderer.stats);
 
     ImGui::End();
 
