@@ -9,6 +9,7 @@
 #include <LocalTransform.hpp>
 #include <WorldTransform.hpp>
 #include "../EditorSimulations/EditorSimulation.hpp"
+#include "RegistryHelper.hpp"
 
 using namespace LittleCore;
 
@@ -83,6 +84,10 @@ void HierarchyWindow::DrawEntity(EditorSimulation& simulation, entt::entity enti
             entitiesToDelete.push_back(entity);
         }
 
+        if (ImGui::MenuItem("Duplicate")) {
+            entitiesToDuplicate.push_back(entity);
+        }
+
         ImGui::EndPopup();
     }
 
@@ -116,8 +121,6 @@ void HierarchyWindow::DrawEntity(EditorSimulation& simulation, entt::entity enti
     ImGui::TreePop();
 }
 
-
-
 void HierarchyWindow::Draw(EditorSimulation& simulation) {
     ImGui::Begin("Hierarchy");
 
@@ -131,6 +134,7 @@ void HierarchyWindow::Draw(EditorSimulation& simulation) {
         if (ImGui::MenuItem("New")) {
             entitiesToCreate.push_back(entt::null);
         }
+
         ImGui::EndPopup();
     }
 
@@ -180,5 +184,11 @@ void HierarchyWindow::Draw(EditorSimulation& simulation) {
         registry.destroy(e);
     }
     entitiesToDelete.clear();
+
+
+    for(auto e : entitiesToDuplicate) {
+        RegistryHelper::Duplicate(registry, e);
+    }
+    entitiesToDuplicate.clear();
 
 }

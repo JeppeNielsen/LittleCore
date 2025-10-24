@@ -26,6 +26,8 @@ namespace LittleCore {
         std::vector<ReparentedEntity> reparentedEntities;
         std::vector<entt::entity> entitiesToCreate;
         std::vector<entt::entity> entitiesToDelete;
+        std::vector<entt::entity> entitiesToDuplicate;
+
 
     };
 }
