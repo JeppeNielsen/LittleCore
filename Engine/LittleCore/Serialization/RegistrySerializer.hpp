@@ -13,8 +13,14 @@
 
 namespace LittleCore {
 
+    struct RegistrySerializerBase {
+
+        virtual std::string Serialize(const entt::registry& registry) = 0;
+        virtual std::string Deserialize(entt::registry& registry, const std::string& jsonString) = 0;
+    };
+
     template<typename ...T>
-    struct RegistrySerializer {
+    struct RegistrySerializer : public RegistrySerializerBase {
 
         template<typename S>
         static auto FindCustomSerializers() {
@@ -122,7 +128,7 @@ namespace LittleCore {
             type_printer<G> dummy;  // Will trigger error showing `T`
         }
 
-        std::string Serialize(const entt::registry& registry) {
+        std::string Serialize(const entt::registry& registry) override {
 
             using SerializedRegistryType = ToRegistry<AllComponentTypes>::type;
             SerializedRegistryType serializedRegistry;
@@ -165,7 +171,7 @@ namespace LittleCore {
             return jsonString;
         }
 
-        std::string Deserialize(entt::registry& registry, const std::string& jsonString) const {
+        std::string Deserialize(entt::registry& registry, const std::string& jsonString) override {
             glz::json_t json;
             auto error = glz::read_json(json, jsonString);
 
