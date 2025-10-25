@@ -185,9 +185,8 @@ void HierarchyWindow::Draw(EditorSimulation& simulation) {
     }
     entitiesToDelete.clear();
 
-
     for(auto e : entitiesToDuplicate) {
-        RegistryHelper::Duplicate(registry, e);
+        RegistryHelper::Duplicate(registry, e, registry);
     }
     entitiesToDuplicate.clear();
 
