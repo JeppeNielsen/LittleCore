@@ -8,8 +8,8 @@
 #include "PrefabResource.hpp"
 
 namespace LittleCore {
-    class PrefabInstance {
+    struct PrefabInstance {
         ResourceHandle<PrefabResource> Prefab;
-        entt::entity root;
+        entt::entity root = entt::null;
     };
 }

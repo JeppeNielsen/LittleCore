@@ -3,6 +3,7 @@
 //
 
 #include "PrefabSystem.hpp"
+#include "RegistryHelper.hpp"
 
 using namespace LittleCore;
 
@@ -25,9 +26,23 @@ void PrefabSystem::Update() {
 }
 
 void PrefabSystem::RefreshInstance(entt::entity entity) {
+    PrefabInstance& prefabInstance = registry.get<PrefabInstance>(entity);
 
+    if (prefabInstance.root != entt::null) {
+        registry.destroy(prefabInstance.root);
+        prefabInstance.root = entt::null;
+    }
 
+    if (!prefabInstance.Prefab) {
+        return;
+    }
 
+    auto& resource = *prefabInstance.Prefab.operator->();
 
+    auto root = RegistryHelper::Duplicate(*resource.registry, resource.root, registry);
+
+    prefabInstance.root = root;
+    auto& rootHierarchy = registry.get<Hierarchy>(root);
+    rootHierarchy.parent = entity;
 
 }

@@ -7,7 +7,7 @@
 
 namespace LittleCore {
     struct PrefabResource {
-        entt::entity entity = entt::null;
+        entt::entity root = entt::null;
         entt::registry* registry = nullptr;
     };
 }
