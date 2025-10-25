@@ -63,7 +63,7 @@ project "UnitTests"
       "../../External/sdl/include",
       "../../External/bgfx/include",
       "../../External/bx/include",
-      "../../External/entt/single_include",
+      "../../External/entt/src",
       "../../External/glm",
       "../../External/googletest/googletest/include",
       "../../External/googletest/googletest",
