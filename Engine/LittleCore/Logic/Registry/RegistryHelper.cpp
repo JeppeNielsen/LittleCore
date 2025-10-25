@@ -18,11 +18,33 @@ void FindAllChildren(entt::registry& registry, entt::entity entity, std::vector<
     }
 }
 
+entt::entity clone_between(entt::registry &srcReg,
+                           entt::entity   src,
+                           entt::registry &dstReg) {
+    const entt::entity dst = dstReg.create();
+
+    // Iterate all storages known to the *source* registry
+    for (auto [id, srcStorage] : srcReg.storage()) {
+        if (srcStorage.contains(src)) {
+            // Get/create the matching storage in the *destination* registry
+            auto& dstStorage = *dstReg.storage(id);
+
+            // Copy the component value over
+            dstStorage.push(dst, srcStorage.value(src));
+        }
+    }
+
+    return dst;
+}
+
 entt::entity clone_entity(entt::registry& registry, entt::entity src) {
     entt::entity dst = registry.create();
 
     for(auto [id, storage]: registry.storage()) {
         if(storage.contains(src)) {
+
+
+
             storage.push(dst, storage.value(src));
         }
     }
@@ -30,13 +52,13 @@ entt::entity clone_entity(entt::registry& registry, entt::entity src) {
     return dst;
 }
 
-entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity source) {
+entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity source, entt::registry& destRegistry) {
     std::vector<entt::entity> entitiesToDuplicate;
     FindAllChildren(registry, source, entitiesToDuplicate);
     std::unordered_map<entt::entity, entt::entity> originalToDuplicate;
 
     for(auto entityToDuplicate : entitiesToDuplicate) {
-        auto duplicate = clone_entity(registry, entityToDuplicate);
+        auto duplicate = clone_between(registry, entityToDuplicate, destRegistry);
         originalToDuplicate[entityToDuplicate] = duplicate;
     }
 

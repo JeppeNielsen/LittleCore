@@ -9,7 +9,7 @@
 namespace LittleCore {
     class RegistryHelper {
     public:
-        static entt::entity Duplicate(entt::registry& registry, entt::entity source);
+        static entt::entity Duplicate(entt::registry& registry, entt::entity source, entt::registry& destRegistry);
 
     };
 }
