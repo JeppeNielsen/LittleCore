@@ -21,6 +21,10 @@ namespace {
         bool IsLoaded() override {
             return true;
         }
+
+        void Reload(Mesh& resource) override {
+
+        }
     };
 
     struct MeshLoaderFactory : IResourceLoaderFactory<MeshLoader> {
@@ -97,6 +101,9 @@ namespace {
             bool IsLoaded() override {
                 return true;
             }
+            void Reload(Mesh& resource) override {
+
+            }
         };
 
         struct DebugMeshLoaderFactory : IResourceLoaderFactory<DebugMeshLoader> {
@@ -135,9 +142,8 @@ namespace {
         struct NotLoadedMeshLoader : IResourceLoader<Mesh> {
             void Load(Mesh& resource) override {}
             void Unload(Mesh& resource) override {}
-            bool IsLoaded() override {
-                return false;
-            }
+            bool IsLoaded() override { return false;}
+            void Reload(Mesh& mesh) override {}
         };
 
         struct NotLoadedMeshLoaderFactory : IResourceLoaderFactory<NotLoadedMeshLoader> {
