@@ -27,10 +27,14 @@ entt::entity clone_between(entt::registry &srcReg,
     for (auto [id, srcStorage] : srcReg.storage()) {
         if (srcStorage.contains(src)) {
             // Get/create the matching storage in the *destination* registry
-            auto& dstStorage = *dstReg.storage(id);
+
+            auto dstStorage = dstReg.storage(id);
+            if (dstStorage == nullptr) {
+                continue;
+            }
 
             // Copy the component value over
-            dstStorage.push(dst, srcStorage.value(src));
+            dstStorage->push(dst, srcStorage.value(src));
         }
     }
 
@@ -64,7 +68,7 @@ entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity so
 
     for(auto[orignal, duplicate] : originalToDuplicate) {
         Hierarchy& originalHierarchy = registry.get<Hierarchy>(orignal);
-        Hierarchy& duplicateHierarchy = registry.get<Hierarchy>(duplicate);
+        Hierarchy& duplicateHierarchy = destRegistry.get<Hierarchy>(duplicate);
 
         duplicateHierarchy.children.clear();
         duplicateHierarchy.previousParent = entt::null;
