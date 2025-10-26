@@ -32,6 +32,7 @@ namespace {
 
         auto instanceEntity = registry.create();
         auto& instanceHierarchy = registry.emplace<Hierarchy>(instanceEntity);
+        auto& local = registry.emplace<LocalTransform>(instanceEntity);
         auto& prefabInstance = registry.emplace<PrefabInstance>(instanceEntity);
         prefabInstance.Prefab = resourceManager.Create<PrefabResource>("9953944CCE324C019F30699342FF9AE0");
 
@@ -39,6 +40,10 @@ namespace {
         prefabSystem.Update();
 
         EXPECT_TRUE(prefabInstance.root!=entt::null);
+        auto localTransform = registry.get<LocalTransform>(prefabInstance.root);
+        EXPECT_EQ(localTransform.position.x,1.0f);
+        EXPECT_EQ(localTransform.position.y,2.0f);
+        EXPECT_EQ(localTransform.position.z,3.0f);
     }
 
 
