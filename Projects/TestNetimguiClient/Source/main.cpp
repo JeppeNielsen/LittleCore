@@ -28,6 +28,7 @@
 #include "GuiResourceDrawers.hpp"
 #include "FileHelper.hpp"
 #include "TupleHelper.hpp"
+#include "PrefabSystem.hpp"
 
 using namespace LittleCore;
 
@@ -156,37 +157,6 @@ struct MeshSerializer : ComponentSerializerBase<Mesh, std::string> {
         mesh.handle = resourceManager->Create<Mesh>(id);
     }
 };
-
-template<typename TComponent, typename TResource>
-struct ResourceSerializer : ComponentSerializerBase<TComponent, std::string> {
-
-    using GetFunction = std::function<ResourceHandle<TextureResource>&(const TComponent&)>;
-    using SetFunction = std::function<void(const TComponent&, ResourceHandle<TextureResource>&)>;
-
-    DefaultResourceManager* resourceManager;
-    GetFunction getFunction;
-    SetFunction setFunction;
-
-    void SetResourceManager(DefaultResourceManager& defaultResourceManager, GetFunction&& getFunction, SetFunction&& setFunction) {
-        resourceManager = &defaultResourceManager;
-        this->getFunction = getFunction;
-        this->setFunction = setFunction;
-    }
-
-    void Serialize(const TComponent& component, std::string& guid) {
-        auto info = resourceManager->GetInfo(getFunction(component));
-        guid = info.id;
-    }
-
-    void Deserialize(const std::string& id, TComponent& component) {
-        setFunction(component, resourceManager->Create<TextureResource>(id));
-    }
-
-};
-
-
-
-
 
 struct TestNetimguiClient : IState {
     BGFXRenderer renderer;
