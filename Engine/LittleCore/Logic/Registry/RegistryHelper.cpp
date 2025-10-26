@@ -30,7 +30,8 @@ entt::entity clone_between(entt::registry &srcReg,
 
             auto dstStorage = dstReg.storage(id);
             if (dstStorage == nullptr) {
-                continue;
+                srcStorage.AssureTypeInRegistry(dstReg);
+                dstStorage = dstReg.storage(id);
             }
 
             // Copy the component value over
