@@ -15,18 +15,10 @@ namespace {
         int y = 0;
     };
 
-    struct Velocity {
-        int vx = 0;
-        int vy = 0;
-    };
-
-    TEST(RegistryHelper, Duplicate) {
+    TEST(RegistryHelper, DuplicateOneEntityComponent_ShouldBeSameValue) {
 
         entt::registry srcRegistry;
         entt::registry destRegistry;
-        destRegistry.assure<Hierarchy>();
-        destRegistry.assure<Position>();
-
 
         auto srcEntity = srcRegistry.create();
         srcRegistry.emplace<Hierarchy>(srcEntity);
@@ -38,8 +30,36 @@ namespace {
 
         auto& copyPosition = destRegistry.get<Position>(copy);
 
-
         ASSERT_TRUE(srcPosition.x == copyPosition.x);
+    }
+
+    TEST(RegistryHelper, DuplicateOneEntityWithOneChild_ShouldKeepHierarchy) {
+
+        entt::registry srcRegistry;
+        entt::registry destRegistry;
+
+
+        auto srcRoot = srcRegistry.create();
+        srcRegistry.emplace<Hierarchy>(srcRoot);
+        srcRegistry.emplace<Position>(srcRoot) = {123, 456 };
+
+        auto srcChild = srcRegistry.create();
+        srcRegistry.emplace<Hierarchy>(srcChild).parent = srcRoot;
+        srcRegistry.emplace<Position>(srcChild) = {666,777};
+
+        srcRegistry.get<Hierarchy>(srcRoot).children.push_back(srcChild);
+
+        auto copy = RegistryHelper::Duplicate(srcRegistry, srcRoot, destRegistry);
+
+        auto& copyHierarchy = destRegistry.get<Hierarchy>(copy);
+        auto& copyPosition = destRegistry.get<Position>(copy);
+        auto& childPosition = destRegistry.get<Position>(copyHierarchy.children[0]);
+
+        ASSERT_TRUE(copyPosition.x == 123);
+        ASSERT_TRUE(copyPosition.y == 456);
+
+        ASSERT_TRUE(childPosition.x == 666);
+        ASSERT_TRUE(childPosition.y == 777);
     }
 
 }
