@@ -55,6 +55,12 @@ void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::Mesh>> (GuiHelper::D
     Internal::DrawResourceDragging(options, component);
 }
 
+template<>
+void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::PrefabResource>> (GuiHelper::DrawOptions& options, const std::string& name, LittleCore::ResourceHandle<LittleCore::PrefabResource>& component) {
+    Internal::DrawResourceInfo("Prefab", options, component);
+    Internal::DrawResourceDragging(options, component);
+}
+
 
 
 
