@@ -10,6 +10,8 @@
 #include "TupleHelper.hpp"
 #include "SerializedRegistry.hpp"
 #include <sstream>
+#include "IgnoreSerialization.hpp"
+#include "ComponentReflection.hpp"
 
 namespace LittleCore {
 
@@ -142,6 +144,9 @@ namespace LittleCore {
                 ComponentList& componentList = std::get<ComponentList>(serializedRegistry.components);
 
                 for (const auto& [entity, component]: registry.view<ComponentType>().each()) {
+                    if (registry.any_of<IgnoreSerialization>(entity)) {
+                        continue;
+                    }
                     SerializedComponent<SerializedComponentType> comp;
                     std::get<0>(comp) = (uint32_t) entity;
                     customSerializer.Serialize(component, std::get<1>(comp));
@@ -157,7 +162,9 @@ namespace LittleCore {
                 auto& componentList = std::get<ComponentList>(serializedRegistry.components);
 
                 for (const auto& [entity, component]: registry.view<TypeToSerialize>().each()) {
-
+                    if (registry.any_of<IgnoreSerialization>(entity)) {
+                        continue;
+                    }
                     SerializedComponentPtr<TypeToSerialize> comp;
                     std::get<0>(comp) = (uint32_t) entity;
                     std::get<1>(comp) = &component;
