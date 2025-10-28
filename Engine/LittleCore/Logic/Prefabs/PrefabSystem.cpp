@@ -27,19 +27,6 @@ void PrefabSystem::Update() {
             RefreshInstance(e);
         }
     }
-    return;
-/*
-    std::vector<entt::entity> changed(observer.begin(), observer.end());
-    observer.clear();
-
-    while (!changed.empty()) {
-        std::vector<entt::entity> toCheck = changed;
-        changed.clear();
-        for (auto e : toCheck) {
-            RefreshInstance(e, changed);
-        }
-    }
-    */
 }
 
 void PrefabSystem::RefreshInstance(entt::entity entity) {
