@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 #include "RegistryHelper.hpp"
 #include "Hierarchy.hpp"
+#include "PrefabInstance.hpp"
 
 using namespace LittleCore;
 
@@ -60,6 +61,23 @@ namespace {
 
         ASSERT_TRUE(childPosition.x == 666);
         ASSERT_TRUE(childPosition.y == 777);
+    }
+
+    TEST(RegistryHelper, DuplicateOneEntityWithPrefabInstanceRootShouldBeNull) {
+
+        entt::registry srcRegistry;
+        entt::registry destRegistry;
+
+        auto srcRoot = srcRegistry.create();
+        srcRegistry.emplace<Hierarchy>(srcRoot);
+        srcRegistry.emplace<PrefabInstance>(srcRoot);
+
+        auto copy = RegistryHelper::Duplicate(srcRegistry, srcRoot, destRegistry);
+
+        auto& copyHierarchy = destRegistry.get<Hierarchy>(copy);
+        auto& prefabInstance = destRegistry.get<PrefabInstance>(copy);
+
+        ASSERT_TRUE(prefabInstance.roots.empty());
     }
 
 }
