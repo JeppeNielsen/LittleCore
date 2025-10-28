@@ -5,10 +5,15 @@
 #include "RegistryHelper.hpp"
 #include <vector>
 #include "Hierarchy.hpp"
+#include "IgnoreSerialization.hpp"
 using namespace LittleCore;
 
 
 void FindAllChildren(entt::registry& registry, entt::entity entity, std::vector<entt::entity>& children) {
+
+    if (registry.any_of<IgnoreSerialization>(entity)) {
+        return;
+    }
 
     children.push_back(entity);
 
@@ -36,21 +41,7 @@ entt::entity clone_between(entt::registry &srcReg,
 
             // Copy the component value over
             dstStorage->push(dst, srcStorage.value(src));
-        }
-    }
-
-    return dst;
-}
-
-entt::entity clone_entity(entt::registry& registry, entt::entity src) {
-    entt::entity dst = registry.create();
-
-    for(auto [id, storage]: registry.storage()) {
-        if(storage.contains(src)) {
-
-
-
-            storage.push(dst, storage.value(src));
+            //dstStorage->PatchEntity(dstReg, dst);
         }
     }
 
@@ -78,4 +69,33 @@ entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity so
     }
 
     return originalToDuplicate[source];
+}
+
+void RegistryHelper::TraverseHierarchy(entt::registry& registry, entt::entity root,
+                                      const std::function<void(entt::entity)>& onEntity) {
+    if (!registry.any_of<Hierarchy>(root)) {
+        return;
+    }
+
+    onEntity(root);
+
+    auto& hierarchy = registry.get<Hierarchy>(root);
+    for(auto child : hierarchy.children) {
+        TraverseHierarchy(registry, child, onEntity);
+    }
+}
+
+entt::entity RegistryHelper::FindParent(entt::registry& registry, entt::entity source,
+                                        const std::function<bool(entt::entity)>& predicate) {
+    while (true) {
+        if (predicate(source)) {
+            return source;
+        }
+        source = registry.get<Hierarchy>(source).parent;
+
+        if (!registry.valid(source)) {
+            return entt::null;
+        }
+    }
+    return entt::null;
 }
