@@ -5,6 +5,7 @@
 
 #pragma once
 #include "ResourceLoader.hpp"
+#include "HierarchySystem.hpp"
 #include "PrefabResource.hpp"
 #include "RegistrySerializer.hpp"
 
@@ -19,6 +20,7 @@ namespace LittleCore {
         void Reload(PrefabResource& resource) override;
 
         entt::registry registry;
+        HierarchySystem hierarchySystem;
         RegistrySerializerBase& registrySerializer;
     };
 }

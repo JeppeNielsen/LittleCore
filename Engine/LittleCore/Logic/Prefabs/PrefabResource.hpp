@@ -4,10 +4,11 @@
 
 #pragma once
 #include <entt/entt.hpp>
+#include <vector>
 
 namespace LittleCore {
     struct PrefabResource {
-        entt::entity root = entt::null;
+        std::vector<entt::entity> roots;
         entt::registry* registry = nullptr;
     };
 }

@@ -10,29 +10,31 @@
 using namespace LittleCore;
 
 PrefabResourceLoader::PrefabResourceLoader(RegistrySerializerBase& registrySerializer) :
-     registrySerializer(registrySerializer) {
+     registrySerializer(registrySerializer),
+     hierarchySystem(registry){
 }
 
-entt::entity FindRoot(entt::registry& registry) {
+void FindRoots(entt::registry& registry, std::vector<entt::entity>& roots) {
     auto view = registry.view<Hierarchy>();
-    for(auto[entity, hierachy] : view.each()) {
-        if (hierachy.children.size() == 0) {
-            return entity;
+    for(auto[entity, hierarchy] : view.each()) {
+        if (hierarchy.children.size() == 0) {
+            roots.push_back(entity);
         }
     }
-    return entt::null;
 }
 
 void PrefabResourceLoader::Load(PrefabResource& resource) {
     auto json = FileHelper::ReadAllText(path);
     registrySerializer.Deserialize(registry, json);
+    hierarchySystem.Update();
     resource.registry = &registry;
-    resource.root = FindRoot(registry);
+    resource.roots.clear();
+    FindRoots(registry, resource.roots);
 }
 
 void PrefabResourceLoader::Unload(PrefabResource& resource) {
     registry.clear();
-    resource.root = entt::null;
+    resource.roots.clear();
     resource.registry = nullptr;
 }
 

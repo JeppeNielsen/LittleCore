@@ -4,6 +4,7 @@
 
 #include "PrefabSystem.hpp"
 #include "RegistryHelper.hpp"
+#include "IgnoreSerialization.hpp"
 
 using namespace LittleCore;
 
@@ -19,19 +20,35 @@ void PrefabSystem::Update() {
         return;
     }
 
-    for(auto e : observer) {
-        RefreshInstance(e);
+    while (!observer.empty()) {
+        std::vector<entt::entity> changed(observer.begin(), observer.end());
+        observer.clear();
+        for (auto e : changed) {
+            RefreshInstance(e);
+        }
     }
+    return;
+/*
+    std::vector<entt::entity> changed(observer.begin(), observer.end());
     observer.clear();
+
+    while (!changed.empty()) {
+        std::vector<entt::entity> toCheck = changed;
+        changed.clear();
+        for (auto e : toCheck) {
+            RefreshInstance(e, changed);
+        }
+    }
+    */
 }
 
 void PrefabSystem::RefreshInstance(entt::entity entity) {
     PrefabInstance& prefabInstance = registry.get<PrefabInstance>(entity);
 
-    if (prefabInstance.root != entt::null) {
-        registry.destroy(prefabInstance.root);
-        prefabInstance.root = entt::null;
+    for(auto root : prefabInstance.roots) {
+        registry.destroy(root);
     }
+    prefabInstance.roots.clear();
 
     if (!prefabInstance.Prefab) {
         return;
@@ -39,10 +56,16 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
 
     auto& resource = *prefabInstance.Prefab.operator->();
 
-    auto root = RegistryHelper::Duplicate(*resource.registry, resource.root, registry);
+    for(auto rootToDuplicate : resource.roots) {
+        auto root = RegistryHelper::Duplicate(*resource.registry, rootToDuplicate, registry);
 
-    prefabInstance.root = root;
-    auto& rootHierarchy = registry.get<Hierarchy>(root);
-    rootHierarchy.parent = entity;
+        RegistryHelper::TraverseHierarchy(registry, root, [&](auto child) {
+            registry.emplace<IgnoreSerialization>(child);
+        });
 
+        prefabInstance.roots.push_back(root);
+
+        auto& rootHierarchy = registry.get<Hierarchy>(root);
+        rootHierarchy.parent = entity;
+    }
 }
