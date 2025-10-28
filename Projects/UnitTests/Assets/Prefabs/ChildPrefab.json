@@ -1,0 +1,127 @@
+{
+   "components": [
+      {
+         "type": "LittleCore::LocalTransform",
+         "components": [
+            [
+               0,
+               {
+                  "position": {
+                     "x": 1,
+                     "y": 2,
+                     "z": 3
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "Wobbler",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Camera",
+         "components": []
+      },
+      {
+         "type": "Rotatable",
+         "components": []
+      },
+      {
+         "type": "LittleCore::WorldTransform",
+         "components": [
+            [
+               0,
+               {
+                  "world": {
+
+                  },
+                  "worldInverse": {
+
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::LocalBoundingBox",
+         "components": [
+            [
+               0,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     }
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::WorldBoundingBox",
+         "components": [
+            [
+               0,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     }
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Hierarchy",
+         "components": [
+            [
+               0,
+               {
+                  "parent": 4294967295,
+                  "previousParent": 4294967295,
+                  "children": []
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Texturable",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Renderable",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Mesh",
+         "components": []
+      }
+   ]
+}
