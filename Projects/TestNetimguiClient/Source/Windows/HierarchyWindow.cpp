@@ -47,15 +47,29 @@ bool IsParentAllowed(entt::registry& registry, entt::entity entity, entt::entity
     return true;
 }
 
+bool NoChildrenIsIgnored(entt::registry& registry, const Hierarchy& hierarchy) {
+    for(auto child : hierarchy.children) {
+        if (registry.any_of<IgnoreSerialization>(child)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void HierarchyWindow::DrawEntity(EditorSimulation& simulation, entt::entity entity, entt::entity parent) {
     auto& registry = simulation.simulation.registry;
+
+    if (registry.any_of<IgnoreSerialization>(entity)) {
+        return;
+    }
+
     std::string name = GetEntityName(entity);
 
     Hierarchy& hierarchy = registry.get<Hierarchy>(entity);
 
     ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_None;
 
-    if (hierarchy.children.empty()) {
+    if (hierarchy.children.empty() || !NoChildrenIsIgnored(registry, hierarchy)) {
         nodeFlags |= ImGuiTreeNodeFlags_Leaf;
     }
 
