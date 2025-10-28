@@ -13,5 +13,14 @@ namespace LittleCore {
 
         using Children = std::vector<entt::entity>;
         Children children;
+
+        Hierarchy() = default;
+
+        Hierarchy(const Hierarchy& other) {
+            parent = other.parent;
+            previousParent = entt::null;
+            children.clear();
+        }
+
     };
 }

@@ -61,10 +61,6 @@ entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity so
     for(auto[orignal, duplicate] : originalToDuplicate) {
         Hierarchy& originalHierarchy = registry.get<Hierarchy>(orignal);
         Hierarchy& duplicateHierarchy = destRegistry.get<Hierarchy>(duplicate);
-
-        duplicateHierarchy.children.clear();
-        duplicateHierarchy.previousParent = entt::null;
-
         duplicateHierarchy.parent = originalHierarchy.parent == entt::null ? entt::null : originalToDuplicate[originalHierarchy.parent];
     }
 
