@@ -16,7 +16,7 @@
 namespace LittleCore {
 
     struct RegistrySerializerBase {
-
+        virtual ~RegistrySerializerBase() = default;
         virtual std::string Serialize(const entt::registry& registry) = 0;
         virtual std::string Deserialize(entt::registry& registry, const std::string& jsonString) = 0;
     };
