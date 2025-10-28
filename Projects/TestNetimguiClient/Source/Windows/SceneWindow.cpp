@@ -7,6 +7,7 @@
 #include "../EditorSimulations/EditorCamera.hpp"
 #include "imgui.h"
 #include "CameraPicker.hpp"
+#include "RegistryHelper.hpp"
 
 using namespace LittleCore;
 
@@ -86,7 +87,14 @@ void SceneWindow::DrawCamera(EditorSimulation& simulation, EditorCamera& camera)
             if (cameraPicker.hasPicked) {
                 simulation.selection.Clear();
                 for (auto e: cameraPicker.pickedEntities) {
-                    simulation.selection.Select(e);
+                    if (simulation.simulation.registry.any_of<IgnoreSerialization>(e)) {
+                        e = RegistryHelper::FindParent(simulation.simulation.registry, e, [&](auto entity)->bool{
+                            return !simulation.simulation.registry.any_of<IgnoreSerialization>(entity);
+                        });
+                    }
+                    if (e != entt::null) {
+                        simulation.selection.Select(e);
+                    }
                 }
             }
         }
