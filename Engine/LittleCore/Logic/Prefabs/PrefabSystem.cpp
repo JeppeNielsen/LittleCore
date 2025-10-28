@@ -10,8 +10,8 @@ using namespace LittleCore;
 
 PrefabSystem::PrefabSystem(entt::registry& registry) : SystemBase(registry),
     observer(registry, entt::collector
-            .update<PrefabInstance>().where<Hierarchy>()
-            .group<PrefabInstance, Hierarchy>()) {
+            .update<Prefab>().where<Hierarchy>()
+            .group<Prefab, Hierarchy>()) {
 
 }
 
@@ -30,18 +30,18 @@ void PrefabSystem::Update() {
 }
 
 void PrefabSystem::RefreshInstance(entt::entity entity) {
-    PrefabInstance& prefabInstance = registry.get<PrefabInstance>(entity);
+    Prefab& prefab = registry.get<Prefab>(entity);
 
-    for(auto root : prefabInstance.roots) {
+    for(auto root : prefab.roots) {
         registry.destroy(root);
     }
-    prefabInstance.roots.clear();
+    prefab.roots.clear();
 
-    if (!prefabInstance.Prefab) {
+    if (!prefab.resource) {
         return;
     }
 
-    auto& resource = *prefabInstance.Prefab.operator->();
+    auto& resource = *prefab.resource.operator->();
 
     for(auto rootToDuplicate : resource.roots) {
         auto root = RegistryHelper::Duplicate(*resource.registry, rootToDuplicate, registry);
@@ -50,7 +50,7 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
             registry.emplace<IgnoreSerialization>(child);
         });
 
-        prefabInstance.roots.push_back(root);
+        prefab.roots.push_back(root);
 
         auto& rootHierarchy = registry.get<Hierarchy>(root);
         rootHierarchy.parent = entity;

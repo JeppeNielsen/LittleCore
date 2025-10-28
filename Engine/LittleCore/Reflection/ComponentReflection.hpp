@@ -5,7 +5,7 @@
 #pragma once
 #include <glaze/glaze.hpp>
 #include "Hierarchy.hpp"
-#include "PrefabInstance.hpp"
+#include "Prefab.hpp"
 
 template<>
 struct glz::meta<LittleCore::Hierarchy> {
@@ -16,9 +16,9 @@ struct glz::meta<LittleCore::Hierarchy> {
 };
 
 template<>
-struct glz::meta<LittleCore::PrefabInstance> {
-    using T = LittleCore::PrefabInstance;
+struct glz::meta<LittleCore::Prefab> {
+    using T = LittleCore::Prefab;
     static constexpr auto value = glz::object(
-            "Prefab", &T::Prefab
+            "resource", &T::resource
     );
 };

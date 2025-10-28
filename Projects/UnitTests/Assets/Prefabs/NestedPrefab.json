@@ -122,7 +122,7 @@
          "components": []
       },
       {
-         "type": "LittleCore::PrefabInstance",
+         "type": "LittleCore::Prefab",
          "components": [
             [
                0,

@@ -9,14 +9,14 @@
 #include "glaze/glaze.hpp"
 
 namespace LittleCore {
-    struct PrefabInstance {
-        ResourceHandle<PrefabResource> Prefab;
+    struct Prefab {
+        ResourceHandle<PrefabResource> resource;
         std::vector<entt::entity> roots;
 
-        PrefabInstance() = default;
+        Prefab() = default;
 
-        PrefabInstance(const PrefabInstance& other) {
-            Prefab = other.Prefab;
+        Prefab(const Prefab& other) {
+            resource = other.resource;
             roots.clear();
         }
     };

@@ -158,7 +158,7 @@ struct MeshSerializer : ComponentSerializerBase<Mesh, std::string> {
     }
 };
 
-struct PrefabInstanceSerializer : ComponentSerializerBase<PrefabInstance, std::string> {
+struct PrefabSerializer : ComponentSerializerBase<Prefab, std::string> {
 
     DefaultResourceManager* resourceManager;
 
@@ -166,13 +166,13 @@ struct PrefabInstanceSerializer : ComponentSerializerBase<PrefabInstance, std::s
         resourceManager = &defaultResourceManager;
     }
 
-    void Serialize(const PrefabInstance& prefabInstance, std::string& id) {
-        auto info = resourceManager->GetInfo(prefabInstance.Prefab);
+    void Serialize(const Prefab& prefab, std::string& id) {
+        auto info = resourceManager->GetInfo(prefab.resource);
         id = info.id;
     }
 
-    void Deserialize(const std::string& id, PrefabInstance& prefabInstance) {
-        prefabInstance.Prefab = resourceManager->Create<PrefabResource>(id);
+    void Deserialize(const std::string& id, Prefab& prefab) {
+        prefab.resource = resourceManager->Create<PrefabResource>(id);
     }
 };
 
@@ -198,7 +198,7 @@ struct TestNetimguiClient : IState {
             Texturable,
             Renderable,
             Mesh,
-            PrefabInstance>;
+            Prefab>;
 
     Meta::Rebind<EntityGuiDrawer, Components> drawer;
 
@@ -207,7 +207,7 @@ struct TestNetimguiClient : IState {
             LocalBoundingBox,
             WorldBoundingBox,
             Hierarchy,
-            TexturableSerializer, RenderableSerializer, MeshSerializer, PrefabInstanceSerializer>;
+            TexturableSerializer, RenderableSerializer, MeshSerializer, PrefabSerializer>;
 
     using SerializerComponents = Meta::Concat<Components, ComponentSerializers>;
 
@@ -332,7 +332,7 @@ struct TestNetimguiClient : IState {
         registrySerializer.GetSerializer<TexturableSerializer>().SetResourceManager(resourceManager);
         registrySerializer.GetSerializer<RenderableSerializer>().SetResourceManager(resourceManager);
         registrySerializer.GetSerializer<MeshSerializer>().SetResourceManager(resourceManager);
-        registrySerializer.GetSerializer<PrefabInstanceSerializer>().SetResourceManager(resourceManager);
+        registrySerializer.GetSerializer<PrefabSerializer>().SetResourceManager(resourceManager);
 
         //auto data = FileHelper::ReadAllText("Scene.json");
 

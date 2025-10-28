@@ -5,7 +5,7 @@
 
 #pragma once
 #include "SystemBase.hpp"
-#include "PrefabInstance.hpp"
+#include "Prefab.hpp"
 #include "Hierarchy.hpp"
 
 namespace LittleCore {
