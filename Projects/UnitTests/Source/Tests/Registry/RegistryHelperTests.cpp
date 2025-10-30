@@ -75,9 +75,9 @@ namespace {
         auto copy = RegistryHelper::Duplicate(srcRegistry, srcRoot, destRegistry);
 
         auto& copyHierarchy = destRegistry.get<Hierarchy>(copy);
-        auto& Prefab = destRegistry.get<Prefab>(copy);
+        auto& prefab = destRegistry.get<Prefab>(copy);
 
-        ASSERT_TRUE(Prefab.roots.empty());
+        ASSERT_TRUE(prefab.roots.empty());
     }
 
 }

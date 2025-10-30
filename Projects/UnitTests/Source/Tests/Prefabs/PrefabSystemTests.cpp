@@ -25,13 +25,13 @@ namespace {
             resourceManager = &defaultResourceManager;
         }
 
-        void Serialize(const Prefab& Prefab, std::string& id) {
-            auto info = resourceManager->GetInfo(Prefab.Prefab);
+        void Serialize(const Prefab& prefab, std::string& id) {
+            auto info = resourceManager->GetInfo(prefab.resource);
             id = info.id;
         }
 
-        void Deserialize(const std::string& id, Prefab& Prefab) {
-            Prefab.Prefab = resourceManager->Create<PrefabResource>(id);
+        void Deserialize(const std::string& id, Prefab& prefab) {
+            prefab.resource = resourceManager->Create<PrefabResource>(id);
         }
     };
 
@@ -55,14 +55,14 @@ namespace {
         auto instanceEntity = registry.create();
         auto& instanceHierarchy = registry.emplace<Hierarchy>(instanceEntity);
         auto& local = registry.emplace<LocalTransform>(instanceEntity);
-        auto& Prefab = registry.emplace<Prefab>(instanceEntity);
-        Prefab.Prefab = resourceManager.Create<PrefabResource>("9953944CCE324C019F30699342FF9AE0");
+        auto& prefab = registry.emplace<Prefab>(instanceEntity);
+        prefab.resource = resourceManager.Create<PrefabResource>("9953944CCE324C019F30699342FF9AE0");
 
         hierarchySystem.Update();
         prefabSystem.Update();
 
-        EXPECT_TRUE(Prefab.roots.size() == 1);
-        auto localTransform = registry.get<LocalTransform>(Prefab.roots[0]);
+        EXPECT_TRUE(prefab.roots.size() == 1);
+        auto localTransform = registry.get<LocalTransform>(prefab.roots[0]);
         EXPECT_EQ(localTransform.position.x,1.0f);
         EXPECT_EQ(localTransform.position.y,2.0f);
         EXPECT_EQ(localTransform.position.z,3.0f);
@@ -89,16 +89,16 @@ namespace {
         auto instanceEntity = registry.create();
         auto& instanceHierarchy = registry.emplace<Hierarchy>(instanceEntity);
         auto& local = registry.emplace<LocalTransform>(instanceEntity);
-        auto& Prefab = registry.emplace<Prefab>(instanceEntity);
-        Prefab.Prefab = resourceManager.Create<PrefabResource>("DAEFD5275FF944E7BC65614E634E85D1");
+        auto& prefab = registry.emplace<Prefab>(instanceEntity);
+        prefab.resource = resourceManager.Create<PrefabResource>("DAEFD5275FF944E7BC65614E634E85D1");
 
 
         prefabSystem.Update();
         hierarchySystem.Update();
 
-        EXPECT_EQ(Prefab.roots.size(), 1);
-        auto& hierarchy = registry.get<Hierarchy>(Prefab.roots[0]);
-        auto& prefabHandle = registry.get<Prefab>(Prefab.roots[0]);
+        EXPECT_EQ(prefab.roots.size(), 1);
+        auto& hierarchy = registry.get<Hierarchy>(prefab.roots[0]);
+        auto& prefabHandle = registry.get<Prefab>(prefab.roots[0]);
         auto& nestedHierarchy = registry.get<Hierarchy>(hierarchy.children[0]);
 
         EXPECT_EQ(hierarchy.children.size(), 1);
