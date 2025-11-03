@@ -19,6 +19,7 @@ namespace LittleCore {
         virtual ~RegistrySerializerBase() = default;
         virtual std::string Serialize(const entt::registry& registry) = 0;
         virtual std::string Deserialize(entt::registry& registry, const std::string& jsonString) = 0;
+        virtual glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId, const std::string& json) = 0;
     };
 
     template<typename ...T>
@@ -222,6 +223,16 @@ namespace LittleCore {
 
             return {};
         }
+
+        glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId, const std::string& json) override {
+            const auto& deserializer = deserializers.find(componentTypeId);
+            if (deserializer == deserializers.end()) {
+                return {glz::error_code::none};
+            }
+            return deserializer->second->DeserializeComponent(registry, entity, json);
+        }
+
+
     };
 
 }

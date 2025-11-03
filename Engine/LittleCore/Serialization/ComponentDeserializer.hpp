@@ -27,6 +27,15 @@ namespace LittleCore {
             }
             return {};
         }
+
+        glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& json) {
+            TComponent& componentData = registry.get<TComponent>(entity);
+            auto error = glz::read_json(componentData, json);
+            if (error) {
+                return error;
+            }
+            return {};
+        }
     };
 
 }
