@@ -10,6 +10,7 @@
 #include "RegistrySerializer.hpp"
 #include "LocalTransform.hpp"
 #include "MathReflection.hpp"
+#include "PrefabExposedComponents.hpp"
 
 using namespace LittleCore;
 
@@ -106,6 +107,66 @@ namespace {
     }
 
 
+    TEST(PrefabSystem, TestExposedComponents) {
+
+        std::string rootPath = "../../../../Assets/";
+
+        ResourcePathMapper resourcePathMapper;
+        resourcePathMapper.RefreshFromRootPath(rootPath);
+        ResourceManager<PrefabResourceLoaderFactory> resourceManager(resourcePathMapper);
+
+        RegistrySerializer<LocalTransform, Hierarchy, PrefabSerializer, PrefabExposedComponents> serializer;
+        serializer.GetSerializer<PrefabSerializer>().SetResourceManager(resourceManager);
+
+        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(serializer);
+
+
+        entt::registry registry;
+        HierarchySystem hierarchySystem(registry);
+        PrefabSystem prefabSystem(registry);
+        prefabSystem.SetSerializer(serializer);
+
+        auto instanceEntity = registry.create();
+        auto& instanceHierarchy = registry.emplace<Hierarchy>(instanceEntity);
+        auto& local = registry.emplace<LocalTransform>(instanceEntity);
+        auto& prefab = registry.emplace<Prefab>(instanceEntity);
+        prefab.resource = resourceManager.Create<PrefabResource>("BBE8C8BC37C24312BCC239D8651E8137");
+        SerializedPrefabComponent serializedPrefabComponent;
+        serializedPrefabComponent.sourceEntity = (entt::entity)0;
+        serializedPrefabComponent.componentId = "LittleCore::LocalTransform";
+        serializedPrefabComponent.data = "{\n"
+                                         "                  \"position\": {\n"
+                                         "                     \"x\": 55,\n"
+                                         "                     \"y\": 66,\n"
+                                         "                     \"z\": 77\n"
+                                         "                  },\n"
+                                         "                  \"rotation\": {\n"
+                                         "                     \"x\": 0,\n"
+                                         "                     \"y\": 0,\n"
+                                         "                     \"z\": 0,\n"
+                                         "                     \"w\": 1\n"
+                                         "                  },\n"
+                                         "                  \"scale\": {\n"
+                                         "                     \"x\": 1,\n"
+                                         "                     \"y\": 1,\n"
+                                         "                     \"z\": 1\n"
+                                         "                  }\n"
+                                         "               }";
+
+        prefab.components.push_back(serializedPrefabComponent);
+
+        prefabSystem.Update();
+        hierarchySystem.Update();
+
+
+        auto& localTransform = registry.get<LocalTransform>(prefab.roots[0]);
+
+        EXPECT_EQ(localTransform.position.x, 55);
+        EXPECT_EQ(localTransform.position.y, 66);
+        EXPECT_EQ(localTransform.position.z, 77);
+
+
+    }
 
 
 
