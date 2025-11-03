@@ -48,7 +48,7 @@ entt::entity clone_between(entt::registry &srcReg,
     return dst;
 }
 
-entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity source, entt::registry& destRegistry) {
+entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity source, entt::registry& destRegistry, const Callback& callback) {
     std::vector<entt::entity> entitiesToDuplicate;
     FindAllChildren(registry, source, entitiesToDuplicate);
     std::unordered_map<entt::entity, entt::entity> originalToDuplicate;
@@ -67,6 +67,10 @@ entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity so
         } else {
             duplicateHierarchy.parent = originalToDuplicate[originalHierarchy.parent];
             destRegistry.get<Hierarchy>(duplicateHierarchy.parent).children.push_back(duplicate);
+        }
+
+        if (callback) {
+            callback(orignal, duplicate);
         }
     }
 
