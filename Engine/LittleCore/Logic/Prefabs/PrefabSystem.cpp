@@ -5,6 +5,7 @@
 #include "PrefabSystem.hpp"
 #include "RegistryHelper.hpp"
 #include "IgnoreSerialization.hpp"
+#include "PrefabExposedComponents.hpp"
 
 using namespace LittleCore;
 
@@ -44,7 +45,35 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
     auto& resource = *prefab.resource.operator->();
 
     for(auto rootToDuplicate : resource.roots) {
-        auto root = RegistryHelper::Duplicate(*resource.registry, rootToDuplicate, registry);
+        auto root = RegistryHelper::Duplicate(*resource.registry, rootToDuplicate, registry, [&] (auto source, auto dest){
+            if (!resource.registry->any_of<PrefabExposedComponents>(source)) {
+                return;
+            }
+
+            PrefabExposedComponents& prefabExposedComponents = resource.registry->get<PrefabExposedComponents>(source);
+
+
+
+            for(auto& exposedComponent : prefabExposedComponents.exposedComponents) {
+
+                auto it = std::find_if(prefab.components.begin(),
+                                       prefab.components.end(), [&](SerializedPrefabComponent& element) {
+                            return element.sourceEntity == source && element.componentId == exposedComponent;
+                        });
+
+                if (it == prefab.components.end()) {
+                   /* prefab.components.push_back({
+                            source,
+                            dest,
+                            exposedComponent,
+                            "{}"
+                    });
+                    */
+                }else {
+                    it->entity = dest;
+                }
+            }
+        });
 
         RegistryHelper::TraverseHierarchy(registry, root, [&](auto child) {
             registry.emplace<IgnoreSerialization>(child);
@@ -54,5 +83,15 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
 
         auto& rootHierarchy = registry.get<Hierarchy>(root);
         rootHierarchy.parent = entity;
+
+        if (registrySerializer != nullptr) {
+            for (SerializedPrefabComponent& serializedPrefabComponent: prefab.components) {
+                registrySerializer->DeserializeComponent(registry, serializedPrefabComponent.entity, serializedPrefabComponent.componentId, serializedPrefabComponent.data);
+            }
+        }
     }
+}
+
+void PrefabSystem::SetSerializer(RegistrySerializerBase& registrySerializer) {
+    this->registrySerializer = &registrySerializer;
 }
