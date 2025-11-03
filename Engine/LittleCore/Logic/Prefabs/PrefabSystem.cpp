@@ -13,7 +13,7 @@ PrefabSystem::PrefabSystem(entt::registry& registry) : SystemBase(registry),
     observer(registry, entt::collector
             .update<Prefab>().where<Hierarchy>()
             .group<Prefab, Hierarchy>()) {
-
+    registry.on_destroy<Prefab>().connect<&PrefabSystem::EntityDestroyed>(this);
 }
 
 void PrefabSystem::Update() {
@@ -30,14 +30,18 @@ void PrefabSystem::Update() {
     }
 }
 
-void PrefabSystem::RefreshInstance(entt::entity entity) {
-    Prefab& prefab = registry.get<Prefab>(entity);
-
+void PrefabSystem::Clear(Prefab& prefab) {
+    isDestroying = true;
     for(auto root : prefab.roots) {
         registry.destroy(root);
     }
     prefab.roots.clear();
+    isDestroying = false;
+}
 
+void PrefabSystem::RefreshInstance(entt::entity entity) {
+    Prefab& prefab = registry.get<Prefab>(entity);
+    Clear(prefab);
     if (!prefab.resource) {
         return;
     }
@@ -94,4 +98,12 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
 
 void PrefabSystem::SetSerializer(RegistrySerializerBase& registrySerializer) {
     this->registrySerializer = &registrySerializer;
+}
+
+void PrefabSystem::EntityDestroyed(entt::registry& registry, entt::entity entity) {
+    if (isDestroying) {
+        return;
+    }
+    Prefab& prefab = registry.get<Prefab>(entity);
+    Clear(prefab);
 }
