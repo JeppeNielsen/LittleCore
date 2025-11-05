@@ -96,4 +96,39 @@ namespace {
 
         EXPECT_EQ(entitiesInQuery.size(), 0);
     }
+
+    struct OctreeMesh {
+        int meshId = 2;
+    };
+
+    TEST(OctreeSystem, RemovedComponentShouldBeRemovedFromOctree) {
+        entt::registry registry;
+        OctreeSystem<OctreeMesh> octreeSystem(registry);
+
+        auto entity = registry.create();
+
+        auto& worldBoundingBox = registry.emplace<WorldBoundingBox>(entity);
+        worldBoundingBox.bounds = {{0,0,0} , {1,1,1}};
+
+        registry.patch<WorldBoundingBox>(entity);
+
+        registry.emplace<OctreeMesh>(entity);
+
+        octreeSystem.Update();
+
+        BoundingBox boundingBox = {{1,0,0},{1,1,1}};
+
+        std::vector<entt::entity> entitiesInQuery;
+
+        octreeSystem.Query(boundingBox, entitiesInQuery);
+
+        EXPECT_EQ(entitiesInQuery.size(), 1);
+
+        registry.remove<OctreeMesh>(entity);
+
+        entitiesInQuery.clear();
+        octreeSystem.Query(boundingBox, entitiesInQuery);
+
+        EXPECT_EQ(entitiesInQuery.size(), 0);
+    }
 }

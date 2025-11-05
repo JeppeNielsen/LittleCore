@@ -21,6 +21,12 @@ namespace LittleCore {
             defaultNode.node = nullptr;
             observer.connect(registry, entt::collector.update<WorldBoundingBox>().where<T...>().template group<WorldBoundingBox, T...>());
             registry.on_destroy<WorldBoundingBox>().connect<&OctreeSystem::EntityDestroyed>(this);
+            (HookDestroyed<T>(), ...);
+        }
+
+        template<typename TypeToHook>
+        void HookDestroyed() {
+            registry.on_destroy<TypeToHook>().template connect<&OctreeSystem::EntityDestroyed>(this);
         }
 
         void EntityDestroyed(entt::registry& reg, entt::entity entity) {
