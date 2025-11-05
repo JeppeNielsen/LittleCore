@@ -12,6 +12,7 @@
 #include <sstream>
 #include "IgnoreSerialization.hpp"
 #include "ComponentReflection.hpp"
+#include "RegistrySerializerConcepts.hpp"
 
 namespace LittleCore {
 
@@ -19,6 +20,7 @@ namespace LittleCore {
         virtual ~RegistrySerializerBase() = default;
         virtual std::string Serialize(const entt::registry& registry) = 0;
         virtual std::string Deserialize(entt::registry& registry, const std::string& jsonString) = 0;
+        virtual std::string SerializeComponent(const entt::registry& registry, entt::entity entity, const std::string& componentTypeId) = 0;
         virtual glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId, const std::string& json) = 0;
     };
 
@@ -150,7 +152,12 @@ namespace LittleCore {
                     }
                     SerializedComponent<SerializedComponentType> comp;
                     std::get<0>(comp) = (uint32_t) entity;
-                    customSerializer.Serialize(component, std::get<1>(comp));
+
+                    if constexpr (HasSerializeWithRegistryAndEntity<TypeToSerialize, ComponentType, SerializedComponentType>) {
+                        customSerializer.Serialize(component, std::get<1>(comp), registry, entity);
+                    } else {
+                        customSerializer.Serialize(component, std::get<1>(comp));
+                    }
                     componentList.components.emplace_back(comp);
                 }
             });
@@ -222,6 +229,14 @@ namespace LittleCore {
             }
 
             return {};
+        }
+
+        std::string SerializeComponent(const entt::registry& registry, entt::entity entity, const std::string& componentTypeId) override {
+            const auto& deserializer = deserializers.find(componentTypeId);
+            if (deserializer == deserializers.end()) {
+                return "";
+            }
+            return deserializer->second->SerializeComponent(registry, entity);
         }
 
         glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId, const std::string& json) override {

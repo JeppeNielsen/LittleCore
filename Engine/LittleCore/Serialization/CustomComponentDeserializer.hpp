@@ -4,6 +4,7 @@
 
 #pragma once
 #include "IComponentDeserializer.hpp"
+#include "RegistrySerializerConcepts.hpp"
 
 namespace LittleCore {
 
@@ -14,7 +15,7 @@ namespace LittleCore {
         CustomComponentDeserializer(TCustomSerializer& customSerializer)
         : customSerializer(customSerializer) { }
 
-        glz::error_ctx Deserialize(const std::vector<glz::json_t>& components, entt::registry& registry) {
+        glz::error_ctx Deserialize(const std::vector<glz::json_t>& components, entt::registry& registry) override {
             using TComponent = TCustomSerializer::Component;
             using TSerializedComponent = TCustomSerializer::SerializedComponent;
 
@@ -39,7 +40,7 @@ namespace LittleCore {
             return {};
         }
 
-        glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& json) {
+        glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& json) override {
             using TComponent = TCustomSerializer::Component;
             TComponent& componentData = registry.get<TComponent>(entity);
             auto error = glz::read_json(componentData, json);
@@ -47,6 +48,28 @@ namespace LittleCore {
                 return error;
             }
             return {};
+        }
+
+        std::string SerializeComponent(const entt::registry& registry, entt::entity entity) override {
+            using TComponent = TCustomSerializer::Component;
+            using TSerializedComponent = TCustomSerializer::SerializedComponent;
+            if (registry.all_of<TComponent>(entity)) {
+                return "";
+            }
+
+            const TComponent& componentData = registry.get<TComponent>(entity);
+
+            TSerializedComponent serializedComponent;
+
+            if constexpr (HasSerializeWithRegistryAndEntity<TCustomSerializer, TComponent, TSerializedComponent>) {
+                customSerializer.Serialize(componentData, serializedComponent, registry, entity);
+            } else {
+                customSerializer.Serialize(componentData, serializedComponent);
+            }
+
+            std::string json;
+            auto error = glz::write<glz::opts{.prettify = true}>(serializedComponent, json);
+            return json;
         }
     };
 
