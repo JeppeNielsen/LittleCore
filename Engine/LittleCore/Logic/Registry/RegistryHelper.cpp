@@ -69,6 +69,8 @@ entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity so
             destRegistry.get<Hierarchy>(duplicateHierarchy.parent).children.push_back(duplicate);
         }
 
+        duplicateHierarchy.previousParent = duplicateHierarchy.parent;
+
         if (callback) {
             callback(orignal, duplicate);
         }
