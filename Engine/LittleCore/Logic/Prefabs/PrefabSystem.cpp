@@ -56,8 +56,6 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
 
             PrefabExposedComponents& prefabExposedComponents = resource.registry->get<PrefabExposedComponents>(source);
 
-
-
             for(auto& exposedComponent : prefabExposedComponents.exposedComponents) {
 
                 auto it = std::find_if(prefab.components.begin(),
@@ -66,13 +64,12 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
                         });
 
                 if (it == prefab.components.end()) {
-                   /* prefab.components.push_back({
+                    prefab.components.push_back({
                             source,
                             dest,
                             exposedComponent,
                             "{}"
                     });
-                    */
                 }else {
                     it->entity = dest;
                 }

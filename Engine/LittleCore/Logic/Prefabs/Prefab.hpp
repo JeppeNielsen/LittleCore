@@ -20,7 +20,7 @@ namespace LittleCore {
         Prefab(const Prefab& other) {
             resource = other.resource;
             roots.clear();
-            components.clear();
+            components = other.components;
         }
     };
 }
