@@ -6,6 +6,7 @@
 #include "RegistryHelper.hpp"
 #include "Hierarchy.hpp"
 #include "Prefab.hpp"
+#include "HierarchySystem.hpp"
 
 using namespace LittleCore;
 
@@ -78,6 +79,33 @@ namespace {
         auto& prefab = destRegistry.get<Prefab>(copy);
 
         ASSERT_TRUE(prefab.roots.empty());
+    }
+
+    TEST(RegistryHelper, DuplicateOneEntityWithOneChildDuplicatedShowHaveOneChildInChildrenList) {
+
+        entt::registry srcRegistry;
+        HierarchySystem srcHierarchySystem(srcRegistry);
+
+        entt::registry destRegistry;
+        HierarchySystem destHierarchySystem(destRegistry);
+
+        auto srcRoot = srcRegistry.create();
+        auto& srcRootHierarchy = srcRegistry.emplace<Hierarchy>(srcRoot);
+        auto srcChild = srcRegistry.create();
+        auto& srcChildHierarchy = srcRegistry.emplace<Hierarchy>(srcChild);
+        srcChildHierarchy.parent = srcRoot;
+        srcHierarchySystem.Update();
+
+        auto copy = RegistryHelper::Duplicate(srcRegistry, srcRoot, destRegistry);
+
+        auto& copyBeforeHierarchy = destRegistry.get<Hierarchy>(copy);
+
+        destHierarchySystem.Update();
+
+        auto& copyHierarchy = destRegistry.get<Hierarchy>(copy);
+
+        ASSERT_EQ(copyBeforeHierarchy.children.size(), 1);
+        ASSERT_EQ(copyHierarchy.children.size(), 1);
     }
 
 }
