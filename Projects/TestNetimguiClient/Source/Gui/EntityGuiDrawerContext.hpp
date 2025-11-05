@@ -4,13 +4,20 @@
 
 #pragma once
 #include "DefaultResourceManager.hpp"
+#include "IComponentTypeNameGetter.hpp"
+#include "IComponentGuiDrawer.hpp"
 
 namespace LittleCore {
 
     struct EntityGuiDrawerContext {
-        EntityGuiDrawerContext(DefaultResourceManager& resourceManager) : resourceManager(resourceManager) {}
+        EntityGuiDrawerContext(DefaultResourceManager& resourceManager, RegistrySerializerBase& registrySerializer) : resourceManager(resourceManager), registrySerializer(registrySerializer) {}
 
         DefaultResourceManager& resourceManager;
+        RegistrySerializerBase& registrySerializer;
+        IComponentTypeNameGetter* componentTypeGetter;
+        IComponentGuiDrawer* componentGuiDrawer;
+        entt::registry* currentRegistry;
+        entt::entity currentEntity;
     };
 
 }

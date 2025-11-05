@@ -26,11 +26,43 @@ namespace LittleCore {
     };
 
     template <typename ...T>
-    class EntityGuiDrawer : public EntityGuiDrawerBase {
+    class EntityGuiDrawer : public EntityGuiDrawerBase, public IComponentTypeNameGetter, public IComponentGuiDrawer {
         using ComponentTypes = std::tuple<T*...>;
 
         ComponentTypes componentTypes;
     public:
+
+        std::vector<std::string> GetComponentTypeNames(entt::registry& registry, entt::entity entity) override {
+            std::vector<std::string> componentTypeNames;
+            TupleHelper::for_each(componentTypes, [&componentTypeNames, &registry, entity](auto componentPtr) {
+                using ComponentType = typename std::remove_pointer_t<decltype(componentPtr)>;
+                if (registry.all_of<ComponentType>(entity)) {
+                    std::string name = TypeUtility::GetClassName<ComponentType>();
+                    componentTypeNames.push_back(name);
+                }
+            });
+            return componentTypeNames;
+        }
+
+        void DrawComponent(std::string& componentTypeName, entt::registry& registry, entt::entity entity) override {
+
+            TupleHelper::for_each(componentTypes, [&componentTypeName, &registry, entity, this](auto componentPtr) {
+                using ComponentType = typename std::remove_pointer_t<decltype(componentPtr)>;
+
+                if (!registry.all_of<ComponentType>(entity)) {
+                    return;
+                }
+
+                std::string name = TypeUtility::GetClassName<ComponentType>();
+                if (componentTypeName != name) {
+                    return ;
+                }
+
+                DrawComponent<ComponentType>(name, registry, entity);
+
+            });
+
+        }
 
         EntityGuiDrawer(EntityGuiDrawerContext& context) : EntityGuiDrawerBase(context) {}
 
@@ -58,14 +90,18 @@ namespace LittleCore {
             }
 
             TComponent& component = registry.get<TComponent>(entity);
-            bool didChange = ObjectGuiDrawer::Draw(context, component);
+            context.currentEntity = entity;
+            context.currentRegistry = &registry;
+            context.componentTypeGetter = this;
+            context.componentGuiDrawer = this;
+            bool didChange = ObjectGuiDrawer<TComponent>::Draw(context, component);
             if (didChange) {
                 registry.patch<TComponent>(entity);
             }
             return didChange;
         }
 
-        bool Draw(entt::registry& registry, entt::entity entity) {
+        bool Draw(entt::registry& registry, entt::entity entity) override {
             bool didChange = false;
             TupleHelper::for_each(componentTypes, [&didChange, &registry, entity, this](auto componentPtr) {
                 using ComponentType = typename std::remove_pointer_t<decltype(componentPtr)>;
@@ -81,7 +117,7 @@ namespace LittleCore {
             return didChange;
         }
 
-        bool DrawComponentMenu(entt::registry& registry, entt::entity entity) {
+        bool DrawComponentMenu(entt::registry& registry, entt::entity entity) override {
 
             bool didChange = false;
             if (ImGui::BeginPopupContextWindow(NULL, ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonRight)) {

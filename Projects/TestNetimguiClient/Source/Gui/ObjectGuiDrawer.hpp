@@ -10,11 +10,10 @@
 #include "EntityGuiDrawerContext.hpp"
 
 namespace LittleCore {
-    class ObjectGuiDrawer {
-    public:
 
-        template<typename T>
-        static bool Draw(EntityGuiDrawerContext& context, T&& object) {
+    template<typename T>
+    struct ObjectGuiDrawer {
+       static bool Draw(EntityGuiDrawerContext& context, T& object) {
 
             GuiHelper::DrawOptions options(context.resourceManager);
             LittleCore::ReflectionUtility::IterateMembers(object,
