@@ -29,6 +29,9 @@
 #include "FileHelper.hpp"
 #include "TupleHelper.hpp"
 #include "PrefabSystem.hpp"
+#include "PrefabExposedComponents.hpp"
+#include "ComponentDrawers/PrefabExposedComponentsDrawer.hpp"
+#include "ComponentDrawers/PrefabDrawer.hpp"
 
 using namespace LittleCore;
 
@@ -158,21 +161,36 @@ struct MeshSerializer : ComponentSerializerBase<Mesh, std::string> {
     }
 };
 
-struct PrefabSerializer : ComponentSerializerBase<Prefab, std::string> {
+struct SerializedPrefab {
+    std::string prefabId;
+    std::vector<SerializedPrefabComponent> components;
+};
+
+struct PrefabSerializer : ComponentSerializerBase<Prefab, SerializedPrefab> {
 
     DefaultResourceManager* resourceManager;
+    RegistrySerializerBase* registrySerializer;
 
     void SetResourceManager(DefaultResourceManager& defaultResourceManager) {
         resourceManager = &defaultResourceManager;
     }
 
-    void Serialize(const Prefab& prefab, std::string& id) {
-        auto info = resourceManager->GetInfo(prefab.resource);
-        id = info.id;
+    void SetRegistrySerializer(RegistrySerializerBase& registrySerializerBase) {
+        this->registrySerializer = &registrySerializerBase;
     }
 
-    void Deserialize(const std::string& id, Prefab& prefab) {
-        prefab.resource = resourceManager->Create<PrefabResource>(id);
+    void Serialize(const Prefab& prefab, SerializedPrefab& serializedPrefab, const entt::registry& registry, entt::entity entity) {
+        auto info = resourceManager->GetInfo(prefab.resource);
+        serializedPrefab.prefabId = info.id;
+        serializedPrefab.components = prefab.components;
+        for(auto& s : serializedPrefab.components) {
+            s.data = registrySerializer->SerializeComponent(registry, s.entity, s.componentId);
+        }
+    }
+
+    void Deserialize(const SerializedPrefab& serializedPrefab, Prefab& prefab) {
+        prefab.resource = resourceManager->Create<PrefabResource>(serializedPrefab.prefabId);
+        prefab.components = serializedPrefab.components;
     }
 };
 
@@ -198,7 +216,8 @@ struct TestNetimguiClient : IState {
             Texturable,
             Renderable,
             Mesh,
-            Prefab>;
+            Prefab,
+            PrefabExposedComponents>;
 
     Meta::Rebind<EntityGuiDrawer, Components> drawer;
 
@@ -214,7 +233,7 @@ struct TestNetimguiClient : IState {
     Meta::Rebind<RegistrySerializer, SerializerComponents > registrySerializer;
 
     TestNetimguiClient() :
-            drawerContext(resourceManager),
+            drawerContext(resourceManager, registrySerializer),
             drawer(drawerContext),
     editorSimulationContext(renderer, netimguiClientController, drawer),
     editorSimulationRegistry(editorSimulationContext),
@@ -333,6 +352,9 @@ struct TestNetimguiClient : IState {
         registrySerializer.GetSerializer<RenderableSerializer>().SetResourceManager(resourceManager);
         registrySerializer.GetSerializer<MeshSerializer>().SetResourceManager(resourceManager);
         registrySerializer.GetSerializer<PrefabSerializer>().SetResourceManager(resourceManager);
+        registrySerializer.GetSerializer<PrefabSerializer>().SetRegistrySerializer(registrySerializer);
+
+        simulation.GetSystem<PrefabSystem>().SetSerializer(registrySerializer);
 
         //auto data = FileHelper::ReadAllText("Scene.json");
 
@@ -398,24 +420,6 @@ struct TestNetimguiClient : IState {
 
 
 int main() {
-
-    std::tuple<LittleCore::Renderable*> tuple;
-
-
-    //using Reg = ToRegistry<decltype(tuple)>::type;
-    //Reg typ;
-
-
-    /*std::tuple<LittleCore::Texturable*, LittleCore::Renderable*> allTypes;
-    std::tuple<LittleCore::Renderable*> excluding;
-
-    auto result = TupleHelper::exclude(allTypes, excluding);
-
-    static_assert(std::is_same_v<decltype(result), std::tuple<Texturable*>>);
-
-
-    return 0;
-     */
     Engine e({"Netimgui Client", true});
     e.Start<TestNetimguiClient>();
     return 0;
