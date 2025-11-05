@@ -119,6 +119,12 @@ namespace LittleCore {
                 renderSystem.Render(viewId, cameraTransform, camera, renderer);
             });
         }
+
+        template<typename T>
+        T& GetSystem() {
+            return std::get<T>(updateSystems.systems);
+        }
+
     private:
         InputSystems inputSystems;
         UpdateSystems updateSystems;
