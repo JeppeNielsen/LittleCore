@@ -20,7 +20,10 @@ namespace LittleCore {
     std::is_same_v<std::remove_cvref_t<T>, const char*>;
 
     template <typename T>
-    concept SimpleType = std::is_arithmetic_v<T> || std::is_enum_v<T>;
+    concept SimpleType =
+    std::is_arithmetic_v<std::remove_cvref_t<T>> ||
+    std::is_enum_v<std::remove_cvref_t<T>>       ||
+    std::same_as<std::remove_cvref_t<T>, std::string>;
 
     class ReflectionUtility {
     public:
