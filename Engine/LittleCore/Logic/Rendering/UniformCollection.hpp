@@ -11,9 +11,13 @@
 namespace LittleCore {
     class UniformCollection {
     public:
+        ~UniformCollection();
+
         using Uniforms = std::unordered_map<std::string, bgfx::UniformHandle>;
 
         bgfx::UniformHandle GetHandle(const std::string& id, bgfx::UniformType::Enum uniformType);
+
+        void Clear();
 
     private:
         Uniforms uniforms;

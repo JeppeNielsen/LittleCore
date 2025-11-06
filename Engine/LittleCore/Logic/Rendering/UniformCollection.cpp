@@ -15,3 +15,14 @@ bgfx::UniformHandle UniformCollection::GetHandle(const std::string& id, bgfx::Un
     uniforms.emplace(id, uniform);
     return uniform;
 }
+
+void UniformCollection::Clear() {
+    for(auto [id, uniform] : uniforms) {
+        bgfx::destroy(uniform);
+    }
+    uniforms.clear();
+}
+
+UniformCollection::~UniformCollection() {
+    Clear();
+}
