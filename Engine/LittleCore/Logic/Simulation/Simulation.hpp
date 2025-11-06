@@ -67,7 +67,7 @@ namespace LittleCore {
         static SimulationCreatedFunction SimulationDestroyed;
 
         SimulationBase();
-        ~SimulationBase();
+        virtual ~SimulationBase();
 
         virtual void HandleEvent(void* event, InputHandler& inputHandler);
         virtual void Render(Renderer& renderer);
@@ -91,7 +91,7 @@ namespace LittleCore {
             });
         }
 
-        void Update(float dt) {
+        void Update(float dt) override {
             TupleHelper::for_each(inputSystems.systems, [] (auto& inputSystem) {
                 inputSystem.Update();
             });
