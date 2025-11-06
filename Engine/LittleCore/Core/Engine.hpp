@@ -14,13 +14,14 @@ namespace LittleCore {
         template<typename T>
         void Start() {
             MainLoop([this] (){
-                state = std::make_unique<T>();
+                state = new T();
+            },[this]() {
+                delete state;
             });
         }
-
     private:
         EngineSettings settings;
-        std::unique_ptr<IState> state;
-        void MainLoop(const std::function<void()>& gfxInitialized);
+        IState* state = nullptr;
+        void MainLoop(const std::function<void()>& onInitialized,  const std::function<void()>& onDestroy);
     };
 }

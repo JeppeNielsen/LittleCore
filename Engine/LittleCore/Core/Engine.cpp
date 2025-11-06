@@ -15,7 +15,7 @@ Engine::Engine(EngineSettings settings) : settings(settings){
 
 }
 
-void Engine::MainLoop(const std::function<void()>& gfxInitialized) {
+void Engine::MainLoop(const std::function<void()>& onInitialize, const std::function<void()>& onDestroy) {
 
     const int width = 800;
     const int height = 600;
@@ -49,7 +49,7 @@ void Engine::MainLoop(const std::function<void()>& gfxInitialized) {
     bgfx::setDebug(BGFX_DEBUG_TEXT);
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x6495ED, 1.f, 0);
 
-    gfxInitialized();
+    onInitialize();
 
     state->mainWindow = window;
     state->Initialize();
@@ -81,7 +81,10 @@ void Engine::MainLoop(const std::function<void()>& gfxInitialized) {
         bgfx::frame();
     }
 
+    onDestroy();
+
     bgfx::shutdown();
 
+    SDL_Quit();
 }
 
