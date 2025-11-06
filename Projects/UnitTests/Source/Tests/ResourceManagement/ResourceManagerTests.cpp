@@ -3,6 +3,7 @@
 //
 #include "gtest/gtest.h"
 #include "ResourceManager.hpp"
+#include "entt/entt.hpp"
 
 using namespace LittleCore;
 
@@ -159,6 +160,63 @@ namespace {
         auto handle = resourceManager.Create<Mesh>("Cube.obj");
 
         EXPECT_FALSE(handle);
+    }
+
+    TEST(ResourceManagerTest, EntityDestroyedResourceShouldBeUnloaded) {
+
+        struct DebugMeshLoader : IResourceLoader<Mesh> {
+
+            int* loadCounter;
+
+            explicit DebugMeshLoader(int *loadCounter) : loadCounter(loadCounter) {}
+
+            ~DebugMeshLoader() {
+                loadCounter = nullptr;
+            }
+
+            void Load(Mesh& resource) override {
+                (*loadCounter)++;
+            }
+            void Unload(Mesh& resource) override {
+                (*loadCounter)--;
+            }
+            bool IsLoaded() override {
+                return true;
+            }
+            void Reload(Mesh& resource) override {
+
+            }
+        };
+
+        struct DebugMeshLoaderFactory : IResourceLoaderFactory<DebugMeshLoader> {
+            int* loadCounter;
+
+            explicit DebugMeshLoaderFactory(int *loadCounter) : loadCounter(loadCounter) {}
+
+            Loader Create() override {
+                return CreateLoader(loadCounter);
+            }
+        };
+
+        struct MeshComponent {
+            ResourceHandle<Mesh> mesh;
+        };
+
+        int loadCounter = 0;
+
+        ResourcePathMapper pathMapper;
+        ResourceManager<DebugMeshLoaderFactory> resourceManager(pathMapper);
+        resourceManager.CreateLoaderFactory<DebugMeshLoaderFactory>(&loadCounter);
+
+        {
+            entt::registry registry;
+            entt::entity entity = registry.create();
+            registry.emplace<MeshComponent>(entity).mesh = resourceManager.Create<Mesh>("Cube.obj");
+
+            EXPECT_EQ(loadCounter, 1);
+        }
+
+        EXPECT_EQ(loadCounter, 0);
     }
 
 }
