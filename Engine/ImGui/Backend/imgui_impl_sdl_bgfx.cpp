@@ -392,7 +392,12 @@ void ImGui_Implbgfx_InvalidateDeviceObjects()
   if (bgfx::isValid(shader_handle))
   {
     bgfx::destroy(shader_handle);
-    shader_handle.idx = bgfx::kInvalidHandle;
+    shader_handle = BGFX_INVALID_HANDLE;
+  }
+
+  if (bgfx::isValid(uniform_texture)) {
+      bgfx::destroy(uniform_texture);
+      uniform_texture = BGFX_INVALID_HANDLE;
   }
 
   if (isValid(font_texture))
