@@ -43,3 +43,17 @@ void ResizableFrameBuffer::EnsureResources(uint16_t width, uint16_t height) {
 
     frameBuffer = bgfx::createFrameBuffer(1, &texture, false);
 }
+
+ResizableFrameBuffer::~ResizableFrameBuffer() {
+    if (bgfx::isValid(texture)) {
+        bgfx::destroy(texture);
+        texture = BGFX_INVALID_HANDLE;
+    }
+
+    if (bgfx::isValid(frameBuffer)) {
+        bgfx::destroy(frameBuffer);
+        frameBuffer = BGFX_INVALID_HANDLE;
+    }
+}
+
+

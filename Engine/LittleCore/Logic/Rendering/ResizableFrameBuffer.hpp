@@ -10,6 +10,7 @@
 namespace LittleCore {
     class ResizableFrameBuffer {
     public:
+        ~ResizableFrameBuffer();
         void Render(uint16_t width, uint16_t height, const std::function<void()>& renderFunction);
         void EnsureResources(uint16_t width, uint16_t height);
         uint16_t width = 0;
