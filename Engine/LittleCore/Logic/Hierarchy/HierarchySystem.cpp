@@ -61,17 +61,8 @@ void HierarchySystem::EntityDestroyed(entt::registry& reg, entt::entity entity) 
         auto& parentHierarchy = registry.get<Hierarchy>(hierarchy.parent);
         auto& parentChildren = parentHierarchy.children;
         auto it = std::find(parentChildren.begin(), parentChildren.end(), entity);
-
-        if (it == parentChildren.end()) {
-             auto message = std::format("entity: {}, does not exist in parent child list{}", (int)entity, (int)hierarchy.parent);
-             throw std::runtime_error(message);
-             //std::cout << "entity: " << (int)entity <<", does not exist in parent child list"<<(int)hierarchy.parent<<"\n";
-        } else {
-            auto message = std::format("Removing {}, from child list {}", (int)entity, (int)hierarchy.parent);
-            std::cout << message << "\n";
-            parentChildren.erase(it);
-            hierarchy.parent = entt::null;
-        }
+        parentChildren.erase(it);
+        hierarchy.parent = entt::null;
     }
 
     for(auto child : hierarchy.children) {
