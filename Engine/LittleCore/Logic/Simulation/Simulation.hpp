@@ -91,7 +91,7 @@ namespace LittleCore {
             });
         }
 
-        void Update(float dt) override {
+        void Update(float dt) {
             TupleHelper::for_each(inputSystems.systems, [] (auto& inputSystem) {
                 inputSystem.Update();
             });
