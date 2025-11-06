@@ -203,10 +203,11 @@ struct TestNetimguiClient : IState {
     Project project;
     ProjectWindow projectWindow;
 
+    DefaultResourceManager resourceManager;
+
     CustomSimulation<RotationSystem, WobblerSystem, MovableSystem, InputRotationSystem, PrefabSystem> simulation;
     SDLInputHandler sdlInputHandler;
 
-    DefaultResourceManager resourceManager;
     EntityGuiDrawerContext drawerContext;
 
     using Components = Meta::TypeList<LocalTransform,
