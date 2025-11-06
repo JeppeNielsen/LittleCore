@@ -10,7 +10,7 @@
 using namespace LittleCore;
 
 ImGuiController::~ImGuiController() {
-
+    Destroy();
 }
 
 void ImGuiController::Initialize(void* mainWindow, ImGuiController::RenderFunction renderFunction) {
