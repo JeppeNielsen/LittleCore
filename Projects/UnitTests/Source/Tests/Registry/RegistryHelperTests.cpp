@@ -81,7 +81,7 @@ namespace {
         ASSERT_TRUE(prefab.roots.empty());
     }
 
-    TEST(RegistryHelper, DuplicateOneEntityWithOneChildDuplicatedShowHaveOneChildInChildrenList) {
+    TEST(RegistryHelper, DuplicateOneEntityWithOneChildDuplicatedShouldHaveOneChildInChildrenList) {
 
         entt::registry srcRegistry;
         HierarchySystem srcHierarchySystem(srcRegistry);
