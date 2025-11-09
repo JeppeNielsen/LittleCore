@@ -14,7 +14,7 @@
 using namespace LittleCore;
 
 std::string GetEntityName(entt::entity entity) {
-    return "Entity " + std::to_string((int)entity);
+    return "Entity " + std::to_string((uint32_t)entity);
 }
 
 bool IsEntityInHierarchy(entt::registry& registry, entt::entity entity, entt::entity parent) {
@@ -47,9 +47,9 @@ bool IsParentAllowed(entt::registry& registry, entt::entity entity, entt::entity
     return true;
 }
 
-bool NoChildrenIsIgnored(entt::registry& registry, const Hierarchy& hierarchy) {
+bool AreAllChildrenIgnored(entt::registry& registry, const Hierarchy& hierarchy) {
     for(auto child : hierarchy.children) {
-        if (registry.any_of<IgnoreSerialization>(child)) {
+        if (!registry.any_of<IgnoreSerialization>(child)) {
             return false;
         }
     }
@@ -69,7 +69,7 @@ void HierarchyWindow::DrawEntity(EditorSimulation& simulation, entt::entity enti
 
     ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_None;
 
-    if (hierarchy.children.empty() || !NoChildrenIsIgnored(registry, hierarchy)) {
+    if (hierarchy.children.empty() || AreAllChildrenIgnored(registry, hierarchy)) {
         nodeFlags |= ImGuiTreeNodeFlags_Leaf;
     }
 
