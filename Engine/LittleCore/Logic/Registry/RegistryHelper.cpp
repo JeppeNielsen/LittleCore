@@ -41,6 +41,7 @@ entt::entity clone_between(entt::registry &srcReg,
 
             // Copy the component value over
             dstStorage->push(dst, srcStorage.value(src));
+            dstStorage->InvokeComponentCloned(srcReg, src, dstReg, dst);
             //dstStorage->PatchEntity(dstReg, dst);
         }
     }
@@ -58,8 +59,10 @@ entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity so
         originalToDuplicate[entityToDuplicate] = duplicate;
     }
 
-    for(auto[orignal, duplicate] : originalToDuplicate) {
-        Hierarchy& originalHierarchy = registry.get<Hierarchy>(orignal);
+    for(auto entityToDuplicate : entitiesToDuplicate) {
+        auto original = entityToDuplicate;
+        auto duplicate = originalToDuplicate[entityToDuplicate];
+        Hierarchy& originalHierarchy = registry.get<Hierarchy>(original);
         Hierarchy& duplicateHierarchy = destRegistry.get<Hierarchy>(duplicate);
 
         if (originalHierarchy.parent == entt::null) {
@@ -69,10 +72,11 @@ entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity so
             destRegistry.get<Hierarchy>(duplicateHierarchy.parent).children.push_back(duplicate);
         }
 
+        duplicateHierarchy.children.clear();
         duplicateHierarchy.previousParent = duplicateHierarchy.parent;
 
         if (callback) {
-            callback(orignal, duplicate);
+            callback(original, duplicate);
         }
     }
 

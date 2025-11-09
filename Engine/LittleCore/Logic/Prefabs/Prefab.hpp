@@ -15,9 +15,7 @@ namespace LittleCore {
         using Components = std::vector<SerializedPrefabComponent>;
         Components components;
 
-        Prefab() = default;
-
-        Prefab(const Prefab& other) {
+        void Cloned(const Prefab& other) {
             resource = other.resource;
             roots.clear();
             components = other.components;
