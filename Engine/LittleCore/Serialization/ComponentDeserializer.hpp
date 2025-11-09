@@ -48,6 +48,10 @@ namespace LittleCore {
             auto error = glz::write<glz::opts{.prettify = true}>(component, json);
             return json;
         }
+
+        bool EntityHasComponent(const entt::registry& registry, entt::entity entity) override {
+            return registry.all_of<TComponent>(entity);
+        }
     };
 
 }
