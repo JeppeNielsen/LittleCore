@@ -4,6 +4,7 @@
 
 #include "HierarchySystem.hpp"
 #include <iostream>
+#include "RegistryHelper.hpp"
 
 using namespace LittleCore;
 
@@ -34,28 +35,16 @@ void HierarchySystem::Update() {
     observer.clear();
 }
 
-void HierarchySystem::DestroyRecursive(entt::registry& registry, entt::entity entity) {
-    if (!registry.any_of<Hierarchy>(entity)) {
-        return;
-    }
-
-    auto& hierarchy = registry.get<Hierarchy>(entity);
-
-    for(auto child : hierarchy.children) {
-        DestroyRecursive(registry, child);
-    }
-
-    isDestroying = true;
-    registry.destroy(entity);
-    isDestroying = false;
-}
-
-void HierarchySystem::EntityDestroyed(entt::registry& reg, entt::entity entity) {
+void HierarchySystem::EntityDestroyed(entt::registry& r, entt::entity entity) {
     if (isDestroying) {
         return;
     }
 
-    auto& hierarchy = reg.get<Hierarchy>(entity);
+    if (!registry.valid(entity)) {
+        return;
+    }
+
+    auto& hierarchy = registry.get<Hierarchy>(entity);
 
     if (hierarchy.parent != entt::null && registry.any_of<Hierarchy>(hierarchy.parent)) {
         auto& parentHierarchy = registry.get<Hierarchy>(hierarchy.parent);
@@ -65,9 +54,17 @@ void HierarchySystem::EntityDestroyed(entt::registry& reg, entt::entity entity) 
         hierarchy.parent = entt::null;
     }
 
-    for(auto child : hierarchy.children) {
-        DestroyRecursive(reg, child);
+    std::vector<entt::entity> childrenToDestroy;
+
+    RegistryHelper::TraverseHierarchy(registry, entity, [&childrenToDestroy](entt::entity child) {
+         childrenToDestroy.push_back(child);
+    });
+
+    isDestroying = true;
+    for (int i = 1; i < childrenToDestroy.size(); ++i) {
+        registry.destroy(childrenToDestroy[i]);
     }
+    isDestroying = false;
 }
 
 
