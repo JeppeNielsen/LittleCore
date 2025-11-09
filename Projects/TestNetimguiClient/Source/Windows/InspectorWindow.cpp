@@ -27,7 +27,9 @@ void InspectorWindow::DrawEntity(EditorSimulation& simulation, entt::entity e) {
 
     ImGui::PushID((int)e);
 
-    GuiHelper::DrawHeader("Entity:");
+    auto text = std::format("Entity: {}", (uint32_t)e);
+
+    GuiHelper::DrawHeader(text.c_str());
     simulation.context.guiDrawer.Draw(simulation.simulation.registry, e);
 
     ImGui::PopID();
