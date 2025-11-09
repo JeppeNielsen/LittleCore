@@ -18,7 +18,6 @@ namespace LittleCore {
     private:
         RegistrySerializerBase* registrySerializer = nullptr;
         void RefreshInstance(entt::entity entity);
-        void EntityDestroyed(entt::registry& registry, entt::entity);
         void Clear(Prefab& prefab);
         bool isDestroying = false;
         entt::observer observer;

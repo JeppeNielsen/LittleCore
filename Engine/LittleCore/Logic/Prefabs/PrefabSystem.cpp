@@ -13,7 +13,6 @@ PrefabSystem::PrefabSystem(entt::registry& registry) : SystemBase(registry),
     observer(registry, entt::collector
             .update<Prefab>().where<Hierarchy>()
             .group<Prefab, Hierarchy>()) {
-    registry.on_destroy<Prefab>().connect<&PrefabSystem::EntityDestroyed>(this);
 }
 
 void PrefabSystem::Update() {
@@ -31,12 +30,12 @@ void PrefabSystem::Update() {
 }
 
 void PrefabSystem::Clear(Prefab& prefab) {
-    isDestroying = true;
     for(auto root : prefab.roots) {
-        registry.destroy(root);
+        if (registry.valid(root)) {
+            registry.destroy(root);
+        }
     }
     prefab.roots.clear();
-    isDestroying = false;
 }
 
 void PrefabSystem::RefreshInstance(entt::entity entity) {
@@ -74,6 +73,10 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
                     it->entity = dest;
                 }
             }
+
+
+
+
         });
 
         RegistryHelper::TraverseHierarchy(registry, root, [&](auto child) {
@@ -85,6 +88,16 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
         auto& rootHierarchy = registry.get<Hierarchy>(root);
         rootHierarchy.parent = entity;
 
+        std::erase_if(prefab.components, [this](SerializedPrefabComponent& serializedPrefabComponent) {
+            if (!registry.valid(serializedPrefabComponent.entity)) {
+                return true;
+            }
+            if (!registrySerializer->HasComponent(registry, serializedPrefabComponent.entity, serializedPrefabComponent.componentId)) {
+                return true;
+            }
+            return false;
+        });
+
         if (registrySerializer != nullptr) {
             for (SerializedPrefabComponent& serializedPrefabComponent: prefab.components) {
                 registrySerializer->DeserializeComponent(registry, serializedPrefabComponent.entity, serializedPrefabComponent.componentId, serializedPrefabComponent.data);
@@ -95,12 +108,4 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
 
 void PrefabSystem::SetSerializer(RegistrySerializerBase& registrySerializer) {
     this->registrySerializer = &registrySerializer;
-}
-
-void PrefabSystem::EntityDestroyed(entt::registry& registry, entt::entity entity) {
-    if (isDestroying) {
-        return;
-    }
-    Prefab& prefab = registry.get<Prefab>(entity);
-    Clear(prefab);
 }
