@@ -41,3 +41,4 @@
 [submodule "External/entt"]
 	path = External/entt
 	url = https://github.com/JeppeNielsen/entt.git
+	branch = StorageFunctions
