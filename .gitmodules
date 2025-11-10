@@ -38,3 +38,6 @@
 [submodule "External/ufbx"]
 	path = External/ufbx
 	url = https://github.com/ufbx/ufbx.git
+[submodule "External/entt"]
+	path = External/entt
+	url = https://github.com/JeppeNielsen/entt.git
