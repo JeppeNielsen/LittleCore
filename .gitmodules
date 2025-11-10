@@ -10,9 +10,6 @@
 [submodule "External/bgfx"]
 	path = External/bgfx
 	url = https://github.com/JeppeNielsen/bgfx.git
-[submodule "External/entt"]
-	path = External/entt
-	url = https://github.com/skypjack/entt.git
 [submodule "External/glm"]
 	path = External/glm
 	url = https://github.com/JeppeNielsen/glm.git
