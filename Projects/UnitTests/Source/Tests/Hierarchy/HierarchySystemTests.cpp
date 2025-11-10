@@ -96,5 +96,34 @@ namespace {
         EXPECT_TRUE(doesNotExistsInParentChildren);
     }
 
+    TEST(HierachySystem, HierarchyChildrenShouldNotBeEmptyWhenCopiedFromMoreEntities) {
+        entt::registry registry;
+        auto root = registry.create();
+        Hierarchy& hierarchy = registry.emplace<Hierarchy>(root);
+        hierarchy.children.push_back(root);
+        hierarchy.children.push_back(root);
+
+        for (int i = 0; i < 100000; ++i) {
+            auto child = registry.create();
+            registry.emplace<Hierarchy>(child);
+        }
+
+        Hierarchy& hierarchyAfter = registry.get<Hierarchy>(root);
+        EXPECT_EQ(hierarchyAfter.children.size(), 2);
+
+
+        std::vector<Hierarchy> list;
+        Hierarchy first;
+        first.children.push_back(root);
+        first.children.push_back(root);
+        list.push_back(first);
+
+        for (int i = 0; i < 10000; ++i) {
+            list.push_back({});
+        }
+
+        EXPECT_EQ(list[0].children.size(), 2);
+    }
+
 
 }

@@ -168,7 +168,58 @@ namespace {
 
     }
 
+    entt::entity CreatePrefab(entt::entity parent, entt::registry& registry, ResourceManager<PrefabResourceLoaderFactory>& resourceManager) {
+        auto instanceEntity = registry.create();
+        auto& instanceHierarchy = registry.emplace<Hierarchy>(instanceEntity);
+        instanceHierarchy.parent = parent;
+        auto& local = registry.emplace<LocalTransform>(instanceEntity);
+        auto& prefab = registry.emplace<Prefab>(instanceEntity);
+        prefab.resource = resourceManager.Create<PrefabResource>("9953944CCE324C019F30699342FF9AE0");
+        return instanceEntity;
+    }
 
+    TEST(PrefabSystem, TestRemovalOfRootVsPrefabRoots) {
+
+        std::string rootPath = "../../../../Assets/";
+
+        ResourcePathMapper resourcePathMapper;
+        resourcePathMapper.RefreshFromRootPath(rootPath);
+        ResourceManager<PrefabResourceLoaderFactory> resourceManager(resourcePathMapper);
+
+        RegistrySerializer<LocalTransform, Hierarchy, PrefabSerializer> serializer;
+        serializer.GetSerializer<PrefabSerializer>().SetResourceManager(resourceManager);
+
+        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(serializer);
+
+
+        entt::registry registry;
+        HierarchySystem hierarchySystem(registry);
+        PrefabSystem prefabSystem(registry);
+
+        auto root = registry.create();
+        auto& rootHierarchy = registry.emplace<Hierarchy>(root);
+
+        auto prefab1 = CreatePrefab(root, registry, resourceManager);
+        auto prefab2 = CreatePrefab(prefab1, registry, resourceManager);
+        auto prefab3 = CreatePrefab(prefab2, registry, resourceManager);
+        auto prefab4 = CreatePrefab(prefab3, registry, resourceManager);
+        auto prefab5 = CreatePrefab(prefab4, registry, resourceManager);
+
+        prefabSystem.Update();
+        hierarchySystem.Update();
+
+        registry.destroy(prefab2);
+        registry.destroy(prefab1);
+
+
+        registry.clear();
+
+        prefabSystem.Update();
+        hierarchySystem.Update();
+
+        EXPECT_TRUE(!registry.valid(root));
+        EXPECT_TRUE(!registry.valid(prefab1));
+    }
 
 
 
