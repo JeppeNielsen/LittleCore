@@ -5,16 +5,10 @@
 #include "RegistryHelper.hpp"
 #include <vector>
 #include "Hierarchy.hpp"
-#include "IgnoreSerialization.hpp"
+
 using namespace LittleCore;
 
-
 void FindAllChildren(entt::registry& registry, entt::entity entity, std::vector<entt::entity>& children) {
-
-    if (registry.any_of<IgnoreSerialization>(entity)) {
-        return;
-    }
-
     children.push_back(entity);
 
     Hierarchy& hierarchy = registry.get<Hierarchy>(entity);
@@ -23,30 +17,23 @@ void FindAllChildren(entt::registry& registry, entt::entity entity, std::vector<
     }
 }
 
-entt::entity clone_between(entt::registry &srcReg,
-                           entt::entity   src,
-                           entt::registry &dstReg) {
-    const entt::entity dst = dstReg.create();
-
-    // Iterate all storages known to the *source* registry
+void CloneComponents(entt::registry &srcReg,
+                           entt::entity src,
+                           entt::registry &dstReg,
+                           entt::entity dst,
+                           const std::unordered_map<entt::entity, entt::entity>& originalToDuplicate) {
     for (auto [id, srcStorage] : srcReg.storage()) {
         if (srcStorage.contains(src)) {
-            // Get/create the matching storage in the *destination* registry
-
             auto dstStorage = dstReg.storage(id);
             if (dstStorage == nullptr) {
                 srcStorage.AssureTypeInRegistry(dstReg);
                 dstStorage = dstReg.storage(id);
             }
 
-            // Copy the component value over
             dstStorage->push(dst, srcStorage.value(src));
-            dstStorage->InvokeComponentCloned(srcReg, src, dstReg, dst);
-            //dstStorage->PatchEntity(dstReg, dst);
+            dstStorage->InvokeComponentCloned(srcReg, src, dstReg, dst, originalToDuplicate);
         }
     }
-
-    return dst;
 }
 
 entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity source, entt::registry& destRegistry, const Callback& callback) {
@@ -55,30 +42,19 @@ entt::entity RegistryHelper::Duplicate(entt::registry& registry, entt::entity so
     std::unordered_map<entt::entity, entt::entity> originalToDuplicate;
 
     for(auto entityToDuplicate : entitiesToDuplicate) {
-        auto duplicate = clone_between(registry, entityToDuplicate, destRegistry);
+        auto duplicate = destRegistry.create();
         originalToDuplicate[entityToDuplicate] = duplicate;
     }
 
     for(auto entityToDuplicate : entitiesToDuplicate) {
-        auto original = entityToDuplicate;
-        auto duplicate = originalToDuplicate[entityToDuplicate];
-        Hierarchy& originalHierarchy = registry.get<Hierarchy>(original);
-        Hierarchy& duplicateHierarchy = destRegistry.get<Hierarchy>(duplicate);
-
-        if (originalHierarchy.parent == entt::null) {
-            duplicateHierarchy.parent = entt::null;
-        } else {
-            duplicateHierarchy.parent = originalToDuplicate[originalHierarchy.parent];
-            destRegistry.get<Hierarchy>(duplicateHierarchy.parent).children.push_back(duplicate);
-        }
-
-        duplicateHierarchy.children.clear();
-        duplicateHierarchy.previousParent = duplicateHierarchy.parent;
-
-        if (callback) {
-            callback(original, duplicate);
+        CloneComponents(registry, entityToDuplicate, destRegistry, originalToDuplicate[entityToDuplicate], originalToDuplicate);
+    }
+    if (callback) {
+        for (auto entityToDuplicate : entitiesToDuplicate) {
+            callback(entityToDuplicate, originalToDuplicate[entityToDuplicate]);
         }
     }
+
 
     return originalToDuplicate[source];
 }
@@ -110,4 +86,9 @@ entt::entity RegistryHelper::FindParent(entt::registry& registry, entt::entity s
         }
     }
     return entt::null;
+}
+
+entt::entity RegistryHelper::GetDuplicated(const std::unordered_map<entt::entity, entt::entity>& originalToDuplicate, entt::entity entity) {
+    auto it = originalToDuplicate.find(entity);
+    return it==originalToDuplicate.end() ? entity : it->second;
 }

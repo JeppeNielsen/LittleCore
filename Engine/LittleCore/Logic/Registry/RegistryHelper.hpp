@@ -6,6 +6,7 @@
 #pragma once
 #include <functional>
 #include "entt/entt.hpp"
+#include <unordered_map>
 
 namespace LittleCore {
     class RegistryHelper {
@@ -14,5 +15,6 @@ namespace LittleCore {
         static entt::entity Duplicate(entt::registry& registry, entt::entity source, entt::registry& destRegistry, const Callback& callback = nullptr);
         static void TraverseHierarchy(entt::registry& registry, entt::entity root, const std::function<void(entt::entity)>& onEntity);
         static entt::entity FindParent(entt::registry& registry, entt::entity source, const std::function<bool(entt::entity)>& predicate);
+        static entt::entity GetDuplicated(const std::unordered_map<entt::entity, entt::entity>& originalToDuplicate, entt::entity entity);
     };
 }
