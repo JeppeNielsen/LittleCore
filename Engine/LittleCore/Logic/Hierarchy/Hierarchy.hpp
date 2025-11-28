@@ -5,6 +5,7 @@
 #pragma once
 #include <entt/entt.hpp>
 #include <vector>
+#include "RegistryHelper.hpp"
 
 namespace LittleCore {
     struct Hierarchy {
@@ -13,5 +14,12 @@ namespace LittleCore {
 
         using Children = std::vector<entt::entity>;
         Children children;
+
+        void Cloned(const Hierarchy& original, const std::unordered_map<entt::entity, entt::entity>& originalToDuplicate) {
+            parent = RegistryHelper::GetDuplicated(originalToDuplicate, parent);
+            previousParent = entt::null;
+            children.clear();
+        }
+
     };
 }
