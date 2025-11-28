@@ -7,6 +7,7 @@
 #include "ResourceHandle.hpp"
 #include "PrefabResource.hpp"
 #include "SerializedPrefabComponent.hpp"
+#include "RegistryHelper.hpp"
 
 namespace LittleCore {
     struct Prefab {
@@ -15,10 +16,15 @@ namespace LittleCore {
         using Components = std::vector<SerializedPrefabComponent>;
         Components components;
 
-        void Cloned(const Prefab& other) {
+        void Cloned(const Prefab& other, const std::unordered_map<entt::entity, entt::entity>& originalToDuplicate) {
             resource = other.resource;
-            roots.clear();
             components = other.components;
+            for (int i = 0; i < roots.size(); ++i) {
+                roots[i]=RegistryHelper::GetDuplicated(originalToDuplicate, roots[i]);
+            }
+            for (int i = 0; i < components.size(); ++i) {
+                components[i].entity = RegistryHelper::GetDuplicated(originalToDuplicate, components[i].entity);
+            }
         }
     };
 }
