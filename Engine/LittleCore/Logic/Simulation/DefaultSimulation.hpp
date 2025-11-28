@@ -20,16 +20,16 @@ namespace LittleCore {
 
     using DefaultUpdateSystems = UpdateSystems<
             HierarchySystem,
-            MeshBoundingBoxSystem,
+            WorldTransformSystem,
             WorldBoundingBoxSystem,
-            WorldTransformSystem>;
+            MeshBoundingBoxSystem>;
 
     using DefaultRenderSystems = RenderSystems<RenderSystem>;
 
     using DefaultSimulation = Simulation<DefaultInputSystems, DefaultUpdateSystems, DefaultRenderSystems>;
 
     template<typename ...T>
-    using CustomUpdateSystems = ConcatSimulationSystemLists<UpdateSystems<T...>, DefaultUpdateSystems>;
+    using CustomUpdateSystems = ConcatSimulationSystemLists<DefaultUpdateSystems, UpdateSystems<T...>>;
 
     template<typename ...T>
     using CustomSimulation = Simulation<DefaultInputSystems, CustomUpdateSystems<T...>, DefaultRenderSystems>;
