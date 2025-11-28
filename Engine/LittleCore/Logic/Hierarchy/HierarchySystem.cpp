@@ -21,7 +21,8 @@ void HierarchySystem::Update() {
         if (hierarchy.previousParent != entt::null) {
             auto& oldParentHierarchy = registry.get<Hierarchy>(hierarchy.previousParent);
             auto& parentChildren = oldParentHierarchy.children;
-            parentChildren.erase(std::find(parentChildren.begin(), parentChildren.end(), entity));
+            const auto found = std::find(parentChildren.begin(), parentChildren.end(), entity);
+            parentChildren.erase(found);
         }
 
         if (hierarchy.parent != entt::null) {
@@ -49,8 +50,8 @@ void HierarchySystem::EntityDestroyed(entt::registry& r, entt::entity entity) {
     if (hierarchy.parent != entt::null && registry.any_of<Hierarchy>(hierarchy.parent)) {
         auto& parentHierarchy = registry.get<Hierarchy>(hierarchy.parent);
         auto& parentChildren = parentHierarchy.children;
-        auto it = std::find(parentChildren.begin(), parentChildren.end(), entity);
-        parentChildren.erase(it);
+        const auto found = std::find(parentChildren.begin(), parentChildren.end(), entity);
+        parentChildren.erase(found);
         hierarchy.parent = entt::null;
     }
 
