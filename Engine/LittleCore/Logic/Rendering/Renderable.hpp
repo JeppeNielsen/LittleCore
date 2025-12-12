@@ -4,13 +4,14 @@
 #pragma once
 #include "ResourceHandle.hpp"
 #include "ShaderResource.hpp"
+#include "BlendMode.hpp"
 
 namespace LittleCore {
 
     struct Renderable {
 
         ResourceHandle<ShaderResource> shader;
-        int mask;
+        BlendMode blendMode = BlendMode::Off;
 
     };
 
