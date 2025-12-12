@@ -8,6 +8,7 @@
 #include "TextureResourceLoaderFactory.hpp"
 #include "MeshResourceLoaderFactory.hpp"
 #include "PrefabResourceLoaderFactory.hpp"
+#include "FontResourceLoaderFactory.hpp"
 
 namespace LittleCore {
 
@@ -15,6 +16,7 @@ namespace LittleCore {
             ShaderResourceLoaderFactory,
             TextureResourceLoaderFactory,
             MeshResourceLoaderFactory,
-            PrefabResourceLoaderFactory>;
+            PrefabResourceLoaderFactory,
+            FontResourceLoaderFactory>;
 
 }
