@@ -20,7 +20,8 @@ solution "LittleCore"
       {
          "NDEBUG",
          "BX_CONFIG_DEBUG=0",
-         "XWIN_COCOA=1"
+         "XWIN_COCOA=1",
+         "MSDFGEN_PUBLIC="
       }
       optimize "Full"
    filter "configurations:Debug*"
@@ -28,7 +29,8 @@ solution "LittleCore"
       {
          "_DEBUG",
          "BX_CONFIG_DEBUG=1",
-         "XWIN_COCOA=1"
+         "XWIN_COCOA=1",
+         "MSDFGEN_PUBLIC="
       }
 
       optimize "Debug"
@@ -61,7 +63,8 @@ project "TestGlaze"
       "../../Engine/LittleCore/**",
       "../../External/glm",
       "../../External/bgfx/include",
-      "../../External/bx/include"
+      "../../External/bx/include",
+      "../../External/msdfgen/"
    }
 
    links { 
