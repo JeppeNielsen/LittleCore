@@ -23,7 +23,9 @@ project "LittleCore"
       "../External/stb",
       "../External/sdl/include",
       "../External/hash-library",
-      "../External/ufbx"
+      "../External/ufbx",
+      "../External/msdfgen",
+      "../External/freetype/include"
    }
 
    externalincludedirs {
@@ -37,7 +39,9 @@ project "LittleCore"
       "../External/stb",
       "../External/sdl/include",
       "../External/hash-library",
-      "../External/ufbx"
+      "../External/ufbx",
+      "../External/msdfgen",
+      "../External/freetype/include"
    }
 
    links {
