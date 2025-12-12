@@ -11,6 +11,8 @@ include "../Libs/Build_ShaderCompiler.lua"
 include "../Libs/Build_LittleCore.lua"
 include "../Libs/Build_ImGui.lua"
 include "../Libs/Build_Netimgui.lua"
+include "../Libs/Build_freetype.lua"
+include "../Libs/Build_msdfgen.lua"
 
 solution "LittleCore"
    configurations { "Release", "Debug" }
@@ -32,7 +34,8 @@ solution "LittleCore"
       {
          "_DEBUG",
          "BX_CONFIG_DEBUG=1",
-         "XWIN_COCOA=1"
+         "XWIN_COCOA=1",
+         "MSDFGEN_PUBLIC="
       }
 
       optimize "Debug"
@@ -74,6 +77,7 @@ project "TestNetimguiClient"
       "../../External/glaze/include",
       "../../Engine/Netimgui",
       "../../External/ImGuizmo",
+      "../../External/msdfgen/",
       "Source/EditorSimulations"
    }
 
@@ -85,7 +89,9 @@ project "TestNetimguiClient"
       "LittleCore",
       "ImGui",
       "ShaderCompiler",
-      "Netimgui"
+      "Netimgui",
+      "freetype",
+      "msdfgen"
    }
 
    filter "system:windows"
