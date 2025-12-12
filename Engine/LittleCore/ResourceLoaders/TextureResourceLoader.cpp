@@ -8,20 +8,20 @@
 using namespace LittleCore;
 using namespace bgfx;
 
-void TextureResourceLoader::Load(TextureResource &resource) {
+void TextureResourceLoader::Load(Texturable& texturable) {
 
-    ImageLoader::TryLoadImage(path, [&resource](unsigned char * data, int width, int height) {
+    ImageLoader::TryLoadImage(path, [&texturable](unsigned char * data, int width, int height) {
         const bgfx::Memory* mem_image = bgfx::makeRef(data, sizeof(unsigned char)*width*height*4);
-        resource.handle = bgfx::createTexture2D(width, height, false, 0, TextureFormat::RGBA8, BGFX_TEXTURE_NONE, mem_image);
+        texturable.texture = bgfx::createTexture2D(width, height, false, 0, TextureFormat::RGBA8, BGFX_TEXTURE_NONE, mem_image);
     });
 
 }
 
-void TextureResourceLoader::Unload(TextureResource &resource) {
+void TextureResourceLoader::Unload(Texturable& texturable) {
 
-    if (resource.handle.idx != bgfx::kInvalidHandle) {
-        bgfx::destroy(resource.handle);
-        resource.handle = BGFX_INVALID_HANDLE;
+    if (texturable.texture.idx != bgfx::kInvalidHandle) {
+        bgfx::destroy(texturable.texture);
+        texturable.texture = BGFX_INVALID_HANDLE;
     }
 }
 
@@ -29,7 +29,7 @@ bool TextureResourceLoader::IsLoaded() {
     return true;
 }
 
-void TextureResourceLoader::Reload(TextureResource &resource) {
-    Unload(resource);
-    Load(resource);
+void TextureResourceLoader::Reload(Texturable& texturable) {
+    Unload(texturable);
+    Load(texturable);
 }

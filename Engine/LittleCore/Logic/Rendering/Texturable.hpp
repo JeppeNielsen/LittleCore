@@ -4,12 +4,12 @@
 
 
 #pragma once
-
+#include <bgfx/bgfx.h>
 #include "ResourceHandle.hpp"
-#include "TextureResource.hpp"
+#include "ResourceComponent.hpp"
 
 namespace LittleCore {
-    struct Texturable {
-        ResourceHandle<TextureResource> texture;
+    struct Texturable : public ResourceComponent<Texturable> {
+        bgfx::TextureHandle texture = BGFX_INVALID_HANDLE;
     };
 }

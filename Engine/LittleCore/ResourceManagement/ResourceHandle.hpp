@@ -50,6 +50,13 @@ namespace LittleCore {
             }
         }
 
+        void Clear() {
+            if (storage) {
+                storage->DecrementReference();
+                storage = nullptr;
+            }
+        }
+
         bool IsLoaded() const {
             return storage ? storage->IsLoaded() : false;
         }

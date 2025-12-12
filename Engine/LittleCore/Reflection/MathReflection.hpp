@@ -80,3 +80,11 @@ struct glz::meta<LittleCore::Mesh> {
             "handle", &T::handle
     );
 };
+
+template<>
+struct glz::meta<LittleCore::Texturable> {
+    using T = LittleCore::Texturable;
+    static constexpr auto value = glz::object(
+            "handle", &T::handle
+    );
+};

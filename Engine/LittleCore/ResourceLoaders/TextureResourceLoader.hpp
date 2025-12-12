@@ -4,15 +4,15 @@
 
 #pragma once
 #include "ResourceLoader.hpp"
-#include "TextureResource.hpp"
+#include "Texturable.hpp"
 
 namespace LittleCore {
-    class TextureResourceLoader : public IResourceLoader<TextureResource> {
+    class TextureResourceLoader : public IResourceLoader<Texturable> {
 
-        void Load(TextureResource& resource) override;
-        void Unload(TextureResource& resource) override;
+        void Load(Texturable& texturable) override;
+        void Unload(Texturable& texturable) override;
         bool IsLoaded() override;
-        void Reload(TextureResource& resource) override;
+        void Reload(Texturable& texturable) override;
 
     };
 }
