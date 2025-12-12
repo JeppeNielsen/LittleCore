@@ -32,6 +32,8 @@
 #include "PrefabExposedComponents.hpp"
 #include "ComponentDrawers/PrefabExposedComponentsDrawer.hpp"
 #include "ComponentDrawers/PrefabDrawer.hpp"
+#include "ComponentDrawers/RenderableDrawer.hpp"
+#include "LabelMeshSystem.hpp"
 
 using namespace LittleCore;
 
@@ -112,16 +114,25 @@ struct TexturableSerializer : ComponentSerializerBase<Texturable, std::string> {
     }
 
     void Serialize(const Texturable& texturable, std::string& id) {
-        auto info = resourceManager->GetInfo(texturable.texture);
-        id = info.id;
+        auto info = resourceManager->GetInfo(texturable.handle);
+        if (info.isMissing) {
+            id = "";
+        } else {
+            id = info.id;
+        }
     }
 
     void Deserialize(const std::string& id, Texturable& texturable) {
-        texturable.texture = resourceManager->Create<TextureResource>(id);
+        texturable.handle = resourceManager->Create<Texturable>(id);
     }
 };
 
-struct RenderableSerializer : ComponentSerializerBase<Renderable, std::string> {
+struct SerializedRenderable {
+    std::string shaderId;
+    int blendMode;
+};
+
+struct RenderableSerializer : ComponentSerializerBase<Renderable, SerializedRenderable> {
 
     DefaultResourceManager* resourceManager;
 
@@ -129,13 +140,15 @@ struct RenderableSerializer : ComponentSerializerBase<Renderable, std::string> {
         resourceManager = &defaultResourceManager;
     }
 
-    void Serialize(const Renderable& renderable, std::string& id) {
+    void Serialize(const Renderable& renderable, SerializedRenderable& serializedRenderable) {
         auto info = resourceManager->GetInfo(renderable.shader);
-        id = info.id;
+        serializedRenderable.shaderId = info.id;
+        serializedRenderable.blendMode = (int)(renderable.blendMode);
     }
 
-    void Deserialize(const std::string& id, Renderable& renderable) {
-        renderable.shader = resourceManager->Create<ShaderResource>(id);
+    void Deserialize(const SerializedRenderable& serializedRenderable, Renderable& renderable) {
+        renderable.shader = resourceManager->Create<ShaderResource>(serializedRenderable.shaderId);
+        renderable.blendMode = (BlendMode)serializedRenderable.blendMode;
     }
 };
 
@@ -194,6 +207,35 @@ struct PrefabSerializer : ComponentSerializerBase<Prefab, SerializedPrefab> {
     }
 };
 
+struct SerializedLabel {
+    std::string text;
+    std::string fontId;
+};
+
+struct LabelSerializer : ComponentSerializerBase<Label, SerializedLabel> {
+
+    DefaultResourceManager* resourceManager;
+
+    void SetResourceManager(DefaultResourceManager& defaultResourceManager) {
+        resourceManager = &defaultResourceManager;
+    }
+
+    void Serialize(const Label& label, SerializedLabel& serializedLabel) {
+        auto info = resourceManager->GetInfo(label.font);
+        if (info.isMissing) {
+            serializedLabel.fontId = "";
+        } else {
+            serializedLabel.fontId = info.id;
+        }
+        serializedLabel.text = label.text;
+    }
+
+    void Deserialize(const SerializedLabel& serializedLabel, Label& label) {
+        label.font = resourceManager->Create<FontResource>(serializedLabel.fontId);
+        label.text = serializedLabel.text;
+    }
+};
+
 struct TestNetimguiClient : IState {
     BGFXRenderer renderer;
     EditorSimulationContext editorSimulationContext;
@@ -205,7 +247,7 @@ struct TestNetimguiClient : IState {
 
     DefaultResourceManager resourceManager;
 
-    CustomSimulation<RotationSystem, WobblerSystem, MovableSystem, InputRotationSystem, PrefabSystem> simulation;
+    CustomSimulation<RotationSystem, WobblerSystem, MovableSystem, InputRotationSystem, PrefabSystem, LabelMeshSystem> simulation;
     SDLInputHandler sdlInputHandler;
 
     EntityGuiDrawerContext drawerContext;
@@ -218,7 +260,8 @@ struct TestNetimguiClient : IState {
             Renderable,
             Mesh,
             Prefab,
-            PrefabExposedComponents>;
+            PrefabExposedComponents,
+            Label>;
 
     Meta::Rebind<EntityGuiDrawer, Components> drawer;
 
@@ -227,7 +270,7 @@ struct TestNetimguiClient : IState {
             LocalBoundingBox,
             WorldBoundingBox,
             Hierarchy,
-            TexturableSerializer, RenderableSerializer, MeshSerializer, PrefabSerializer>;
+            TexturableSerializer, RenderableSerializer, MeshSerializer, PrefabSerializer, LabelSerializer>;
 
     using SerializerComponents = Meta::Concat<Components, ComponentSerializers>;
 
@@ -268,7 +311,7 @@ struct TestNetimguiClient : IState {
         registry.emplace<Texturable>(quad);
 
         registry.get<Renderable>(quad).shader = resourceManager.Create<ShaderResource>("65886F92DEC94836A9E2FEA6C3483543");
-        registry.get<Texturable>(quad).texture = resourceManager.Create<TextureResource>("020CDC91085545C0AB724CC5C3645F3B");
+        registry.get<Texturable>(quad).handle = resourceManager.Create<Texturable>("020CDC91085545C0AB724CC5C3645F3B");
 
         return quad;
     }
@@ -300,6 +343,7 @@ struct TestNetimguiClient : IState {
         resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<MeshResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(registrySerializer);
+        resourceManager.CreateLoaderFactory<FontResourceLoaderFactory>();
 
         auto& registry = simulation.registry;
         {
@@ -354,6 +398,7 @@ struct TestNetimguiClient : IState {
         registrySerializer.GetSerializer<MeshSerializer>().SetResourceManager(resourceManager);
         registrySerializer.GetSerializer<PrefabSerializer>().SetResourceManager(resourceManager);
         registrySerializer.GetSerializer<PrefabSerializer>().SetRegistrySerializer(registrySerializer);
+        registrySerializer.GetSerializer<LabelSerializer>().SetResourceManager(resourceManager);
 
         simulation.GetSystem<PrefabSystem>().SetSerializer(registrySerializer);
 
