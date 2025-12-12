@@ -30,7 +30,7 @@ std::vector<uint8_t> ConvertToUint8(const BitmapConstSection<float, 3>& bitmap) 
     return pixels;
 }
 
-static std::vector<uint8_t> toRGB8(const msdf::BitmapConstSection<float, 3>& bmp) {
+static std::vector<uint8_t> toRGB8(const BitmapConstSection<float, 3>& bmp) {
     const int w = bmp.width;
     const int h = bmp.height;
 
