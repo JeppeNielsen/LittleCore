@@ -6,7 +6,6 @@
 #include "Math.hpp"
 #include <bx/math.h>
 #include "Math.hpp"
-#include <iostream>
 
 using namespace LittleCore;
 
@@ -49,8 +48,8 @@ void BGFXRenderer::EndRender(bgfx::ViewId viewId) {
 }
 
 void BGFXRenderer::BeginBatch(bgfx::ViewId viewId) {
-    startBatchVertex = 0;
-    startBatchIndex = 0;
+    startBatchVertex = currentVertex;
+    startBatchIndex = currentTriangle;
 }
 
 void BGFXRenderer::RenderMesh(const Mesh& mesh, const glm::mat4x4& world) {
@@ -79,7 +78,7 @@ void BGFXRenderer::RenderMesh(const Mesh& mesh, const glm::mat4x4& world) {
     stats.numTriangles+=mesh.triangles.size();
 }
 
-void BGFXRenderer::EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram) {
+void BGFXRenderer::EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram, BlendMode blendMode) {
     if (currentVertex == 0 || currentTriangle==0) {
         return;
     }
@@ -89,21 +88,23 @@ void BGFXRenderer::EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgr
                      | BGFX_STATE_WRITE_G
                      | BGFX_STATE_WRITE_B
                      | BGFX_STATE_WRITE_A
-                     | BGFX_STATE_WRITE_Z
                      | BGFX_STATE_DEPTH_TEST_LESS
                      | BGFX_STATE_CULL_CW
                      | BGFX_STATE_MSAA
-    //| BGFX_STATE_BLEND_ALPHA
     ;
 
-    bgfx::setVertexBuffer(0, &vertexBuffer, startBatchVertex, currentVertex - startBatchVertex);
-    bgfx::setIndexBuffer(&indexBuffer, startBatchIndex, currentTriangle - startBatchIndex);
+    if (blendMode == BlendMode::Off) {
+        state |= BGFX_STATE_WRITE_Z;
+    } else if (blendMode == BlendMode::Alpha) {
+        state |= BGFX_STATE_BLEND_ALPHA;
+    }
 
-    // Set render states.
     bgfx::setState(state);
 
-    bgfx::submit(viewId, shaderProgram);
+    bgfx::setVertexBuffer(0, &vertexBuffer, 0, currentVertex);
+    bgfx::setIndexBuffer(&indexBuffer, startBatchIndex, currentTriangle - startBatchIndex);
 
+    bgfx::submit(viewId, shaderProgram);
     stats.numRenderCalls++;
 }
 
