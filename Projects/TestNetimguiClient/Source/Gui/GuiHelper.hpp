@@ -12,7 +12,7 @@
 #include <iostream>
 #include "Rect.hpp"
 #include "ResourceHandle.hpp"
-#include "TextureResource.hpp"
+#include "Texturable.hpp"
 #include "DefaultResourceManager.hpp"
 
 class GuiHelper {
