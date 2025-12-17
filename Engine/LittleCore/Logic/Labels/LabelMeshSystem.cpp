@@ -20,7 +20,7 @@ void WriteGlyph(Mesh& mesh, Label& label, uint32_t glyphId, float& offset) {
 
     float yPen = 0;
 
-    SdfFontAtlasDynamic::GlyphQuad quad;
+    FontAtlas::GlyphQuad quad;
     if (!label.font->atlasDynamic.getQuad(glyphId, offset, yPen, quad)) {
         return;
     }

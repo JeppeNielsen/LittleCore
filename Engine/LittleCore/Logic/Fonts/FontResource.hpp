@@ -3,11 +3,11 @@
 //
 
 #pragma once
-#include "SDFFontAtlasDynamic.hpp"
+#include "FontAtlas.hpp"
 
 namespace LittleCore {
     struct FontResource {
         FontResource();
-        SdfFontAtlasDynamic atlasDynamic;
+        FontAtlas atlasDynamic;
     };
 }

@@ -5,12 +5,11 @@
 #include <unordered_map>
 #include <string>
 
-#include "MaxRectsPacker.hpp" // <- your class (adjust include path)
+#include "MaxRectsPacker.hpp"
 
-// Forward declare stb type so we don't pull stb headers into the .hpp
 struct stbtt_fontinfo;
 
-class SdfFontAtlasDynamic {
+class FontAtlas {
 public:
     struct Config {
         uint16_t pageW = 1024;
@@ -32,13 +31,13 @@ public:
         uint16_t pageIndex;   // which atlas page/texture to sample
     };
 
-    SdfFontAtlasDynamic();
+    FontAtlas();
 
-    ~SdfFontAtlasDynamic();
+    ~FontAtlas();
 
-    SdfFontAtlasDynamic(const SdfFontAtlasDynamic&) = delete;
+    FontAtlas(const FontAtlas&) = delete;
 
-    SdfFontAtlasDynamic& operator=(const SdfFontAtlasDynamic&) = delete;
+    FontAtlas& operator=(const FontAtlas&) = delete;
 
     // Recommended: atlas owns the TTF bytes so lifetime is safe.
     bool initFromFile(const char* path, float pixelHeight, const Config& cfg);

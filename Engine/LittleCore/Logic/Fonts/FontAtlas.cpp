@@ -1,4 +1,4 @@
-#include "SDFFontAtlasDynamic.hpp"
+#include "FontAtlas.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -8,7 +8,7 @@
 
 #include "ImageLoader.hpp"
 
-struct SdfFontAtlasDynamic::Page {
+struct FontAtlas::Page {
     uint16_t w = 0, h = 0;
     bgfx::TextureHandle tex = BGFX_INVALID_HANDLE;
 
@@ -17,7 +17,7 @@ struct SdfFontAtlasDynamic::Page {
     LittleCore::MaxRectsPacker packer;
 };
 
-struct SdfFontAtlasDynamic::Glyph {
+struct FontAtlas::Glyph {
     uint16_t pageIndex = 0;
     uint16_t x = 0, y = 0, w = 0, h = 0;
 
@@ -56,13 +56,13 @@ static bool readFileBytes(const char* path, std::vector<uint8_t>& out) {
     return true;
 }
 
-SdfFontAtlasDynamic::SdfFontAtlasDynamic() = default;
+FontAtlas::FontAtlas() = default;
 
-SdfFontAtlasDynamic::~SdfFontAtlasDynamic() {
+FontAtlas::~FontAtlas() {
     destroy();
 }
 
-bool SdfFontAtlasDynamic::initFromFile(const char* path, float pixelHeight, const Config& cfg) {
+bool FontAtlas::initFromFile(const char* path, float pixelHeight, const Config& cfg) {
     destroy();
 
     if (!readFileBytes(path, m_ttfOwned))
@@ -71,7 +71,7 @@ bool SdfFontAtlasDynamic::initFromFile(const char* path, float pixelHeight, cons
     return initFromMemory(m_ttfOwned.data(), m_ttfOwned.size(), pixelHeight, cfg);
 }
 
-bool SdfFontAtlasDynamic::initFromMemory(const void* ttfData, size_t ttfSize, float pixelHeight, const Config& cfg) {
+bool FontAtlas::initFromMemory(const void* ttfData, size_t ttfSize, float pixelHeight, const Config& cfg) {
     destroy();
 
     if (!ttfData || ttfSize == 0 || pixelHeight <= 0.0f)
@@ -93,7 +93,7 @@ bool SdfFontAtlasDynamic::initFromMemory(const void* ttfData, size_t ttfSize, fl
     return createPage();
 }
 
-void SdfFontAtlasDynamic::destroy() {
+void FontAtlas::destroy() {
     for (auto& p: m_pages) {
         if (bgfx::isValid(p.tex))
             bgfx::destroy(p.tex);
@@ -114,15 +114,15 @@ void SdfFontAtlasDynamic::destroy() {
     m_scale = 0.0f;
 }
 
-float SdfFontAtlasDynamic::pixelHeight() const { return m_pixelHeight; }
+float FontAtlas::pixelHeight() const { return m_pixelHeight; }
 
-uint32_t SdfFontAtlasDynamic::pageCount() const { return (uint32_t)m_pages.size(); }
+uint32_t FontAtlas::pageCount() const { return (uint32_t)m_pages.size(); }
 
-bgfx::TextureHandle SdfFontAtlasDynamic::pageTexture(uint16_t pageIndex) const {
+bgfx::TextureHandle FontAtlas::pageTexture(uint16_t pageIndex) const {
     return (pageIndex < m_pages.size()) ? m_pages[pageIndex].tex : (bgfx::TextureHandle) BGFX_INVALID_HANDLE;
 }
 
-bool SdfFontAtlasDynamic::ensureGlyph(uint32_t codepoint) {
+bool FontAtlas::ensureGlyph(uint32_t codepoint) {
     return (m_glyphs.find(codepoint) != m_glyphs.end()) ? true : rasterizeAndPackGlyph(codepoint);
 }
 
@@ -133,7 +133,7 @@ static bool isWhitespace(uint32_t cp) {
            || cp == 0x0Du; // \r
 }
 
-bool SdfFontAtlasDynamic::getQuad(uint32_t codepoint, float& penX, float& penY, GlyphQuad& out) {
+bool FontAtlas::getQuad(uint32_t codepoint, float& penX, float& penY, GlyphQuad& out) {
     /*if (isWhitespace(codepoint)) {
         penX += m_pixelHeight * m_scale;
         return false;
@@ -170,7 +170,7 @@ bool SdfFontAtlasDynamic::getQuad(uint32_t codepoint, float& penX, float& penY, 
     return true;
 }
 
-std::vector<uint32_t> SdfFontAtlasDynamic::utf8ToCodepoints(const std::string& s) {
+std::vector<uint32_t> FontAtlas::utf8ToCodepoints(const std::string& s) {
     std::vector<uint32_t> cps;
     cps.reserve(s.size());
 
@@ -204,7 +204,7 @@ std::vector<uint32_t> SdfFontAtlasDynamic::utf8ToCodepoints(const std::string& s
     return cps;
 }
 
-bool SdfFontAtlasDynamic::createPage() {
+bool FontAtlas::createPage() {
     if (m_cfg.pageW == 0 || m_cfg.pageH == 0)
         return false;
 
@@ -231,7 +231,7 @@ bool SdfFontAtlasDynamic::createPage() {
     return true;
 }
 
-bool SdfFontAtlasDynamic::rasterizeAndPackGlyph(uint32_t codepoint) {
+bool FontAtlas::rasterizeAndPackGlyph(uint32_t codepoint) {
     if (!m_font)
         return false;
 
