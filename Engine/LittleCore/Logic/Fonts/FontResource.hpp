@@ -5,6 +5,7 @@
 #pragma once
 #include <msdfgen-ext.h>
 #include "FontAtlas.hpp"
+#include "SDFFontAtlasDynamic.hpp"
 
 namespace LittleCore {
     struct FontResource {
@@ -17,5 +18,7 @@ namespace LittleCore {
 
         const FontAtlas::GlyphInfo& EnsureGlyph(uint32_t glyphId);
         FontAtlas::GlyphInfo emptyGlyph;
+
+        SdfFontAtlasDynamic atlasDynamic;
     };
 }

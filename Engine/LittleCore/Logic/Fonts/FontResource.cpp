@@ -35,18 +35,19 @@ static std::vector<uint8_t> toRGB8(const BitmapConstSection<float, 3>& bmp) {
     const int h = bmp.height;
 
     std::vector<uint8_t> out;
-    out.resize(static_cast<size_t>(w) * static_cast<size_t>(h) * 3u);
+    out.resize(static_cast<size_t>(w) * static_cast<size_t>(h) * 4);
 
     for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {
             const float* p = bmp(x, y);          // p[0]=R, p[1]=G, p[2]=B
-            const size_t i = (static_cast<size_t>(y) * w + x) * 3u;
+            const size_t i = (static_cast<size_t>(y) * w + x) * 4;
 
             for (int c = 0; c < 3; ++c) {
                 float v = std::clamp(p[c], 0.0f, 1.0f);
                 out[i + static_cast<size_t>(c)] =
-                        static_cast<uint8_t>(std::lround(v * 255.0f));
+                        static_cast<uint8_t>(std::floor(v * 255.0f));
             }
+            out[i + 3] = 255;
         }
     }
     return out;
@@ -67,10 +68,10 @@ const FontAtlas::GlyphInfo& FontResource::EnsureGlyph(uint32_t glyphId) {
     }
 
     shape.normalize();
-    edgeColoringSimple(shape, 3.0);
+    edgeColoringSimple(shape, 1.0);
 
 
-    const double glyphSize = 32.0;
+    const double glyphSize = 64.0;
     const double pxRange   = 8.0;      // because Range_em(0.125)*64 = 8
     const double paddingPx = 8.0;     // >= pxRange; 10 is a good safety margin
 

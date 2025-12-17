@@ -13,10 +13,12 @@ FontResourceLoader::FontResourceLoader(msdfgen::FreetypeHandle* freetypeHandle) 
 
 void FontResourceLoader::Load(FontResource& resource) {
     resource.font = loadFont(freetypeHandle, path.c_str());
+    resource.atlasDynamic.initFromFile(path.c_str(), 64, {});
 }
 
 void FontResourceLoader::Unload(FontResource& resource) {
     destroyFont(resource.font);
+    resource.atlasDynamic.destroy();
 }
 
 bool FontResourceLoader::IsLoaded() {

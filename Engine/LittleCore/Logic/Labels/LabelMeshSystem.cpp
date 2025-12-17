@@ -18,17 +18,51 @@ LabelMeshSystem::LabelMeshSystem(entt::registry& registry) :
 
 void WriteGlyph(Mesh& mesh, Label& label, uint32_t glyphId, float& offset) {
 
-    auto& info = label.font->EnsureGlyph(glyphId);
+    float yPen = 0;
+
+    SdfFontAtlasDynamic::GlyphQuad quad;
+    if (!label.font->atlasDynamic.getQuad(glyphId, offset, yPen, quad)) {
+        return;
+    }
 
     uint16_t index = mesh.vertices.size();
 
     mesh.triangles.push_back(index);
-    mesh.triangles.push_back(index+2);
     mesh.triangles.push_back(index+1);
+    mesh.triangles.push_back(index+2);
 
     mesh.triangles.push_back(index);
-    mesh.triangles.push_back(index+3);
     mesh.triangles.push_back(index+2);
+    mesh.triangles.push_back(index+3);
+
+
+    mesh.vertices.push_back({
+                                    {quad.x0, -quad.y0,0},
+                                    0xFFFFFF,
+                                    {quad.u0, quad.v0}
+                            });
+
+    mesh.vertices.push_back({
+                                    {quad.x0, -quad.y1,0},
+                                    0xFFFFFF,
+                                    {quad.u0, quad.v1}
+                            });
+
+    mesh.vertices.push_back({
+                                    {quad.x1, -quad.y1,0},
+                                    0xFFFFFF,
+                                    {quad.u1, quad.v1}
+                            });
+
+    mesh.vertices.push_back({
+                                    {quad.x1, -quad.y0,0},
+                                    0xFFFFFF,
+                                    {quad.u1, quad.v0}
+                            });
+    return;
+
+    auto& info = label.font->EnsureGlyph(glyphId);
+
 
     glm::vec3 position = {offset,0,0};
 
@@ -75,7 +109,7 @@ void LabelMeshSystem::Update() {
 
         auto& mesh = registry.get<Mesh>(entity);
         auto& texturable = registry.get<Texturable>(entity);
-        texturable.texture = label.font->fontAtlas.texture();
+
         texturable.handle.Clear();
         mesh.handle.Clear();
 
@@ -87,8 +121,19 @@ void LabelMeshSystem::Update() {
             WriteGlyph(mesh, label, label.text[i], offset);
         }
 
+        texturable.texture = label.font->atlasDynamic.pageTexture(0);
+
         registry.patch<Mesh>(entity);
     }
     observer.clear();
 
+}
+
+void LabelMeshSystem::Reload() {
+    auto view = registry.view<const Label, Texturable>();
+
+    for(auto [entity, label, texturable] : view.each()) {
+        texturable.texture = label.font->atlasDynamic.pageTexture(0);
+        registry.patch<Label>(entity);
+    }
 }

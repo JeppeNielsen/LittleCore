@@ -15,6 +15,7 @@ namespace LittleCore {
     public:
         LabelMeshSystem(entt::registry& registry);
         void Update();
+        void Reload();
     private:
         entt::observer observer;
     };
