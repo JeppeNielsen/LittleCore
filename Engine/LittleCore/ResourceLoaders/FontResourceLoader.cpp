@@ -5,19 +5,16 @@
 #include "FontResourceLoader.hpp"
 
 using namespace LittleCore;
-using namespace msdfgen;
 
-FontResourceLoader::FontResourceLoader(msdfgen::FreetypeHandle* freetypeHandle) :freetypeHandle(freetypeHandle) {
+FontResourceLoader::FontResourceLoader() {
 
 }
 
 void FontResourceLoader::Load(FontResource& resource) {
-    resource.font = loadFont(freetypeHandle, path.c_str());
     resource.atlasDynamic.initFromFile(path.c_str(), 64, {});
 }
 
 void FontResourceLoader::Unload(FontResource& resource) {
-    destroyFont(resource.font);
     resource.atlasDynamic.destroy();
 }
 

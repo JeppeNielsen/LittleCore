@@ -6,18 +6,16 @@
 #include <vector>
 #include "ResourceLoader.hpp"
 #include "FontResource.hpp"
-#include <msdfgen-ext.h>
 
 namespace LittleCore {
     class FontResourceLoader : public IResourceLoader<FontResource> {
     public:
-        FontResourceLoader(msdfgen::FreetypeHandle* freetypeHandle);
+        FontResourceLoader();
         void Load(FontResource& resource) override;
         void Unload(FontResource& resource) override;
         bool IsLoaded() override;
         void Reload(FontResource& resource) override;
     private:
-        msdfgen::FreetypeHandle* freetypeHandle;
     };
 }
 

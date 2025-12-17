@@ -59,43 +59,7 @@ void WriteGlyph(Mesh& mesh, Label& label, uint32_t glyphId, float& offset) {
                                     0xFFFFFF,
                                     {quad.u1, quad.v0}
                             });
-    return;
 
-    auto& info = label.font->EnsureGlyph(glyphId);
-
-
-    glm::vec3 position = {offset,0,0};
-
-    float fontSize = 1.0f;
-
-    glm::vec2 bottomLeft = {info.bounds.l * fontSize,info.bounds.b * fontSize};
-    glm::vec2 topRight = {info.bounds.r * fontSize,info.bounds.t * fontSize};
-
-    mesh.vertices.push_back({
-                                    position + glm::vec3(bottomLeft.x, bottomLeft.y,0),
-                                    0xFFFFFF,
-                                    {info.u0, info.v0}
-                            });
-
-    mesh.vertices.push_back({
-                                    position + glm::vec3(bottomLeft.x,topRight.y,0),
-                                    0xFFFFFF,
-                                    {info.u0, info.v1}
-                            });
-
-    mesh.vertices.push_back({
-                                    position + glm::vec3(topRight.x,topRight.y,0),
-                                    0xFFFFFF,
-                                    {info.u1, info.v1}
-                            });
-
-    mesh.vertices.push_back({
-                                    position + glm::vec3(topRight.x,bottomLeft.y,0),
-                                    0xFFFFFF,
-                                    {info.u1, info.v0}
-                            });
-
-    offset += info.advance;
 }
 
 void LabelMeshSystem::Update() {
