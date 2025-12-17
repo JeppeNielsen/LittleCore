@@ -42,12 +42,3 @@
 	path = External/entt
 	url = https://github.com/JeppeNielsen/entt.git
 	branch = StorageFunctions
-[submodule "External/msdf-atlas-gen"]
-	path = External/msdf-atlas-gen
-	url = https://github.com/Chlumsky/msdf-atlas-gen.git
-[submodule "External/msdfgen"]
-	path = External/msdfgen
-	url = https://github.com/Chlumsky/msdfgen.git
-[submodule "External/freetype"]
-	path = External/freetype
-	url = https://github.com/freetype/freetype.git
