@@ -1,0 +1,181 @@
+{
+   "components": [
+      {
+         "type": "LittleCore::LocalTransform",
+         "components": [
+            [
+               1048579,
+               {
+                  "position": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "Wobbler",
+         "components": [
+            [
+               1048579,
+               {
+                  "speed": 0,
+                  "direction": {
+                     "x": 0,
+                     "y": 1,
+                     "z": 0
+                  },
+                  "position": 0
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Camera",
+         "components": []
+      },
+      {
+         "type": "Rotatable",
+         "components": [
+            [
+               1048579,
+               {
+                  "speed": 0,
+                  "speedY": 0,
+                  "speedX": 0,
+                  "yaw": 0
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::PrefabExposedComponents",
+         "components": [
+            [
+               1048579,
+               {
+                  "exposedComponents": [
+                     "Wobbler",
+                     "Rotatable"
+                  ]
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::WorldTransform",
+         "components": [
+            [
+               1048579,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::LocalBoundingBox",
+         "components": [
+            [
+               1048579,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 0
+                     }
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::WorldBoundingBox",
+         "components": [
+            [
+               1048579,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 0
+                     }
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Hierarchy",
+         "components": [
+            [
+               1048579,
+               {
+                  "parent": 4294967295
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Texturable",
+         "components": [
+            [
+               1048579,
+               "B4F53D886601404BA8D7FABF120C25EA"
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Renderable",
+         "components": [
+            [
+               1048579,
+               "65886F92DEC94836A9E2FEA6C3483543"
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Mesh",
+         "components": [
+            [
+               1048579,
+               "FA8AFB7BA10E484B9BFCF18FAD9C3D09"
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Prefab",
+         "components": []
+      }
+   ]
+}

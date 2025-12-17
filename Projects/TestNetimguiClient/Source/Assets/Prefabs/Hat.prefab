@@ -1,0 +1,144 @@
+{
+   "components": [
+      {
+         "type": "LittleCore::LocalTransform",
+         "components": [
+            [
+               1,
+               {
+                  "position": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 0.4,
+                     "y": 0.2,
+                     "z": 0.4
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "Wobbler",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Camera",
+         "components": []
+      },
+      {
+         "type": "Rotatable",
+         "components": []
+      },
+      {
+         "type": "LittleCore::WorldTransform",
+         "components": [
+            [
+               1,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::LocalBoundingBox",
+         "components": [
+            [
+               1,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 10.842308,
+                        "z": 1.1741018
+                     },
+                     "extends": {
+                        "x": 33.272804,
+                        "y": 11.8714905,
+                        "z": 28.875534
+                     }
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::WorldBoundingBox",
+         "components": [
+            [
+               1,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 2.1684616,
+                        "z": 0.23482037
+                     },
+                     "extends": {
+                        "x": 6.654561,
+                        "y": 2.374298,
+                        "z": 5.775107
+                     }
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Hierarchy",
+         "components": [
+            [
+               1,
+               {
+                  "parent": 4294967295
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Texturable",
+         "components": [
+            [
+               1,
+               "A3FE4AB5CB9A4C719248B9825BEDAEEF"
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Renderable",
+         "components": [
+            [
+               1,
+               "65886F92DEC94836A9E2FEA6C3483543"
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Mesh",
+         "components": [
+            [
+               1,
+               "DD386498609F413F8ED308A6189B64B2"
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Prefab",
+         "components": []
+      }
+   ]
+}
