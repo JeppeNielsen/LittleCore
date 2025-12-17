@@ -23,6 +23,12 @@ concept HasUpdateFunctionWithDelta = requires(T t, float dt) {
     { t.Update(dt) } -> std::same_as<void>;
 };
 
+template <typename T>
+concept HasReloadFunction = requires(T t) {
+    { t.Reload() } -> std::same_as<void>;
+};
+
+
 namespace LittleCore {
 
     template<typename ...T>
@@ -72,6 +78,7 @@ namespace LittleCore {
         virtual void HandleEvent(void* event, InputHandler& inputHandler);
         virtual void Render(Renderer& renderer);
         virtual void Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer);
+        virtual void Reload();
 
         entt::registry registry;
     };
@@ -117,6 +124,15 @@ namespace LittleCore {
         void Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer) override {
             TupleHelper::for_each(renderSystems.systems, [&] (auto& renderSystem) {
                 renderSystem.Render(viewId, cameraTransform, camera, renderer);
+            });
+        }
+
+        void Reload() override {
+            TupleHelper::for_each(updateSystems.systems, [] (auto& updateSystem) {
+                using updateSystemType = std::remove_cvref_t<decltype(updateSystem)>;
+                if constexpr (HasReloadFunction<updateSystemType>) {
+                    updateSystem.Reload();
+                }
             });
         }
 

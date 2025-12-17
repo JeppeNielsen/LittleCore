@@ -30,3 +30,7 @@ void SimulationBase::Render(bgfx::ViewId viewId, const WorldTransform& cameraTra
     /*empty*/
 }
 
+void SimulationBase::Reload() {
+    /*empty*/
+}
+
