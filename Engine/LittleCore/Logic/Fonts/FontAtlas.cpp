@@ -8,6 +8,8 @@
 
 #include "ImageLoader.hpp"
 
+using namespace LittleCore;
+
 struct FontAtlas::Page {
     uint16_t w = 0, h = 0;
     bgfx::TextureHandle tex = BGFX_INVALID_HANDLE;
