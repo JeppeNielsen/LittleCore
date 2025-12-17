@@ -420,7 +420,7 @@ struct TestNetimguiClient : IState {
             currentSimulation->DrawGUI();
         }
 
-        projectWindow.Draw(project, resourceManager);
+        projectWindow.Draw(project, resourceManager, editorSimulationRegistry);
 
         ImGui::Begin("Save");
 

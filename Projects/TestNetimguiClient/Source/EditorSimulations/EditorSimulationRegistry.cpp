@@ -46,3 +46,9 @@ bool EditorSimulationRegistry::TryGetFirst(EditorSimulation** editorSimulation) 
 
     return false;
 }
+
+void EditorSimulationRegistry::Reload() {
+    for(auto& simulation : simulations) {
+        simulation->simulation.Reload();
+    }
+}

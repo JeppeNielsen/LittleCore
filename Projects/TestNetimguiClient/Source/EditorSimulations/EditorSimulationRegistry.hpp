@@ -22,8 +22,9 @@ namespace LittleCore {
         void AddSimulation(SimulationBase& simulation);
         void RemoveSimulation(SimulationBase& simulation);
 
-    private:
+        void Reload();
 
+    private:
         using Simulations = std::vector<std::unique_ptr<EditorSimulation>>;
         Simulations simulations;
         EditorSimulationContext& context;

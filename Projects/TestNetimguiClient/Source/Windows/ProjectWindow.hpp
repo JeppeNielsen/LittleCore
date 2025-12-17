@@ -4,12 +4,13 @@
 #pragma once
 #include "Project.hpp"
 #include "DefaultResourceManager.hpp"
+#include "EditorSimulationRegistry.hpp"
 
 namespace LittleCore {
     class EditorSimulation;
 
     class ProjectWindow {
     public:
-        void Draw(Project& project, DefaultResourceManager& defaultResourceManager);
+        void Draw(Project& project, DefaultResourceManager& defaultResourceManager, EditorSimulationRegistry& editorSimulationRegistry);
     };
 }

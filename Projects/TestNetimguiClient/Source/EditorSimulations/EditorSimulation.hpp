@@ -23,6 +23,7 @@ namespace LittleCore {
 
         void DrawGUI();
         void Update(float dt);
+        void Reload();
 
         EditorSimulationContext& context;
         SimulationBase& simulation;

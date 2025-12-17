@@ -29,3 +29,7 @@ void EditorSimulation::Update(float dt) {
     pickingSystem.Update();
     cameraController.Update(dt);
 }
+
+void EditorSimulation::Reload() {
+    simulation.Reload();
+}
