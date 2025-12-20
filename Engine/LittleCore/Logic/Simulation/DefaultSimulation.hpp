@@ -12,6 +12,8 @@
 #include "MeshBoundingBoxSystem.hpp"
 #include "WorldTransformSystem.hpp"
 #include "RenderSystem.hpp"
+#include "TexturableSystem.hpp"
+#include "ColorableSystem.hpp"
 
 namespace LittleCore {
 
@@ -22,7 +24,9 @@ namespace LittleCore {
             HierarchySystem,
             WorldTransformSystem,
             WorldBoundingBoxSystem,
-            MeshBoundingBoxSystem>;
+            MeshBoundingBoxSystem,
+            TexturableSystem,
+            ColorableSystem>;
 
     using DefaultRenderSystems = RenderSystems<RenderSystem>;
 
