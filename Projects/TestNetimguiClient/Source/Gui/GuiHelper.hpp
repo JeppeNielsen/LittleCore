@@ -14,6 +14,7 @@
 #include "ResourceHandle.hpp"
 #include "Texturable.hpp"
 #include "DefaultResourceManager.hpp"
+#include "Color.hpp"
 
 class GuiHelper {
 public:
@@ -50,6 +51,12 @@ public:
     template<>
     void Draw<vec3>(DrawOptions& options, const std::string &name, vec3 &value) {
         ImGui::InputFloat3(name.c_str(), &value.x, "%.4f");
+        options.didChange |= ImGui::IsItemEdited();
+    }
+
+    template<>
+    void Draw<LittleCore::Color>(DrawOptions& options, const std::string &name, LittleCore::Color &value) {
+        ImGui::ColorEdit4(name.c_str(), &value.x);
         options.didChange |= ImGui::IsItemEdited();
     }
 
