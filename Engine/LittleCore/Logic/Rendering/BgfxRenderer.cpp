@@ -116,3 +116,32 @@ void BGFXRenderer::SetTexture(const std::string& id, bgfx::TextureHandle texture
     bgfx::setTexture(0, textureUniform, texture);
 }
 
+void BGFXRenderer::SetUniforms(const RenderableUniforms& uniforms) {
+
+    for(const auto& e : uniforms.GetUniforms()) {
+        switch (e.kind) {
+            case RenderableUniforms::UniformEntry::Kind::Texture:{
+                SetTexture(e.id, e.value.tex);
+                break;
+            }
+            case RenderableUniforms::UniformEntry::Kind::Vec4: {
+                auto uniform = uniformCollection.GetHandle(e.id, bgfx::UniformType::Vec4);
+                bgfx::setUniform(uniform, glm::value_ptr(e.value.v4));
+                break;
+            }
+            case RenderableUniforms::UniformEntry::Kind::Mat3x3: {
+                auto uniform = uniformCollection.GetHandle(e.id, bgfx::UniformType::Mat3);
+                bgfx::setUniform(uniform, glm::value_ptr(e.value.m3));
+                break;
+
+            }
+            case RenderableUniforms::UniformEntry::Kind::Mat4x4: {
+                auto uniform = uniformCollection.GetHandle(e.id, bgfx::UniformType::Mat4);
+                bgfx::setUniform(uniform, glm::value_ptr(e.value.m4));
+                break;
+            }
+        }
+    }
+
+}
+

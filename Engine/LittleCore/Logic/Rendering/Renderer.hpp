@@ -8,6 +8,7 @@
 #include "Camera.hpp"
 #include "RenderingStats.hpp"
 #include "BlendMode.hpp"
+#include "RenderableUniforms.hpp"
 
 namespace LittleCore {
     struct Renderer {
@@ -20,6 +21,7 @@ namespace LittleCore {
         virtual void RenderMesh(const Mesh& mesh, const glm::mat4x4& world) = 0;
         virtual void EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram, BlendMode blendMode) = 0;
         virtual void SetTexture(const std::string& id, bgfx::TextureHandle texture) = 0;
+        virtual void SetUniforms(const LittleCore::RenderableUniforms& uniforms) = 0;
 
         vec2 screenSize;
         RenderingStats stats;

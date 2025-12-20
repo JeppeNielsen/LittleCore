@@ -5,6 +5,7 @@
 #include "ResourceHandle.hpp"
 #include "ShaderResource.hpp"
 #include "BlendMode.hpp"
+#include "RenderableUniforms.hpp"
 
 namespace LittleCore {
 
@@ -12,6 +13,7 @@ namespace LittleCore {
 
         ResourceHandle<ShaderResource> shader;
         BlendMode blendMode = BlendMode::Off;
+        RenderableUniforms uniforms;
 
     };
 

@@ -39,6 +39,7 @@ namespace LittleCore {
         virtual void RenderMesh(const Mesh& mesh, const glm::mat4x4& world) override;
         virtual void EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram, BlendMode blendMode) override;
         virtual void SetTexture(const std::string& id, bgfx::TextureHandle texture) override;
+        virtual void SetUniforms(const LittleCore::RenderableUniforms& uniforms) override;
     };
 
 }

@@ -55,9 +55,14 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
     bgfx::TextureHandle prevTexture = BGFX_INVALID_HANDLE;
     bgfx::ProgramHandle currentShader = BGFX_INVALID_HANDLE;
     bgfx::TextureHandle currentTexture = BGFX_INVALID_HANDLE;
+
     BlendMode currentBlendMode = BlendMode::Off;
     BlendMode prevBlendMode = BlendMode::Off;
 
+    uint64_t currentHash = 0;
+    uint64_t previousHash = 0;
+    entt::entity currentRenderable = entt::null;
+    entt::entity prevRenderable = entt::null;
 
     bool startedBatch = false;
     for (int i = 0; i < entities.size(); ++i) {
@@ -77,22 +82,32 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
                                       : (bgfx::TextureHandle) BGFX_INVALID_HANDLE;
         currentBlendMode = renderable.blendMode;
 
+        currentHash = renderable.uniforms.CalculateHash();
+
+        currentRenderable = entity;
+
         if (!startedBatch) {
             renderer->BeginBatch(viewId);
             prevShader = currentShader;
             prevTexture = currentTexture;
             prevBlendMode = currentBlendMode;
+            previousHash = currentHash;
+            prevRenderable = currentRenderable;
             startedBatch = true;
         } else {
 
             if (currentTexture.idx != prevTexture.idx ||
                 currentShader.idx != prevShader.idx ||
-                currentBlendMode != prevBlendMode) {
-                renderer->SetTexture("colorTexture", prevTexture);
+                currentBlendMode != prevBlendMode ||
+                currentHash != previousHash) {
+                renderer->SetUniforms(registry.get<Renderable>(prevRenderable).uniforms);
+                //renderer->SetTexture("colorTexture", prevTexture);
                 renderer->EndBatch(viewId, prevShader, prevBlendMode);
                 prevTexture = currentTexture;
                 prevShader = currentShader;
                 prevBlendMode = currentBlendMode;
+                previousHash = currentHash;
+                prevRenderable = currentRenderable;
                 renderer->BeginBatch(viewId);
             }
         }
@@ -101,7 +116,10 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
         renderer->RenderMesh(*mesh, worldTransform.world);
     }
 
-    renderer->SetTexture("colorTexture", currentTexture);
+    if (currentRenderable!=entt::null) {
+        renderer->SetUniforms(registry.get<Renderable>(currentRenderable).uniforms);
+    }
+    //renderer->SetTexture("colorTexture", currentTexture);
     renderer->EndBatch(viewId, currentShader, currentBlendMode);
 
     renderer->EndRender(viewId);
