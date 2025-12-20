@@ -10,5 +10,6 @@ namespace LittleCore {
     struct Label {
         ResourceHandle<FontResource> font;
         std::string text;
+        float outlineSize;
     };
 }

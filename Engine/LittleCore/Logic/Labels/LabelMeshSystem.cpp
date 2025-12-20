@@ -4,15 +4,16 @@
 
 #include "LabelMeshSystem.hpp"
 #include <iostream>
+#include "Renderable.hpp"
 
 using namespace LittleCore;
 
 LabelMeshSystem::LabelMeshSystem(entt::registry& registry) :
     SystemBase(registry),
     observer(registry, entt::collector
-            .update<Label>().where<Mesh, Texturable>()
-            .update<Mesh>().where<Label, Texturable>()
-            .group<Mesh, Label, Texturable>()) {
+            .update<Label>().where<Mesh, Renderable>()
+            .update<Mesh>().where<Label, Renderable>()
+            .group<Mesh, Label, Renderable>()) {
 }
 
 
@@ -72,9 +73,8 @@ void LabelMeshSystem::Update() {
         }
 
         auto& mesh = registry.get<Mesh>(entity);
-        auto& texturable = registry.get<Texturable>(entity);
+        auto& renderable = registry.get<Renderable>(entity);
 
-        texturable.handle.Clear();
         mesh.handle.Clear();
 
         mesh.triangles.clear();
@@ -85,7 +85,8 @@ void LabelMeshSystem::Update() {
             WriteGlyph(mesh, label, label.text[i], offset);
         }
 
-        texturable.texture = label.font->atlasDynamic.pageTexture(0);
+        renderable.uniforms.Set("colorTexture", label.font->atlasDynamic.pageTexture(0));
+        renderable.uniforms.Set("outlineSize", vec4(label.outlineSize));
 
         registry.patch<Mesh>(entity);
     }
@@ -94,10 +95,11 @@ void LabelMeshSystem::Update() {
 }
 
 void LabelMeshSystem::Reload() {
-    auto view = registry.view<const Label, Texturable>();
+    auto view = registry.view<const Label, Renderable>();
 
-    for(auto [entity, label, texturable] : view.each()) {
-        texturable.texture = label.font->atlasDynamic.pageTexture(0);
+    for(auto [entity, label, renderable] : view.each()) {
+        renderable.uniforms.Set("colorTexture", label.font->atlasDynamic.pageTexture(0));
+        renderable.uniforms.Set("outlineSize", vec4(label.outlineSize));
         registry.patch<Label>(entity);
     }
 }

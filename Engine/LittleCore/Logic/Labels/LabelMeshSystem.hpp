@@ -8,7 +8,6 @@
 #include "Label.hpp"
 #include "Mesh.hpp"
 #include "SystemBase.hpp"
-#include "Texturable.hpp"
 
 namespace LittleCore {
     class LabelMeshSystem : SystemBase {
