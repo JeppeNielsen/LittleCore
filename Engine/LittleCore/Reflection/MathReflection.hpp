@@ -19,6 +19,17 @@ struct glz::meta<glm::vec3> {
 };
 
 template<>
+struct glz::meta<glm::vec4> {
+    using T = glm::vec4;
+    static constexpr auto value = glz::object(
+            "x", &T::x,
+            "y", &T::y,
+            "z", &T::z,
+            "w", &T::w
+    );
+};
+
+template<>
 struct glz::meta<glm::quat> {
     using T = glm::quat;
     static constexpr auto value = glz::object(
