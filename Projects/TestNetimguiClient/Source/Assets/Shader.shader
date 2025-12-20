@@ -33,10 +33,12 @@
     #include "../../../../External/bgfx/examples/common/common.sh"
     SAMPLER2D(colorTexture,  0);
 
+    uniform vec4 color;
+
     void main()
     {
         vec4 mColor = texture2D(colorTexture,v_texcoord0);
-        gl_FragColor = mColor;
+        gl_FragColor = mColor * color;
     }
 
 }
