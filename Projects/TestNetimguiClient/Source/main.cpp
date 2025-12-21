@@ -210,6 +210,7 @@ struct PrefabSerializer : ComponentSerializerBase<Prefab, SerializedPrefab> {
 struct SerializedLabel {
     std::string text;
     std::string fontId;
+    float outlineSize;
 };
 
 struct LabelSerializer : ComponentSerializerBase<Label, SerializedLabel> {
@@ -228,11 +229,13 @@ struct LabelSerializer : ComponentSerializerBase<Label, SerializedLabel> {
             serializedLabel.fontId = info.id;
         }
         serializedLabel.text = label.text;
+        serializedLabel.outlineSize = label.outlineSize;
     }
 
     void Deserialize(const SerializedLabel& serializedLabel, Label& label) {
         label.font = resourceManager->Create<FontResource>(serializedLabel.fontId);
         label.text = serializedLabel.text;
+        label.outlineSize = serializedLabel.outlineSize;
     }
 };
 
@@ -261,7 +264,8 @@ struct TestNetimguiClient : IState {
             Mesh,
             Prefab,
             PrefabExposedComponents,
-            Label>;
+            Label,
+            Colorable>;
 
     Meta::Rebind<EntityGuiDrawer, Components> drawer;
 
