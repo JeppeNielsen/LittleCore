@@ -56,7 +56,7 @@ public:
 
     template<>
     void Draw<LittleCore::Color>(DrawOptions& options, const std::string &name, LittleCore::Color &value) {
-        ImGui::ColorEdit4(name.c_str(), &value.x);
+        ImGui::ColorEdit4(name.c_str(), &value.x, ImGuiColorEditFlags_DefaultOptions_ | ImGuiColorEditFlags_AlphaBar );
         options.didChange |= ImGui::IsItemEdited();
     }
 
