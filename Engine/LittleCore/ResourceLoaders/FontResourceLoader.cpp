@@ -11,11 +11,11 @@ FontResourceLoader::FontResourceLoader() {
 }
 
 void FontResourceLoader::Load(FontResource& resource) {
-    resource.atlasDynamic.initFromFile(path.c_str(), 64, {});
+    resource.atlas.initFromFile(path.c_str(), 64, {});
 }
 
 void FontResourceLoader::Unload(FontResource& resource) {
-    resource.atlasDynamic.destroy();
+    resource.atlas.destroy();
 }
 
 bool FontResourceLoader::IsLoaded() {

@@ -22,7 +22,7 @@ void WriteGlyph(Mesh& mesh, Label& label, uint32_t glyphId, float& offset) {
     float yPen = 0;
 
     FontAtlas::GlyphQuad quad;
-    if (!label.font->atlasDynamic.getQuad(glyphId, offset, yPen, quad)) {
+    if (!label.font->atlas.getQuad(glyphId, offset, yPen, quad)) {
         return;
     }
 
@@ -85,8 +85,9 @@ void LabelMeshSystem::Update() {
             WriteGlyph(mesh, label, label.text[i], offset);
         }
 
-        renderable.uniforms.Set("colorTexture", label.font->atlasDynamic.pageTexture(0));
+        renderable.uniforms.Set("colorTexture", label.font->atlas.pageTexture(0));
         renderable.uniforms.Set("outlineSize", vec4(label.outlineSize));
+        renderable.uniforms.Set("outlineColor", label.outlineColor);
 
         registry.patch<Mesh>(entity);
     }
@@ -98,7 +99,7 @@ void LabelMeshSystem::Reload() {
     auto view = registry.view<const Label, Renderable>();
 
     for(auto [entity, label, renderable] : view.each()) {
-        renderable.uniforms.Set("colorTexture", label.font->atlasDynamic.pageTexture(0));
+        renderable.uniforms.Set("colorTexture", label.font->atlas.pageTexture(0));
         renderable.uniforms.Set("outlineSize", vec4(label.outlineSize));
         registry.patch<Label>(entity);
     }

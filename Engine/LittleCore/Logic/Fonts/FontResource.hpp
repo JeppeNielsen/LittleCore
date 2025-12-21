@@ -8,6 +8,6 @@
 namespace LittleCore {
     struct FontResource {
         FontResource();
-        FontAtlas atlasDynamic;
+        FontAtlas atlas;
     };
 }
