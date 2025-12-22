@@ -9,16 +9,18 @@
 #include "ResourceHandle.hpp"
 #include "Texturable.hpp"
 #include "DefaultResourceManager.hpp"
+#include "RegistrySerializer.hpp"
+#include <entt/entt.hpp>
 
 using namespace LittleCore;
-
-
 
 struct RenderableObject {
     ResourceHandle<FontResource> font;
     ResourceHandle<FontResource> largeFont;
+    ResourceHandle<Mesh> mesh;
 };
 
+/*
 template<>
 struct glz::meta<ResourceHandle<FontResource>> {
     using T = ResourceHandle<FontResource>;
@@ -40,9 +42,54 @@ struct glz::meta<ResourceHandle<FontResource>> {
 };
 
 DefaultResourceManager* glz::meta<ResourceHandle<FontResource>>::resourceManager = nullptr;
+*/
 
+struct SerializationResources {
+    static DefaultResourceManager* resourceManager;
+};
 
+DefaultResourceManager* SerializationResources::resourceManager = nullptr;
 
+template<typename TResource>
+struct glz::meta<ResourceHandle<TResource>> {
+    using T = ResourceHandle<TResource>;
+
+    static constexpr auto read_ref = [](T& self, const std::string& guid_str) {
+        self = SerializationResources::resourceManager->Create<TResource>(guid_str);
+    };
+
+    static constexpr auto write_ref = [](const T& self) {
+        auto info = SerializationResources::resourceManager->GetInfo(self);
+        return info.id;
+    };
+
+    static constexpr auto value = glz::object(
+            "id", glz::custom<read_ref, write_ref>
+    );
+};
+
+template <class T>
+concept DerivedFromResourceComponent =
+std::is_base_of_v<ResourceComponent<T>, T>;
+
+template<typename TResourceComponent>
+requires DerivedFromResourceComponent<TResourceComponent>
+struct glz::meta<TResourceComponent> {
+    using T = TResourceComponent;
+
+    static constexpr auto read_ref = [](T& self, const std::string& guid_str) {
+        self.handle = SerializationResources::resourceManager->Create<typename T::ContainedType>(guid_str);
+    };
+
+    static constexpr auto write_ref = [](const T& self) {
+        auto info = SerializationResources::resourceManager->GetInfo(self.handle);
+        return info.id;
+    };
+
+    static constexpr auto value = glz::object(
+            "id", glz::custom<read_ref, write_ref>
+    );
+};
 
 int main() {
 
@@ -53,9 +100,56 @@ int main() {
 
     DefaultResourceManager resourceManager(resourcePathMapper);
 
-    glz::meta<ResourceHandle<FontResource>>::resourceManager = &resourceManager;
+    SerializationResources::resourceManager = &resourceManager;
 
     resourceManager.CreateLoaderFactory<FontResourceLoaderFactory>();
+    resourceManager.CreateLoaderFactory<MeshResourceLoaderFactory>();
+
+    entt::registry registry;
+    auto entity = registry.create();
+    registry.emplace<Mesh>(entity).handle = resourceManager.Create<Mesh>("DD386498609F413F8ED308A6189B64B2");
+
+
+    RegistrySerializer<Mesh> registrySerializer;
+
+    auto jsonString = registrySerializer.Serialize(registry);
+
+    std::cout<<jsonString<<"\n";
+
+    /*
+    RenderableObject test;
+    test.font = resourceManager.Create<FontResource>("FD7BDACBFAE94552B2D2DB3F1051BECB");
+    test.largeFont = resourceManager.Create<FontResource>("49AF1D1AC4694F3B8915863E133E0C35");
+
+    std::string pretty_json;
+    glz::write<glz::opts{.prettify = true}>(test, pretty_json);
+    std::cout << pretty_json << "\n";
+
+    RenderableObject test2;
+
+    glz::read<glz::opts{.prettify = true}>(test2, pretty_json);
+
+
+    std::cout << std::format("font equal: {0}\n", &test2.font->atlas == &test.font->atlas);
+    std::cout << std::format("largeFont equal: {0}", &test2.largeFont->atlas == &test.largeFont->atlas);
+*/
+
+}
+
+
+int main_old() {
+
+    ResourcePathMapper resourcePathMapper;
+
+    std::string path = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets/";
+    resourcePathMapper.RefreshFromRootPath(path);
+
+    DefaultResourceManager resourceManager(resourcePathMapper);
+
+    resourceManager.CreateLoaderFactory<FontResourceLoaderFactory>();
+    resourceManager.CreateLoaderFactory<MeshResourceLoaderFactory>();
+
+    SerializationResources::resourceManager = &resourceManager;
 
     RenderableObject test;
     test.font = resourceManager.Create<FontResource>("FD7BDACBFAE94552B2D2DB3F1051BECB");
@@ -73,7 +167,7 @@ int main() {
     std::cout << std::format("font equal: {0}\n", &test2.font->atlas == &test.font->atlas);
     std::cout << std::format("largeFont equal: {0}", &test2.largeFont->atlas == &test.largeFont->atlas);
 
-
+    return 0;
 }
 
 int bla() {
