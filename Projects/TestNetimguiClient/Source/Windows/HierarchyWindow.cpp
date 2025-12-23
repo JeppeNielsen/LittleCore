@@ -10,6 +10,7 @@
 #include <WorldTransform.hpp>
 #include "../EditorSimulations/EditorSimulation.hpp"
 #include "RegistryHelper.hpp"
+#include "IgnoreSerialization.hpp"
 
 using namespace LittleCore;
 

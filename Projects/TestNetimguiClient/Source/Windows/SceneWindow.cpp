@@ -8,6 +8,7 @@
 #include "imgui.h"
 #include "CameraPicker.hpp"
 #include "RegistryHelper.hpp"
+#include "IgnoreSerialization.hpp"
 
 using namespace LittleCore;
 

@@ -13,13 +13,14 @@
 #include "IgnoreSerialization.hpp"
 #include "ComponentReflection.hpp"
 #include "RegistrySerializerConcepts.hpp"
+#include "SerializationContext.hpp"
 
 namespace LittleCore {
 
     struct RegistrySerializerBase {
         virtual ~RegistrySerializerBase() = default;
-        virtual std::string Serialize(const entt::registry& registry) = 0;
-        virtual std::string Deserialize(entt::registry& registry, const std::string& jsonString) = 0;
+        virtual std::string Serialize(const entt::registry& registry, SerializationContext& context) = 0;
+        virtual std::string Deserialize(entt::registry& registry, const std::string& jsonString, SerializationContext& context) = 0;
         virtual std::string SerializeComponent(const entt::registry& registry, entt::entity entity, const std::string& componentTypeId) = 0;
         virtual glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId, const std::string& json) = 0;
         virtual bool HasComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId) = 0;
@@ -134,7 +135,7 @@ namespace LittleCore {
             type_printer<G> dummy;  // Will trigger error showing `T`
         }
 
-        std::string Serialize(const entt::registry& registry) override {
+        std::string Serialize(const entt::registry& registry, SerializationContext& context) override {
 
             using SerializedRegistryType = ToRegistry<AllComponentTypes>::type;
             SerializedRegistryType serializedRegistry;
@@ -182,14 +183,18 @@ namespace LittleCore {
                 }
             });
 
+            glz::context ctx;
+            ctx.userData = &context;
             std::string jsonString;
-            auto error = glz::write<glz::opts{.prettify = true}>(serializedRegistry, jsonString);
+            auto error = glz::write<glz::opts{.prettify = true}>(serializedRegistry, jsonString, ctx);
             return jsonString;
         }
 
-        std::string Deserialize(entt::registry& registry, const std::string& jsonString) override {
-            glz::json_t json;
-            auto error = glz::read_json(json, jsonString);
+        std::string Deserialize(entt::registry& registry, const std::string& jsonString, SerializationContext& context) override {
+            glz::context ctx;
+            ctx.userData = &context;
+            glz::generic json;
+            auto error = glz::read<glz::opts{}>(json, jsonString, ctx);
 
             if (error) {
                 return glz::format_error(error, jsonString);

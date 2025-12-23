@@ -6,6 +6,8 @@
 #include "RegistryHelper.hpp"
 #include "FileHelper.hpp"
 #include "Hierarchy.hpp"
+#include "RegistrySerializer.hpp"
+#include "SerializationContext.hpp"
 
 using namespace LittleCore;
 
@@ -25,7 +27,8 @@ void FindRoots(entt::registry& registry, std::vector<entt::entity>& roots) {
 
 void PrefabResourceLoader::Load(PrefabResource& resource) {
     auto json = FileHelper::ReadAllText(path);
-    registrySerializer.Deserialize(registry, json);
+    SerializationContext context;
+    registrySerializer.Deserialize(registry, json, context);
     hierarchySystem.Update();
     resource.registry = &registry;
     resource.roots.clear();

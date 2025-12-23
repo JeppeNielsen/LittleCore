@@ -15,7 +15,7 @@ namespace LittleCore {
         CustomComponentDeserializer(TCustomSerializer& customSerializer)
         : customSerializer(customSerializer) { }
 
-        glz::error_ctx Deserialize(const std::vector<glz::json_t>& components, entt::registry& registry) override {
+        glz::error_ctx Deserialize(const std::vector<glz::generic>& components, entt::registry& registry) override {
             using TComponent = TCustomSerializer::Component;
             using TSerializedComponent = TCustomSerializer::SerializedComponent;
 

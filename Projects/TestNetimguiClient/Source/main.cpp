@@ -429,7 +429,12 @@ struct TestNetimguiClient : IState {
         ImGui::Begin("Save");
 
         if (ImGui::Button("Save")) {
-            auto data = registrySerializer.Serialize(simulation.registry);
+
+            SerializationContext context {
+                .resourceManager = &resourceManager
+            };
+
+            auto data = registrySerializer.Serialize(simulation.registry, context);
             std::cout << data << std::endl;
             FileHelper::TryWriteAllText("Scene.json", data);
 
@@ -441,8 +446,12 @@ struct TestNetimguiClient : IState {
 
             auto data = FileHelper::ReadAllText("Scene.json");
 
+            SerializationContext context {
+                    .resourceManager = &resourceManager
+            };
+
             simulation.registry.clear();
-            registrySerializer.Deserialize(simulation.registry, data);
+            registrySerializer.Deserialize(simulation.registry, data, context);
 
             //registrySerializer.Deserialize()
 

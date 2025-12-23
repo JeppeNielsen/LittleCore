@@ -10,7 +10,7 @@ namespace LittleCore {
 
     struct IComponentDeserializer {
         virtual ~IComponentDeserializer() = default;
-        virtual glz::error_ctx Deserialize(const std::vector<glz::json_t>& components, entt::registry& registry) = 0;
+        virtual glz::error_ctx Deserialize(const std::vector<glz::generic>& components, entt::registry& registry) = 0;
         virtual glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& json) = 0;
         virtual std::string SerializeComponent(const entt::registry& registry, entt::entity entity) = 0;
         virtual bool EntityHasComponent(const entt::registry& registry, entt::entity entity) = 0;

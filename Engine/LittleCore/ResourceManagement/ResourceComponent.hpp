@@ -8,6 +8,7 @@
 namespace LittleCore {
     template<typename T>
     struct ResourceComponent {
+        using ContainedType = T;
         ResourceHandle <T> handle;
 
         T *operator->() const {

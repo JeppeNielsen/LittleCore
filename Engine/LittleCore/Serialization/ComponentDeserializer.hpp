@@ -4,12 +4,13 @@
 
 #pragma once
 #include "IComponentDeserializer.hpp"
+#include "ResourceSerialization.hpp"
 
 namespace LittleCore {
 
     template<typename TComponent>
     struct ComponentDeserializer : public IComponentDeserializer {
-        glz::error_ctx Deserialize(const std::vector<glz::json_t>& components, entt::registry& registry) override {
+        glz::error_ctx Deserialize(const std::vector<glz::generic>& components, entt::registry& registry) override {
 
             for (const auto& component: components) {
                 auto componentElement = component.get_array();

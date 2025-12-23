@@ -70,32 +70,9 @@ struct glz::meta<LittleCore::BoundingBox> {
     );
 };
 
-template<typename TResource>
-struct glz::meta<LittleCore::ResourceHandle<TResource>> {
-    using T = LittleCore::ResourceHandle<TResource>;
-    static constexpr auto value = glz::object(
-    );
-};
-
 template<>
 struct glz::meta<LittleCore::Input> {
     static constexpr auto value = glz::object(
 
-    );
-};
-
-template<>
-struct glz::meta<LittleCore::Mesh> {
-    using T = LittleCore::Mesh;
-    static constexpr auto value = glz::object(
-            "handle", &T::handle
-    );
-};
-
-template<>
-struct glz::meta<LittleCore::Texturable> {
-    using T = LittleCore::Texturable;
-    static constexpr auto value = glz::object(
-            "handle", &T::handle
     );
 };

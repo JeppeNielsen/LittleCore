@@ -7,9 +7,10 @@
 #include "ResourceLoader.hpp"
 #include "HierarchySystem.hpp"
 #include "PrefabResource.hpp"
-#include "RegistrySerializer.hpp"
 
 namespace LittleCore {
+    struct RegistrySerializerBase;
+
     class PrefabResourceLoader : public IResourceLoader<PrefabResource> {
     public:
         PrefabResourceLoader(RegistrySerializerBase& registrySerializer);

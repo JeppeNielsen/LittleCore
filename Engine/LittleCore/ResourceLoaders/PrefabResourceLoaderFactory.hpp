@@ -6,9 +6,11 @@
 #pragma once
 #include "ResourceLoaderFactory.hpp"
 #include "PrefabResourceLoader.hpp"
-#include "RegistrySerializer.hpp"
 
 namespace LittleCore {
+
+    struct RegistrySerializerBase;
+
     struct PrefabResourceLoaderFactory  : IResourceLoaderFactory<PrefabResourceLoader> {
     public:
 

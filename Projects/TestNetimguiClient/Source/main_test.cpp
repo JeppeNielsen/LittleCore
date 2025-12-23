@@ -11,13 +11,12 @@
 #include "DefaultResourceManager.hpp"
 #include "RegistrySerializer.hpp"
 #include <entt/entt.hpp>
-
-using namespace LittleCore;
+#include "RenderableUniforms.hpp"
 
 struct RenderableObject {
-    ResourceHandle<FontResource> font;
-    ResourceHandle<FontResource> largeFont;
-    ResourceHandle<Mesh> mesh;
+    LittleCore::ResourceHandle<LittleCore::FontResource> font;
+    LittleCore::ResourceHandle<LittleCore::FontResource> largeFont;
+    LittleCore::ResourceHandle<LittleCore::Mesh> mesh;
 };
 
 /*
@@ -44,54 +43,9 @@ struct glz::meta<ResourceHandle<FontResource>> {
 DefaultResourceManager* glz::meta<ResourceHandle<FontResource>>::resourceManager = nullptr;
 */
 
-struct SerializationResources {
-    static DefaultResourceManager* resourceManager;
-};
+int main_ser() {
 
-DefaultResourceManager* SerializationResources::resourceManager = nullptr;
-
-template<typename TResource>
-struct glz::meta<ResourceHandle<TResource>> {
-    using T = ResourceHandle<TResource>;
-
-    static constexpr auto read_ref = [](T& self, const std::string& guid_str) {
-        self = SerializationResources::resourceManager->Create<TResource>(guid_str);
-    };
-
-    static constexpr auto write_ref = [](const T& self) {
-        auto info = SerializationResources::resourceManager->GetInfo(self);
-        return info.id;
-    };
-
-    static constexpr auto value = glz::object(
-            "id", glz::custom<read_ref, write_ref>
-    );
-};
-
-template <class T>
-concept DerivedFromResourceComponent =
-std::is_base_of_v<ResourceComponent<T>, T>;
-
-template<typename TResourceComponent>
-requires DerivedFromResourceComponent<TResourceComponent>
-struct glz::meta<TResourceComponent> {
-    using T = TResourceComponent;
-
-    static constexpr auto read_ref = [](T& self, const std::string& guid_str) {
-        self.handle = SerializationResources::resourceManager->Create<typename T::ContainedType>(guid_str);
-    };
-
-    static constexpr auto write_ref = [](const T& self) {
-        auto info = SerializationResources::resourceManager->GetInfo(self.handle);
-        return info.id;
-    };
-
-    static constexpr auto value = glz::object(
-            "id", glz::custom<read_ref, write_ref>
-    );
-};
-
-int main() {
+    using namespace LittleCore;
 
     ResourcePathMapper resourcePathMapper;
 
@@ -99,8 +53,6 @@ int main() {
     resourcePathMapper.RefreshFromRootPath(path);
 
     DefaultResourceManager resourceManager(resourcePathMapper);
-
-    SerializationResources::resourceManager = &resourceManager;
 
     resourceManager.CreateLoaderFactory<FontResourceLoaderFactory>();
     resourceManager.CreateLoaderFactory<MeshResourceLoaderFactory>();
@@ -112,7 +64,11 @@ int main() {
 
     RegistrySerializer<Mesh> registrySerializer;
 
-    auto jsonString = registrySerializer.Serialize(registry);
+    SerializationContext context {
+        .resourceManager = &resourceManager
+    };
+
+    auto jsonString = registrySerializer.Serialize(registry, context);
 
     std::cout<<jsonString<<"\n";
 
@@ -139,6 +95,8 @@ int main() {
 
 int main_old() {
 
+    using namespace LittleCore;
+
     ResourcePathMapper resourcePathMapper;
 
     std::string path = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets/";
@@ -149,19 +107,24 @@ int main_old() {
     resourceManager.CreateLoaderFactory<FontResourceLoaderFactory>();
     resourceManager.CreateLoaderFactory<MeshResourceLoaderFactory>();
 
-    SerializationResources::resourceManager = &resourceManager;
-
     RenderableObject test;
     test.font = resourceManager.Create<FontResource>("FD7BDACBFAE94552B2D2DB3F1051BECB");
     test.largeFont = resourceManager.Create<FontResource>("49AF1D1AC4694F3B8915863E133E0C35");
 
     std::string pretty_json;
-    glz::write<glz::opts{.prettify = true}>(test, pretty_json);
+
+    SerializationContext serializationContext {
+        .resourceManager = &resourceManager
+    };
+    glz::context context;
+    context.userData = &serializationContext;
+
+    glz::write<glz::opts{.prettify = true}>(test, pretty_json, context);
     std::cout << pretty_json << "\n";
 
     RenderableObject test2;
 
-    glz::read<glz::opts{.prettify = true}>(test2, pretty_json);
+    glz::read<glz::opts{.prettify = true}>(test2, pretty_json, context);
 
 
     std::cout << std::format("font equal: {0}\n", &test2.font->atlas == &test.font->atlas);
@@ -171,12 +134,13 @@ int main_old() {
 }
 
 int bla() {
+
+    using namespace LittleCore;
+
     RenderableUniforms uniforms;
 
 
     RenderableUniforms uniforms2;
-
-
 
     bgfx::TextureHandle texture1 = {4};
     bgfx::TextureHandle texture2 = {8};
@@ -187,7 +151,7 @@ int bla() {
 
     uniforms2 = uniforms;
 
-    auto size = sizeof(RenderableUniforms);
+    auto size = sizeof(LittleCore::RenderableUniforms);
 
     for(const auto& e : uniforms.GetUniforms()) {
         if (e.kind == LittleCore::RenderableUniforms::UniformEntry::Kind::Texture) {
