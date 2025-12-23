@@ -99,8 +99,9 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
         });
 
         if (registrySerializer != nullptr) {
+            glz::context context {.userData = nullptr };
             for (SerializedPrefabComponent& serializedPrefabComponent: prefab.components) {
-                registrySerializer->DeserializeComponent(registry, serializedPrefabComponent.entity, serializedPrefabComponent.componentId, serializedPrefabComponent.data);
+                registrySerializer->DeserializeComponent(registry, serializedPrefabComponent.entity, serializedPrefabComponent.componentId, serializedPrefabComponent.data, context);
             }
         }
     }

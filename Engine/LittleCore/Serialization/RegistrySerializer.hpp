@@ -21,8 +21,8 @@ namespace LittleCore {
         virtual ~RegistrySerializerBase() = default;
         virtual std::string Serialize(const entt::registry& registry, SerializationContext& context) = 0;
         virtual std::string Deserialize(entt::registry& registry, const std::string& jsonString, SerializationContext& context) = 0;
-        virtual std::string SerializeComponent(const entt::registry& registry, entt::entity entity, const std::string& componentTypeId) = 0;
-        virtual glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId, const std::string& json) = 0;
+        virtual std::string SerializeComponent(const entt::registry& registry, entt::entity entity, const std::string& componentTypeId, glz::context& context) = 0;
+        virtual glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId, const std::string& json, glz::context& context) = 0;
         virtual bool HasComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId) = 0;
     };
 
@@ -191,8 +191,7 @@ namespace LittleCore {
         }
 
         std::string Deserialize(entt::registry& registry, const std::string& jsonString, SerializationContext& context) override {
-            glz::context ctx;
-            ctx.userData = &context;
+            glz::context ctx {.userData = &context};
             glz::generic json;
             auto error = glz::read<glz::opts{}>(json, jsonString, ctx);
 
@@ -228,7 +227,7 @@ namespace LittleCore {
 
                 const auto& componentElements = componentType["components"].get_array();
 
-                auto error = deserializer->second->Deserialize(componentElements, registry);
+                auto error = deserializer->second->Deserialize(componentElements, registry, ctx);
                 if (error) {
                     return glz::format_error(error, jsonString);
                 }
@@ -237,20 +236,20 @@ namespace LittleCore {
             return {};
         }
 
-        std::string SerializeComponent(const entt::registry& registry, entt::entity entity, const std::string& componentTypeId) override {
+        std::string SerializeComponent(const entt::registry& registry, entt::entity entity, const std::string& componentTypeId, glz::context& context) override {
             const auto& deserializer = deserializers.find(componentTypeId);
             if (deserializer == deserializers.end()) {
                 return "";
             }
-            return deserializer->second->SerializeComponent(registry, entity);
+            return deserializer->second->SerializeComponent(registry, entity, context);
         }
 
-        glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId, const std::string& json) override {
+        glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId, const std::string& json, glz::context& context) override {
             const auto& deserializer = deserializers.find(componentTypeId);
             if (deserializer == deserializers.end()) {
                 return {glz::error_code::none};
             }
-            return deserializer->second->DeserializeComponent(registry, entity, json);
+            return deserializer->second->DeserializeComponent(registry, entity, json, context);
         }
 
         bool HasComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId) override {

@@ -15,7 +15,7 @@ namespace LittleCore {
         CustomComponentDeserializer(TCustomSerializer& customSerializer)
         : customSerializer(customSerializer) { }
 
-        glz::error_ctx Deserialize(const std::vector<glz::generic>& components, entt::registry& registry) override {
+        glz::error_ctx Deserialize(const std::vector<glz::generic>& components, entt::registry& registry, glz::context& context) override {
             using TComponent = TCustomSerializer::Component;
             using TSerializedComponent = TCustomSerializer::SerializedComponent;
 
@@ -40,17 +40,17 @@ namespace LittleCore {
             return {};
         }
 
-        glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& json) override {
+        glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& json, glz::context& context) override {
             using TComponent = TCustomSerializer::Component;
             TComponent& componentData = registry.get<TComponent>(entity);
-            auto error = glz::read_json(componentData, json);
+            auto error = glz::read<glz::opts{}>(componentData, json, context);
             if (error) {
                 return error;
             }
             return {};
         }
 
-        std::string SerializeComponent(const entt::registry& registry, entt::entity entity) override {
+        std::string SerializeComponent(const entt::registry& registry, entt::entity entity, glz::context& context) override {
             using TComponent = TCustomSerializer::Component;
             using TSerializedComponent = TCustomSerializer::SerializedComponent;
             if (registry.all_of<TComponent>(entity)) {
@@ -68,7 +68,7 @@ namespace LittleCore {
             }
 
             std::string json;
-            auto error = glz::write<glz::opts{.prettify = true}>(serializedComponent, json);
+            auto error = glz::write<glz::opts{.prettify = true}>(serializedComponent, json, context);
             return json;
         }
 

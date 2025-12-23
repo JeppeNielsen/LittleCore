@@ -10,7 +10,7 @@ namespace LittleCore {
 
     template<typename TComponent>
     struct ComponentDeserializer : public IComponentDeserializer {
-        glz::error_ctx Deserialize(const std::vector<glz::generic>& components, entt::registry& registry) override {
+        glz::error_ctx Deserialize(const std::vector<glz::generic>& components, entt::registry& registry, glz::context& context) override {
 
             for (const auto& component: components) {
                 auto componentElement = component.get_array();
@@ -21,7 +21,7 @@ namespace LittleCore {
                 }
 
                 TComponent& componentData = registry.emplace<TComponent>(entityId);
-                auto error = glz::read_json(componentData, componentJson);
+                auto error = glz::read_json(componentData, componentJson, context);
                 if (error) {
                     return error;
                 }
@@ -29,16 +29,16 @@ namespace LittleCore {
             return {};
         }
 
-        glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& json) override {
+        glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& json, glz::context& context) override {
             TComponent& componentData = registry.get<TComponent>(entity);
-            auto error = glz::read_json(componentData, json);
+            auto error = glz::read<glz::opts{}>(componentData, json, context);
             if (error) {
                 return error;
             }
             return {};
         }
 
-        std::string SerializeComponent(const entt::registry& registry, entt::entity entity) override {
+        std::string SerializeComponent(const entt::registry& registry, entt::entity entity, glz::context& context) override {
             if (!registry.all_of<TComponent>(entity)) {
                 return "";
             }
@@ -46,7 +46,7 @@ namespace LittleCore {
             const TComponent& component = registry.get<TComponent>(entity);
 
             std::string json;
-            auto error = glz::write<glz::opts{.prettify = true}>(component, json);
+            auto error = glz::write<glz::opts{.prettify = true}>(component, json, context);
             return json;
         }
 
