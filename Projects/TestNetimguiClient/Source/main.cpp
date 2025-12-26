@@ -239,7 +239,7 @@ struct TestNetimguiClient : IState {
         registry.get<LocalTransform>(floor).rotation = quat(rot);
          */
 
-        simulation.GetSystem<PrefabSystem>().SetSerializer(registrySerializer);
+        simulation.GetSystem<PrefabSystem>().Initialize(registrySerializer, resourceManager);
 
         //auto data = FileHelper::ReadAllText("Scene.json");
 

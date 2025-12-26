@@ -8,15 +8,17 @@
 #include "Prefab.hpp"
 #include "Hierarchy.hpp"
 #include "RegistrySerializer.hpp"
+#include "DefaultResourceManager.hpp"
 
 namespace LittleCore {
     class PrefabSystem : SystemBase {
     public:
         PrefabSystem(entt::registry& registry);
         void Update();
-        void SetSerializer(RegistrySerializerBase& registrySerializer);
+        void Initialize(RegistrySerializerBase& registrySerializer, DefaultResourceManager& resourceManager);
     private:
         RegistrySerializerBase* registrySerializer = nullptr;
+        DefaultResourceManager* resourceManager = nullptr;
         void RefreshInstance(entt::entity entity);
         void Clear(Prefab& prefab);
         bool isDestroying = false;

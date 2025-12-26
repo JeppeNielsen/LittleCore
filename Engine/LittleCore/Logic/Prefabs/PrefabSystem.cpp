@@ -95,7 +95,7 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
 
         if (registrySerializer != nullptr) {
             SerializationContext serializationContext {
-                .resourceManager = nullptr,
+                .resourceManager = resourceManager
             };
 
             glz::context context {.userData = &serializationContext };
@@ -106,6 +106,7 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
     }
 }
 
-void PrefabSystem::SetSerializer(RegistrySerializerBase& registrySerializer) {
+void PrefabSystem::Initialize(RegistrySerializerBase& registrySerializer, DefaultResourceManager& resourceManager) {
     this->registrySerializer = &registrySerializer;
+    this->resourceManager = &resourceManager;
 }
