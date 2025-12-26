@@ -8,13 +8,14 @@
 using namespace LittleCore;
 
 IResourceLoaderFactory<PrefabResourceLoader>::Loader PrefabResourceLoaderFactory::Create() {
-    return CreateLoader(registrySerializer);
+    return CreateLoader(registrySerializer, defaultResourceManager);
 }
 
 bool PrefabResourceLoaderFactory::IsPathSupported(const std::string& path) {
     return FileHelper::HasExtension(path, "prefab");
 }
 
-PrefabResourceLoaderFactory::PrefabResourceLoaderFactory(RegistrySerializerBase& registrySerializer) : registrySerializer(registrySerializer) {
+PrefabResourceLoaderFactory::PrefabResourceLoaderFactory(RegistrySerializerBase& registrySerializer, void* defaultResourceManager)
+: registrySerializer(registrySerializer), defaultResourceManager(defaultResourceManager) {
 
 }

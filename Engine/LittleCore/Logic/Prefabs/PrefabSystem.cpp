@@ -49,6 +49,9 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
 
     for(auto rootToDuplicate : resource.roots) {
         auto root = RegistryHelper::Duplicate(*resource.registry, rootToDuplicate, registry, [&] (auto source, auto dest){
+
+            registry.emplace<IgnoreSerialization>(dest);
+
             if (!resource.registry->any_of<PrefabExposedComponents>(source)) {
                 return;
             }
@@ -77,10 +80,6 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
 
 
 
-        });
-
-        RegistryHelper::TraverseHierarchy(registry, root, [&](auto child) {
-            registry.emplace<IgnoreSerialization>(child);
         });
 
         prefab.roots.push_back(root);

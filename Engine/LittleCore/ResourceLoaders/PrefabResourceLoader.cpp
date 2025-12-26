@@ -8,18 +8,21 @@
 #include "Hierarchy.hpp"
 #include "RegistrySerializer.hpp"
 #include "SerializationContext.hpp"
+#include "DefaultResourceManager.hpp"
+#include <iostream>
 
 using namespace LittleCore;
 
-PrefabResourceLoader::PrefabResourceLoader(RegistrySerializerBase& registrySerializer) :
+PrefabResourceLoader::PrefabResourceLoader(RegistrySerializerBase& registrySerializer, void* defaultResourceManager) :
      registrySerializer(registrySerializer),
-     hierarchySystem(registry){
+     hierarchySystem(registry),
+     defaultResourceManager(defaultResourceManager){
 }
 
 void FindRoots(entt::registry& registry, std::vector<entt::entity>& roots) {
     auto view = registry.view<Hierarchy>();
     for(auto[entity, hierarchy] : view.each()) {
-        if (hierarchy.children.size() == 0) {
+        if (hierarchy.parent == entt::null) {
             roots.push_back(entity);
         }
     }
@@ -27,7 +30,9 @@ void FindRoots(entt::registry& registry, std::vector<entt::entity>& roots) {
 
 void PrefabResourceLoader::Load(PrefabResource& resource) {
     auto json = FileHelper::ReadAllText(path);
-    SerializationContext context;
+    SerializationContext context {
+        .resourceManager = (DefaultResourceManager*)defaultResourceManager
+    };
     registrySerializer.Deserialize(registry, json, context);
     hierarchySystem.Update();
     resource.registry = &registry;

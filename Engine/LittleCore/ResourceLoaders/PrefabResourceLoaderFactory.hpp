@@ -14,12 +14,13 @@ namespace LittleCore {
     struct PrefabResourceLoaderFactory  : IResourceLoaderFactory<PrefabResourceLoader> {
     public:
 
-        PrefabResourceLoaderFactory(RegistrySerializerBase& registrySerializer);
+        PrefabResourceLoaderFactory(RegistrySerializerBase& registrySerializer, void* defaultResourceManager);
 
         Loader Create() override;
         bool IsPathSupported(const std::string& path);
 
     private:
         RegistrySerializerBase& registrySerializer;
+        void* defaultResourceManager;
     };
 }

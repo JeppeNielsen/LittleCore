@@ -79,40 +79,6 @@ struct WobblerSystem : SystemBase {
     }
 };
 
-struct SerializedPrefab {
-    std::string prefabId;
-    std::vector<SerializedPrefabComponent> components;
-};
-
-struct PrefabSerializer : ComponentSerializerBase<Prefab, SerializedPrefab> {
-
-    DefaultResourceManager* resourceManager;
-    RegistrySerializerBase* registrySerializer;
-
-    void SetResourceManager(DefaultResourceManager& defaultResourceManager) {
-        resourceManager = &defaultResourceManager;
-    }
-
-    void SetRegistrySerializer(RegistrySerializerBase& registrySerializerBase) {
-        this->registrySerializer = &registrySerializerBase;
-    }
-
-    void Serialize(const Prefab& prefab, SerializedPrefab& serializedPrefab, const entt::registry& registry, entt::entity entity) {
-        auto info = resourceManager->GetInfo(prefab.resource);
-        serializedPrefab.prefabId = info.id;
-        serializedPrefab.components = prefab.components;
-        glz::context context {.userData = nullptr};
-        for(auto& s : serializedPrefab.components) {
-            s.data = registrySerializer->SerializeComponent(registry, s.entity, s.componentId, context);
-        }
-    }
-
-    void Deserialize(const SerializedPrefab& serializedPrefab, Prefab& prefab) {
-        prefab.resource = resourceManager->Create<PrefabResource>(serializedPrefab.prefabId);
-        prefab.components = serializedPrefab.components;
-    }
-};
-
 struct TestNetimguiClient : IState {
     BGFXRenderer renderer;
     EditorSimulationContext editorSimulationContext;
@@ -149,8 +115,7 @@ struct TestNetimguiClient : IState {
             WorldTransform,
             LocalBoundingBox,
             WorldBoundingBox,
-            Hierarchy,
-            PrefabSerializer>;
+            Hierarchy>;
 
     using SerializerComponents = Meta::Concat<Components, ComponentSerializers>;
 
@@ -222,7 +187,7 @@ struct TestNetimguiClient : IState {
         resourceManager.CreateLoaderFactory<ShaderResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<MeshResourceLoaderFactory>();
-        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(registrySerializer);
+        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(registrySerializer, &resourceManager);
         resourceManager.CreateLoaderFactory<FontResourceLoaderFactory>();
 
         auto& registry = simulation.registry;
@@ -273,8 +238,6 @@ struct TestNetimguiClient : IState {
         auto rot = glm::radians(vec3(90,0,0));
         registry.get<LocalTransform>(floor).rotation = quat(rot);
          */
-        registrySerializer.GetSerializer<PrefabSerializer>().SetResourceManager(resourceManager);
-        registrySerializer.GetSerializer<PrefabSerializer>().SetRegistrySerializer(registrySerializer);
 
         simulation.GetSystem<PrefabSystem>().SetSerializer(registrySerializer);
 
