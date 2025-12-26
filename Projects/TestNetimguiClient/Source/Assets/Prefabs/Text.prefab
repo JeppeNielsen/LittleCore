@@ -1,0 +1,245 @@
+{
+   "components": [
+      {
+         "type": "LittleCore::LocalTransform",
+         "components": [
+            [
+               1048580,
+               {
+                  "position": {
+                     "x": -3.7481313,
+                     "y": -0.8001623,
+                     "z": 0
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 0.04,
+                     "y": 0.04,
+                     "z": 1
+                  }
+               }
+            ],
+            [
+               0,
+               {
+                  "position": {
+                     "x": 0.06317139,
+                     "y": 0.094750404,
+                     "z": -10
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "Wobbler",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Camera",
+         "components": [
+            [
+               0,
+               {
+                  "orthoSize": 1,
+                  "fieldOfView": 30,
+                  "isOrthographic": false,
+                  "near": 1,
+                  "far": 200,
+                  "viewRect": {
+                     "min": {
+                        "x": 0,
+                        "y": 0
+                     },
+                     "max": {
+                        "x": 1,
+                        "y": 1
+                     }
+                  },
+                  "clearBackground": true,
+                  "clearColor": 1687547391
+               }
+            ]
+         ]
+      },
+      {
+         "type": "Rotatable",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Texturable",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Renderable",
+         "components": [
+            [
+               1048580,
+               {
+                  "shader": {
+                     "id": "4D05F14B66BA4478AABC7D427B824123"
+                  },
+                  "blendMode": 1
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Mesh",
+         "components": [
+            [
+               1048580,
+               {
+                  "id": ""
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Prefab",
+         "components": []
+      },
+      {
+         "type": "LittleCore::PrefabExposedComponents",
+         "components": [
+            [
+               1048580,
+               {
+                  "exposedComponents": [
+                     "LittleCore::Label"
+                  ]
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Label",
+         "components": [
+            [
+               1048580,
+               {
+                  "font": {
+                     "id": "DCE240C80F794FFCBB6628CB719B30C6"
+                  },
+                  "text": "Jeppe",
+                  "outlineSize": 0,
+                  "outlineColor": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 0
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Colorable",
+         "components": []
+      },
+      {
+         "type": "LittleCore::WorldTransform",
+         "components": [
+            [
+               1048580,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ],
+            [
+               0,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::LocalBoundingBox",
+         "components": [
+            [
+               1048580,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 71.21779,
+                        "y": 14.5,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 79.21779,
+                        "y": 33.5,
+                        "z": 0
+                     }
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::WorldBoundingBox",
+         "components": [
+            [
+               1048580,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": -0.8994198,
+                        "y": -0.22016233,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 3.1687114,
+                        "y": 1.3399999,
+                        "z": 0
+                     }
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Hierarchy",
+         "components": [
+            [
+               1048580,
+               {
+                  "parent": 4294967295
+               }
+            ],
+            [
+               0,
+               {
+                  "parent": 4294967295
+               }
+            ]
+         ]
+      }
+   ]
+}

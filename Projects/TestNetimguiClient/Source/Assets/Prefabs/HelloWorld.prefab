@@ -1,0 +1,301 @@
+{
+   "components": [
+      {
+         "type": "LittleCore::LocalTransform",
+         "components": [
+            [
+               1,
+               {
+                  "position": {
+                     "x": 2.8638916,
+                     "y": -4.127178,
+                     "z": 0
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1
+                  }
+               }
+            ],
+            [
+               2,
+               {
+                  "position": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 0.04,
+                     "y": 0.04,
+                     "z": 1
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "Wobbler",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Camera",
+         "components": []
+      },
+      {
+         "type": "Rotatable",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Texturable",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Renderable",
+         "components": [
+            [
+               1,
+               {
+                  "shader": {
+                     "id": "4D05F14B66BA4478AABC7D427B824123"
+                  },
+                  "blendMode": 1
+               }
+            ],
+            [
+               2,
+               {
+                  "shader": {
+                     "id": "4D05F14B66BA4478AABC7D427B824123"
+                  },
+                  "blendMode": 1
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Mesh",
+         "components": [
+            [
+               1,
+               {
+                  "id": ""
+               }
+            ],
+            [
+               2,
+               {
+                  "id": ""
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Prefab",
+         "components": []
+      },
+      {
+         "type": "LittleCore::PrefabExposedComponents",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Label",
+         "components": [
+            [
+               1,
+               {
+                  "font": {
+                     "id": "DCE240C80F794FFCBB6628CB719B30C6"
+                  },
+                  "text": "Hello World",
+                  "outlineSize": -1,
+                  "outlineColor": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 0.8830409
+                  }
+               }
+            ],
+            [
+               2,
+               {
+                  "font": {
+                     "id": "DCE240C80F794FFCBB6628CB719B30C6"
+                  },
+                  "text": "Hello World",
+                  "outlineSize": 0.1,
+                  "outlineColor": {
+                     "x": 1,
+                     "y": 0.98245615,
+                     "z": 0,
+                     "w": 1
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Colorable",
+         "components": [
+            [
+               1,
+               {
+                  "color": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 0.7368421
+                  }
+               }
+            ],
+            [
+               2,
+               {
+                  "color": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1,
+                     "w": 1
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::WorldTransform",
+         "components": [
+            [
+               1,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ],
+            [
+               2,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::LocalBoundingBox",
+         "components": [
+            [
+               1,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 142.95749,
+                        "y": 19.5,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 148.95749,
+                        "y": 28.5,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
+               2,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 142.95749,
+                        "y": 19.5,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 148.95749,
+                        "y": 28.5,
+                        "z": 0
+                     }
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::WorldBoundingBox",
+         "components": [
+            [
+               1,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 5.832855,
+                        "y": 0.61491287,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 5.9582996,
+                        "y": 1.14,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
+               2,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 5.7182994,
+                        "y": 0.78,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 5.9582996,
+                        "y": 1.14,
+                        "z": 0
+                     }
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Hierarchy",
+         "components": [
+            [
+               1,
+               {
+                  "parent": 2
+               }
+            ],
+            [
+               2,
+               {
+                  "parent": 4294967295
+               }
+            ]
+         ]
+      }
+   ]
+}
