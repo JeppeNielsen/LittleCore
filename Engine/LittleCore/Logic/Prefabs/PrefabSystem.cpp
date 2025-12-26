@@ -76,10 +76,6 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
                     it->entity = dest;
                 }
             }
-
-
-
-
         });
 
         prefab.roots.push_back(root);
@@ -98,7 +94,11 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
         });
 
         if (registrySerializer != nullptr) {
-            glz::context context {.userData = nullptr };
+            SerializationContext serializationContext {
+                .resourceManager = nullptr,
+            };
+
+            glz::context context {.userData = &serializationContext };
             for (SerializedPrefabComponent& serializedPrefabComponent: prefab.components) {
                 registrySerializer->DeserializeComponent(registry, serializedPrefabComponent.entity, serializedPrefabComponent.componentId, serializedPrefabComponent.data, context);
             }

@@ -15,7 +15,7 @@ bool PrefabResourceLoaderFactory::IsPathSupported(const std::string& path) {
     return FileHelper::HasExtension(path, "prefab");
 }
 
-PrefabResourceLoaderFactory::PrefabResourceLoaderFactory(RegistrySerializerBase& registrySerializer, void* defaultResourceManager)
+PrefabResourceLoaderFactory::PrefabResourceLoaderFactory(void* registrySerializer, void* defaultResourceManager)
 : registrySerializer(registrySerializer), defaultResourceManager(defaultResourceManager) {
 
 }

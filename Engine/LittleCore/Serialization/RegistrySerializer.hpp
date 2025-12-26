@@ -13,18 +13,9 @@
 #include "IgnoreSerialization.hpp"
 #include "ComponentReflection.hpp"
 #include "RegistrySerializerConcepts.hpp"
-#include "SerializationContext.hpp"
+#include "RegistrySerializerBase.hpp"
 
 namespace LittleCore {
-
-    struct RegistrySerializerBase {
-        virtual ~RegistrySerializerBase() = default;
-        virtual std::string Serialize(const entt::registry& registry, SerializationContext& context) = 0;
-        virtual std::string Deserialize(entt::registry& registry, const std::string& jsonString, SerializationContext& context) = 0;
-        virtual std::string SerializeComponent(const entt::registry& registry, entt::entity entity, const std::string& componentTypeId, glz::context& context) = 0;
-        virtual glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId, const std::string& json, glz::context& context) = 0;
-        virtual bool HasComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId) = 0;
-    };
 
     template<typename ...T>
     struct RegistrySerializer : public RegistrySerializerBase {
@@ -137,6 +128,9 @@ namespace LittleCore {
 
         std::string Serialize(const entt::registry& registry, SerializationContext& context) override {
 
+            context.registrySerializer = this;
+            context.registry = (entt::registry *)&registry;
+
             using SerializedRegistryType = ToRegistry<AllComponentTypes>::type;
             SerializedRegistryType serializedRegistry;
 
@@ -191,6 +185,10 @@ namespace LittleCore {
         }
 
         std::string Deserialize(entt::registry& registry, const std::string& jsonString, SerializationContext& context) override {
+
+            context.registrySerializer = this;
+            context.registry = &registry;
+
             glz::context ctx {.userData = &context};
             glz::generic json;
             auto error = glz::read<glz::opts{}>(json, jsonString, ctx);

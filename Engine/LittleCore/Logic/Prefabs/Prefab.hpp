@@ -8,6 +8,7 @@
 #include "PrefabResource.hpp"
 #include "SerializedPrefabComponent.hpp"
 #include "RegistryHelper.hpp"
+#include <glaze/glaze.hpp>
 
 namespace LittleCore {
     struct Prefab {
@@ -28,4 +29,14 @@ namespace LittleCore {
         }
     };
 }
+
+template<>
+struct glz::meta<LittleCore::Prefab> {
+    using T = LittleCore::Prefab;
+
+    static constexpr auto value = glz::object(
+        "resource", &T::resource,
+        "components", &T::components
+    );
+};
 

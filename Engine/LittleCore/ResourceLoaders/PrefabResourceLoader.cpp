@@ -13,7 +13,7 @@
 
 using namespace LittleCore;
 
-PrefabResourceLoader::PrefabResourceLoader(RegistrySerializerBase& registrySerializer, void* defaultResourceManager) :
+PrefabResourceLoader::PrefabResourceLoader(void* registrySerializer, void* defaultResourceManager) :
      registrySerializer(registrySerializer),
      hierarchySystem(registry),
      defaultResourceManager(defaultResourceManager){
@@ -33,7 +33,7 @@ void PrefabResourceLoader::Load(PrefabResource& resource) {
     SerializationContext context {
         .resourceManager = (DefaultResourceManager*)defaultResourceManager
     };
-    registrySerializer.Deserialize(registry, json, context);
+    ((RegistrySerializerBase*)registrySerializer)->Deserialize(registry, json, context);
     hierarchySystem.Update();
     resource.registry = &registry;
     resource.roots.clear();

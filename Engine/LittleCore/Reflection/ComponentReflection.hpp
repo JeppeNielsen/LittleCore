@@ -17,14 +17,6 @@ struct glz::meta<LittleCore::Hierarchy> {
 };
 
 template<>
-struct glz::meta<LittleCore::Prefab> {
-    using T = LittleCore::Prefab;
-    static constexpr auto value = glz::object(
-            "resource", &T::resource
-    );
-};
-
-template<>
 struct glz::meta<LittleCore::Renderable> {
     using T = LittleCore::Renderable;
     static constexpr auto value = glz::object(
