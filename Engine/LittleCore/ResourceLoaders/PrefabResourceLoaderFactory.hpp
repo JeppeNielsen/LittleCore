@@ -6,19 +6,20 @@
 #pragma once
 #include "ResourceLoaderFactory.hpp"
 #include "PrefabResourceLoader.hpp"
+#include "RegistrySerializerBase.hpp"
 
 namespace LittleCore {
 
     struct PrefabResourceLoaderFactory  : IResourceLoaderFactory<PrefabResourceLoader> {
     public:
 
-        PrefabResourceLoaderFactory(void* registrySerializer, void* defaultResourceManager);
+        PrefabResourceLoaderFactory(RegistrySerializerBase& registrySerializer, void* defaultResourceManager);
 
         Loader Create() override;
         bool IsPathSupported(const std::string& path);
 
     private:
-        void* registrySerializer;
+        RegistrySerializerBase& registrySerializer;
         void* defaultResourceManager;
     };
 }

@@ -187,7 +187,7 @@ struct TestNetimguiClient : IState {
         resourceManager.CreateLoaderFactory<ShaderResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<MeshResourceLoaderFactory>();
-        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(&registrySerializer, &resourceManager);
+        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(registrySerializer, &resourceManager);
         resourceManager.CreateLoaderFactory<FontResourceLoaderFactory>();
 
         auto& registry = simulation.registry;

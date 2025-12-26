@@ -8,6 +8,7 @@
 #include <string>
 #include <glaze/glaze.hpp>
 #include "RegistrySerializerBase.hpp"
+#include "SerializationContext.hpp"
 
 namespace LittleCore {
     struct SerializedPrefabComponent {

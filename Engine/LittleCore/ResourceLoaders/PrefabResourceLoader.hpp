@@ -7,12 +7,13 @@
 #include "ResourceLoader.hpp"
 #include "HierarchySystem.hpp"
 #include "PrefabResource.hpp"
+#include "RegistrySerializerBase.hpp"
 
 namespace LittleCore {
 
     class PrefabResourceLoader : public IResourceLoader<PrefabResource> {
     public:
-        PrefabResourceLoader(void* registrySerializer, void* defaultResourceManager);
+        PrefabResourceLoader(RegistrySerializerBase& registrySerializer, void* defaultResourceManager);
     public:
         void Load(PrefabResource& resource) override;
         void Unload(PrefabResource& resource) override;
@@ -21,7 +22,7 @@ namespace LittleCore {
 
         entt::registry registry;
         HierarchySystem hierarchySystem;
-        void* registrySerializer;
+        RegistrySerializerBase& registrySerializer;
         void* defaultResourceManager;
     };
 }
