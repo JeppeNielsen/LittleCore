@@ -190,6 +190,8 @@ struct TestNetimguiClient : IState {
         resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(registrySerializer, &resourceManager);
         resourceManager.CreateLoaderFactory<FontResourceLoaderFactory>();
 
+        simulation.GetSystem<PrefabSystem>().Initialize(registrySerializer, resourceManager);
+
         auto& registry = simulation.registry;
         {
             auto cameraObject = registry.create();
@@ -239,7 +241,7 @@ struct TestNetimguiClient : IState {
         registry.get<LocalTransform>(floor).rotation = quat(rot);
          */
 
-        simulation.GetSystem<PrefabSystem>().Initialize(registrySerializer, resourceManager);
+
 
         //auto data = FileHelper::ReadAllText("Scene.json");
 
