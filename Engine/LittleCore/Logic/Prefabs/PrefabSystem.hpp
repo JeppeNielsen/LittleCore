@@ -15,7 +15,7 @@ namespace LittleCore {
     public:
         PrefabSystem(entt::registry& registry);
         void Update();
-        void Initialize(RegistrySerializerBase& registrySerializer, DefaultResourceManager& resourceManager);
+        void SetResources(RegistrySerializerBase& registrySerializer, DefaultResourceManager& resourceManager);
     private:
         RegistrySerializerBase* registrySerializer = nullptr;
         DefaultResourceManager* resourceManager = nullptr;

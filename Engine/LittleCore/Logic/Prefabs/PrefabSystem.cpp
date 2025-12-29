@@ -106,7 +106,7 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
     }
 }
 
-void PrefabSystem::Initialize(RegistrySerializerBase& registrySerializer, DefaultResourceManager& resourceManager) {
+void PrefabSystem::SetResources(RegistrySerializerBase& registrySerializer, DefaultResourceManager& resourceManager) {
     this->registrySerializer = &registrySerializer;
     this->resourceManager = &resourceManager;
 }
