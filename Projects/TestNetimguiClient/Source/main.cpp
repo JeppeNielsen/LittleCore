@@ -30,9 +30,6 @@
 #include "TupleHelper.hpp"
 #include "PrefabSystem.hpp"
 #include "PrefabExposedComponents.hpp"
-#include "ComponentDrawers/PrefabExposedComponentsDrawer.hpp"
-#include "ComponentDrawers/PrefabDrawer.hpp"
-#include "ComponentDrawers/RenderableDrawer.hpp"
 #include "LabelMeshSystem.hpp"
 
 using namespace LittleCore;
@@ -87,12 +84,7 @@ struct TestNetimguiClient : IState {
     ImGuiController gui;
     Project project;
     ProjectWindow projectWindow;
-
     DefaultResourceManager resourceManager;
-
-    CustomSimulation<RotationSystem, WobblerSystem, MovableSystem, InputRotationSystem, PrefabSystem, LabelMeshSystem> simulation;
-    SDLInputHandler sdlInputHandler;
-
     EntityGuiDrawerContext drawerContext;
 
     using Components = Meta::TypeList<
@@ -120,6 +112,11 @@ struct TestNetimguiClient : IState {
     using SerializerComponents = Meta::Concat<Components, ComponentSerializers>;
 
     Meta::Rebind<RegistrySerializer, SerializerComponents > registrySerializer;
+
+
+    CustomSimulation<RotationSystem, WobblerSystem, MovableSystem, InputRotationSystem> simulation;
+
+
 
     TestNetimguiClient() :
             drawerContext(resourceManager, registrySerializer),
@@ -190,7 +187,7 @@ struct TestNetimguiClient : IState {
         resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(registrySerializer, &resourceManager);
         resourceManager.CreateLoaderFactory<FontResourceLoaderFactory>();
 
-        simulation.GetSystem<PrefabSystem>().Initialize(registrySerializer, resourceManager);
+        simulation.SetResources(registrySerializer, resourceManager);
 
         auto& registry = simulation.registry;
         {
@@ -232,21 +229,6 @@ struct TestNetimguiClient : IState {
         }
 
         auto quad = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
-        /*auto child = CreateQuadNew(registry, {1,1,-0.4}, vec3(1,1,1) * 0.5f, quad);
-
-        registry.emplace<Wobbler>(child);
-
-        auto floor = CreateQuadNew(registry, {0,0,0}, {10,10,1});
-        auto rot = glm::radians(vec3(90,0,0));
-        registry.get<LocalTransform>(floor).rotation = quat(rot);
-         */
-
-
-
-        //auto data = FileHelper::ReadAllText("Scene.json");
-
-        //simulation.registry.clear();
-        //registrySerializer.Deserialize(simulation.registry, data);
     }
 
     void HandleEvent(void* event) override {
@@ -315,7 +297,7 @@ struct TestNetimguiClient : IState {
 };
 
 
-int main() {
+int main_editor() {
     Engine e({"Netimgui Client", true});
     e.Start<TestNetimguiClient>();
     return 0;
