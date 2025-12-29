@@ -15,6 +15,7 @@
 #include "Texturable.hpp"
 #include "DefaultResourceManager.hpp"
 #include "Color.hpp"
+#include "BlendMode.hpp"
 
 class GuiHelper {
 public:
@@ -87,6 +88,33 @@ public:
     void Draw<int>(DrawOptions& options, const std::string &name, int& value) {
         ImGui::InputInt(name.c_str(), &value);
         options.didChange |= ImGui::IsItemEdited();
+    }
+
+    template<>
+    void Draw<LittleCore::BlendMode>(DrawOptions& options, const std::string& name, LittleCore::BlendMode& value) {
+
+        static const char* BlendModeNames[] = {
+                "Off", "Alpha", "Add", "Multiply"
+        };
+
+        int current = static_cast<int>(value);
+
+        if (ImGui::BeginCombo("BlendMode", BlendModeNames[current]))  // preview
+        {
+            for (int i = 0; i < IM_ARRAYSIZE(BlendModeNames); ++i)
+            {
+                bool is_selected = (current == i);
+                if (ImGui::Selectable(BlendModeNames[i], is_selected))
+                {
+                    current = i;
+                    value = static_cast<LittleCore::BlendMode>(i);
+                    options.didChange = true;
+                }
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus(); // nice UX
+            }
+            ImGui::EndCombo();
+        }
     }
 
     static void DrawHeader(const std::string& name);

@@ -3,10 +3,27 @@
 //
 #pragma once
 #include "GuiHelper.hpp"
+#include "ResourceHandle.hpp"
+#include "GuiResourceDrawers.hpp"
 #include "Texturable.hpp"
 #include "ShaderResource.hpp"
 #include "Mesh.hpp"
 #include "FontResource.hpp"
+
+template<>
+void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::Texturable>> (GuiHelper::DrawOptions& options, const std::string& name, LittleCore::ResourceHandle<LittleCore::Texturable>& component);
+
+template<>
+void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::ShaderResource>> (GuiHelper::DrawOptions& options, const std::string& name, LittleCore::ResourceHandle<LittleCore::ShaderResource>& component);
+
+template<>
+void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::Mesh>> (GuiHelper::DrawOptions& options, const std::string& name, LittleCore::ResourceHandle<LittleCore::Mesh>& component);
+
+template<>
+void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::PrefabResource>> (GuiHelper::DrawOptions& options, const std::string& name, LittleCore::ResourceHandle<LittleCore::PrefabResource>& component);
+
+template<>
+void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::FontResource>> (GuiHelper::DrawOptions& options, const std::string& name, LittleCore::ResourceHandle<LittleCore::FontResource>& component);
 
 namespace Internal {
 
@@ -38,6 +55,8 @@ namespace Internal {
     }
 }
 
+
+/*
 template<>
 void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::Texturable>> (GuiHelper::DrawOptions& options, const std::string& name, LittleCore::ResourceHandle<LittleCore::Texturable>& component) {
     Internal::DrawResourceInfo("Texture", options, component);
@@ -67,7 +86,4 @@ void GuiHelper::Draw<LittleCore::ResourceHandle<LittleCore::FontResource>> (GuiH
     Internal::DrawResourceInfo("Font", options, component);
     Internal::DrawResourceDragging(options, component);
 }
-
-
-
-
+*/
