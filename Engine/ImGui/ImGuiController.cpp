@@ -13,7 +13,7 @@ ImGuiController::~ImGuiController() {
     Destroy();
 }
 
-void ImGuiController::Initialize(void* mainWindow, ImGuiController::RenderFunction renderFunction) {
+void ImGuiController::Initialize(void* mainWindow, const ImGuiController::RenderFunction& renderFunction) {
     this->mainWindow = mainWindow;
     this->renderFunction = renderFunction;
 

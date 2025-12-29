@@ -19,7 +19,7 @@ namespace LittleCore {
 
         using RenderFunction = std::function<void()>;
 
-        void Initialize(void* mainWindow, RenderFunction renderFunction);
+        void Initialize(void* mainWindow, const RenderFunction& renderFunction);
         void HandleEvent(void* event);
         void Render();
         void Destroy();
