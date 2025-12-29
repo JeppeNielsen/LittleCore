@@ -34,3 +34,7 @@ void SimulationBase::Reload() {
     /*empty*/
 }
 
+void SimulationBase::SetResources(RegistrySerializerBase& registrySerializer, DefaultResourceManager& resourceManager) {
+
+}
+

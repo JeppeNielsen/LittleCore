@@ -12,6 +12,8 @@
 #include <iostream>
 #include "TypeUtility.hpp"
 #include <functional>
+#include "RegistrySerializerBase.hpp"
+#include "DefaultResourceManager.hpp"
 
 template <typename T>
 concept HasUpdateFunction = requires(T t) {
@@ -28,6 +30,10 @@ concept HasReloadFunction = requires(T t) {
     { t.Reload() } -> std::same_as<void>;
 };
 
+template <typename T>
+concept HasSetResourcesFunction = requires(T t, LittleCore::RegistrySerializerBase& registrySerializer, LittleCore::DefaultResourceManager& resourceManager) {
+    { t.SetResources(registrySerializer, resourceManager) } -> std::same_as<void>;
+};
 
 namespace LittleCore {
 
@@ -79,6 +85,7 @@ namespace LittleCore {
         virtual void Render(Renderer& renderer);
         virtual void Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer);
         virtual void Reload();
+        virtual void SetResources(RegistrySerializerBase& registrySerializer, DefaultResourceManager& resourceManager);
 
         entt::registry registry;
     };
@@ -132,6 +139,15 @@ namespace LittleCore {
                 using updateSystemType = std::remove_cvref_t<decltype(updateSystem)>;
                 if constexpr (HasReloadFunction<updateSystemType>) {
                     updateSystem.Reload();
+                }
+            });
+        }
+
+        void SetResources(RegistrySerializerBase& registrySerializer, DefaultResourceManager& resourceManager) override {
+            TupleHelper::for_each(updateSystems.systems, [&] (auto& updateSystem) {
+                using updateSystemType = std::remove_cvref_t<decltype(updateSystem)>;
+                if constexpr (HasSetResourcesFunction<updateSystemType>) {
+                    updateSystem.SetResources(registrySerializer, resourceManager);
                 }
             });
         }
