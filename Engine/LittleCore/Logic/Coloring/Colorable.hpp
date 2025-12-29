@@ -7,6 +7,6 @@
 
 namespace LittleCore {
     struct Colorable {
-        Color color;
+        Color color = {1,1,1,1};
     };
 }
