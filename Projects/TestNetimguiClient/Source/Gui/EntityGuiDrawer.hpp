@@ -10,20 +10,9 @@
 #include "GuiHelper.hpp"
 #include "ObjectGuiDrawer.hpp"
 #include "TypeUtility.hpp"
-#include "EntityGuiDrawerContext.hpp"
+#include "EntityGuiDrawerBase.hpp"
 
 namespace LittleCore {
-
-    struct EntityGuiDrawerBase {
-
-        EntityGuiDrawerBase(EntityGuiDrawerContext& context) : context(context) {}
-
-        ~EntityGuiDrawerBase() = default;
-        virtual bool Draw(entt::registry& registry, entt::entity entity) = 0;
-        virtual bool DrawComponentMenu(entt::registry& registry, entt::entity entity) = 0;
-
-        EntityGuiDrawerContext& context;
-    };
 
     template <typename ...T>
     class EntityGuiDrawer : public EntityGuiDrawerBase, public IComponentTypeNameGetter, public IComponentGuiDrawer {

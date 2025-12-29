@@ -23,12 +23,19 @@ void GizmoDrawer::DrawGizmo(GizmoDrawerContext& context,
                             entt::registry& cameraRegistry, entt::entity cameraEntity,
                             entt::registry& objectRegistry, entt::entity objectEntity,
                             ImGuizmo::OPERATION operation) {
+    if (!objectRegistry.all_of<WorldTransform>(objectEntity)) {
+        return;
+    }
+
     ImVec2 size = {max.x - min.x, max.y - min.y};
 
     ImGuizmo::PushID((int)objectEntity);
 
     auto& camera = cameraRegistry.get<Camera>(cameraEntity);
     auto& cameraWorldTransform = cameraRegistry.get<WorldTransform>(cameraEntity);
+
+
+
     auto& quadWorldTransform = objectRegistry.get<WorldTransform>(objectEntity);
 
     auto viewPtr = glm::value_ptr(cameraWorldTransform.worldInverse);
