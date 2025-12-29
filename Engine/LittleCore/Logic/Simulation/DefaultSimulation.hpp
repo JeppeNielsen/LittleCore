@@ -14,9 +14,10 @@
 #include "RenderSystem.hpp"
 #include "TexturableSystem.hpp"
 #include "ColorableSystem.hpp"
+#include "LabelMeshSystem.hpp"
+#include "PrefabSystem.hpp"
 
 namespace LittleCore {
-
 
     using DefaultInputSystems = InputSystems<InputSystem>;
 
@@ -26,7 +27,9 @@ namespace LittleCore {
             WorldBoundingBoxSystem,
             MeshBoundingBoxSystem,
             TexturableSystem,
-            ColorableSystem>;
+            ColorableSystem,
+            LabelMeshSystem,
+            PrefabSystem>;
 
     using DefaultRenderSystems = RenderSystems<RenderSystem>;
 
