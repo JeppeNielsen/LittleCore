@@ -19,8 +19,8 @@ namespace LittleCore {
         float fieldOfView = 60;
         bool isOrthographic = false;
         
-        float near;
-        float far;
+        float near=0.1f;
+        float far = 100.0f;
 
         Rect viewRect = {{0,0},{1,1}};
 
