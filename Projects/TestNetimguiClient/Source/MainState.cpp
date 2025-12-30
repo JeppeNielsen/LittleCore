@@ -16,7 +16,6 @@
 #include "DefaultResourceManager.hpp"
 #include <glm/glm.hpp>
 #include <thread>
-#include "MathReflection.hpp"
 #include "EntityGuiDrawer.hpp"
 #include "SystemBase.hpp"
 #include "InputRotationSystem.hpp"
@@ -48,38 +47,17 @@ struct MainState::Parameters {
     ProjectWindow projectWindow;
     DefaultResourceManager resourceManager;
     EntityGuiDrawerContext drawerContext;
+    EntityGuiDrawerBase* entityGuiDrawer;
+    RegistrySerializerBase* registrySerializer;
 
-    using Components = Meta::TypeList<
-            LocalTransform,
-            Camera,
-            Texturable,
-            Renderable,
-            Mesh,
-            Prefab,
-            PrefabExposedComponents,
-            Label,
-            Colorable
-    >;
-
-    Meta::Rebind<EntityGuiDrawer, Components> drawer;
-
-    using ComponentSerializers = Meta::TypeList<
-            WorldTransform,
-            LocalBoundingBox,
-            WorldBoundingBox,
-            Hierarchy>;
-
-    using SerializerComponents = Meta::Concat<Components, ComponentSerializers>;
-
-    Meta::Rebind<RegistrySerializer, SerializerComponents > registrySerializer;
-
-
-
+    ~Parameters() {
+        delete entityGuiDrawer;
+        delete registrySerializer;
+    }
 
     Parameters() :
-            drawerContext(resourceManager, registrySerializer),
-            drawer(drawerContext),
-            editorSimulationContext(renderer, netimguiClientController, drawer),
+            drawerContext(resourceManager),
+            editorSimulationContext(renderer, netimguiClientController),
             editorSimulationRegistry(editorSimulationContext),
             resourceManager(project.resourcePathMapper) {}
 
@@ -106,10 +84,21 @@ struct MainState::Parameters {
         resourceManager.CreateLoaderFactory<ShaderResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
         resourceManager.CreateLoaderFactory<MeshResourceLoaderFactory>();
-        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(registrySerializer, &resourceManager);
         resourceManager.CreateLoaderFactory<FontResourceLoaderFactory>();
 
 
+    }
+
+    void SetGuiDrawer(EntityGuiDrawerBase* entityGuiDrawer) {
+        this->entityGuiDrawer = entityGuiDrawer;
+        editorSimulationContext.guiDrawer = entityGuiDrawer;
+        entityGuiDrawer->Initialize(&drawerContext);
+    }
+
+    void SetRegistrySerializer(RegistrySerializerBase* registrySerializer) {
+        this->registrySerializer = registrySerializer;
+        drawerContext.registrySerializer = registrySerializer;
+        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(*registrySerializer, &resourceManager);
     }
 
     void UpdateEditorSimulation(float dt) {
@@ -131,7 +120,7 @@ struct MainState::Parameters {
 
     void AddSimulation(SimulationBase& simulation) {
         editorSimulationRegistry.AddSimulation(simulation);
-        simulation.SetResources(registrySerializer, resourceManager);
+        simulation.SetResources(*registrySerializer, resourceManager);
     }
 
 };
@@ -175,4 +164,26 @@ void MainState::OnGui() {
 
 void MainState::AddSimulation(SimulationBase& simulation) {
     parameters->AddSimulation(simulation);
+}
+
+void MainState::AddEntityGuiDrawer(EntityGuiDrawerBase* entityGuiDrawerBase) {
+    parameters->SetGuiDrawer(entityGuiDrawerBase);
+}
+
+void MainState::AddRegistrySerializer(RegistrySerializerBase* registrySerializerBase) {
+    parameters->SetRegistrySerializer(registrySerializerBase);
+}
+
+std::string MainState::Save(const entt::registry& registry) const {
+    SerializationContext context {
+        .resourceManager = &parameters->resourceManager
+    };
+    return parameters->registrySerializer->Serialize(registry, context);
+}
+
+std::string MainState::Load(entt::registry& registry, const std::string& data) const {
+    SerializationContext context {
+        .resourceManager = &parameters->resourceManager
+    };
+    return parameters->registrySerializer->Deserialize(registry, data, context);
 }

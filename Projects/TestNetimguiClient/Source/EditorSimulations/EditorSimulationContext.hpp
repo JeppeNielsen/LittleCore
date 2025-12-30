@@ -12,11 +12,11 @@
 namespace LittleCore {
     struct EditorSimulationContext {
 
-        EditorSimulationContext(Renderer& renderer, NetimguiClientController& netimguiClientController, EntityGuiDrawerBase& guiDrawer);
+        EditorSimulationContext(Renderer& renderer, NetimguiClientController& netimguiClientController);
 
         Renderer& renderer;
         NetimguiClientController& netimguiClientController;
-        EntityGuiDrawerBase& guiDrawer;
+        EntityGuiDrawerBase* guiDrawer;
 
     };
 }

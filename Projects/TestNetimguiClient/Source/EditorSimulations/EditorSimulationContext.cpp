@@ -8,11 +8,9 @@ using namespace LittleCore;
 
 EditorSimulationContext::EditorSimulationContext(
         Renderer& renderer,
-        NetimguiClientController& netimguiClientController,
-        EntityGuiDrawerBase& guiDrawer)
+        NetimguiClientController& netimguiClientController)
  : renderer(renderer),
-   netimguiClientController(netimguiClientController),
-   guiDrawer(guiDrawer)
+   netimguiClientController(netimguiClientController)
 {
 
 }

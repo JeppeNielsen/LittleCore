@@ -7,7 +7,6 @@
 #include "imgui.h"
 #include "../EditorSimulations//EditorSimulation.hpp"
 #include "EntityGuiDrawer.hpp"
-#include "MathReflection.hpp"
 
 using namespace LittleCore;
 
@@ -30,10 +29,10 @@ void InspectorWindow::DrawEntity(EditorSimulation& simulation, entt::entity e) {
     auto text = std::format("Entity: {}", (uint32_t)e);
 
     GuiHelper::DrawHeader(text.c_str());
-    simulation.context.guiDrawer.Draw(simulation.simulation.registry, e);
+    simulation.context.guiDrawer->Draw(simulation.simulation.registry, e);
 
     ImGui::PopID();
 
-    simulation.context.guiDrawer.DrawComponentMenu(simulation.simulation.registry, e);
+    simulation.context.guiDrawer->DrawComponentMenu(simulation.simulation.registry, e);
 }
 

@@ -1,7 +1,7 @@
 //
 // Created by Jeppe Nielsen on 13/04/2024.
 //
-
+/*
 #include "Engine.hpp"
 #include "EditorSimulations/EditorSimulationRegistry.hpp"
 #include "ImGuiController.hpp"
@@ -302,3 +302,5 @@ int main_editor() {
     e.Start<TestNetimguiClient>();
     return 0;
 }
+
+ */

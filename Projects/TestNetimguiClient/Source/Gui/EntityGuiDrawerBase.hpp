@@ -8,14 +8,19 @@
 namespace LittleCore {
     struct EntityGuiDrawerBase {
 
-        EntityGuiDrawerBase(EntityGuiDrawerContext& context) : context(context) {}
+        EntityGuiDrawerBase() = default;
 
-        ~EntityGuiDrawerBase() = default;
+        virtual ~EntityGuiDrawerBase() = default;
 
         virtual bool Draw(entt::registry& registry, entt::entity entity) = 0;
 
         virtual bool DrawComponentMenu(entt::registry& registry, entt::entity entity) = 0;
 
-        EntityGuiDrawerContext& context;
+        void Initialize(EntityGuiDrawerContext* context) {
+            this->context = context;
+        }
+
+    protected:
+        EntityGuiDrawerContext* context;
     };
 }

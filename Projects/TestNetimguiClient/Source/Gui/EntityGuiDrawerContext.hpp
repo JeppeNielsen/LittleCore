@@ -10,10 +10,10 @@
 namespace LittleCore {
 
     struct EntityGuiDrawerContext {
-        EntityGuiDrawerContext(DefaultResourceManager& resourceManager, RegistrySerializerBase& registrySerializer) : resourceManager(resourceManager), registrySerializer(registrySerializer) {}
+        EntityGuiDrawerContext(DefaultResourceManager& resourceManager) : resourceManager(resourceManager) {}
 
         DefaultResourceManager& resourceManager;
-        RegistrySerializerBase& registrySerializer;
+        RegistrySerializerBase* registrySerializer;
         IComponentTypeNameGetter* componentTypeGetter;
         IComponentGuiDrawer* componentGuiDrawer;
         entt::registry* currentRegistry;

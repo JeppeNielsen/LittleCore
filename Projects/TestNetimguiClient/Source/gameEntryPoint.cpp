@@ -6,56 +6,76 @@
 #include "MainState.hpp"
 #include <imgui.h>
 #include "DefaultSimulation.hpp"
+#include "FileHelper.hpp"
 
-struct Mover {
-    float speed;
+using namespace LittleCore;
 
+struct Velocity {
+    glm::vec3 speed;
 };
 
+struct Rotater {
+    float speed;
+};
 
 struct MoverSystem : LittleCore::SystemBase {
 
-
-
     void Update(float dt) {
-        for(auto[entity, mover]  : registry.view<Mover>().each()) {
-            std::cout << std::format("Entity #{0} has mover with speed {1}", (int)entity, mover.speed)<<"\n";
+        for(auto[entity, velocity, transform]  : registry.view<const Velocity, LocalTransform>().each()) {
+            transform.position += velocity.speed * dt;
+            registry.patch<LocalTransform>(entity);
         }
     }
 
 };
 
+struct RotatorSystem : LittleCore::SystemBase {
+
+    void Update(float dt) {
+        for(auto[entity, rotator, transform]  : registry.view<const Rotater, LocalTransform>().each()) {
+            transform.rotation *= quat({0,rotator.speed * dt ,0 });
+            registry.patch<LocalTransform>(entity);
+        }
+    }
+
+};
+
+
+
 struct SimpleGame : public LittleCore::MainState {
+
+
 
     LittleCore::CustomSimulation<MoverSystem> simulation;
 
     void OnInitialize() override {
+        SerializedTypes<Velocity, Rotater>();
 
         AddSimulation(simulation);
-
-        auto entity = simulation.registry.create();
-        simulation.registry.emplace<Mover>(entity);
-
-        auto entity2 = simulation.registry.create();
-        simulation.registry.emplace<Mover>(entity2).speed = 2.0f;
     }
 
     void OnUpdate(float dt) override {
-
         simulation.Update(dt);
-
     }
 
     void OnRender() override {
 
-
-
     }
 
     void OnGui() override {
-        ImGui::Begin("Project");
+        ImGui::Begin("File");
 
-        ImGui::Button("click me");
+        if (ImGui::Button("Save")) {
+            auto data = Save(simulation.registry);
+            FileHelper::TryWriteAllText("Scene.json", data);
+        }
+
+        if (ImGui::Button("Load")) {
+            auto data = FileHelper::ReadAllText("Scene.json");
+            simulation.registry.clear();
+            auto error = Load(simulation.registry, data);
+
+        }
 
         ImGui::End();
 

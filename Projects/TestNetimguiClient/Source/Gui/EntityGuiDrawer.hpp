@@ -53,8 +53,6 @@ namespace LittleCore {
 
         }
 
-        EntityGuiDrawer(EntityGuiDrawerContext& context) : EntityGuiDrawerBase(context) {}
-
         template<typename TComponent>
         bool DrawComponent(const std::string& name, entt::registry& registry, entt::entity entity)  {
             GuiHelper::DrawHeader(name);
@@ -79,11 +77,11 @@ namespace LittleCore {
             }
 
             TComponent& component = registry.get<TComponent>(entity);
-            context.currentEntity = entity;
-            context.currentRegistry = &registry;
-            context.componentTypeGetter = this;
-            context.componentGuiDrawer = this;
-            bool didChange = ObjectGuiDrawer<TComponent>::Draw(context, component);
+            context->currentEntity = entity;
+            context->currentRegistry = &registry;
+            context->componentTypeGetter = this;
+            context->componentGuiDrawer = this;
+            bool didChange = ObjectGuiDrawer<TComponent>::Draw(*context, component);
             if (didChange) {
                 registry.patch<TComponent>(entity);
             }
