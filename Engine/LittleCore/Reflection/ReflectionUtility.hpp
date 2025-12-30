@@ -10,6 +10,7 @@
 #include <concepts>
 #include "TypeUtility.hpp"
 #include "ResourceSerialization.hpp"
+#include "MathReflection.hpp"
 
 namespace LittleCore {
 
