@@ -11,12 +11,14 @@
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
+#include "Project.hpp"
 
 using namespace LittleCore;
 
 struct ImguiTest : IState {
     ImGuiController gui;
     NetimguiServerController netimguiController;
+    Project project;
 
     ImguiTest() : netimguiController(gui) {}
 
@@ -29,6 +31,9 @@ struct ImguiTest : IState {
         if (!netimguiController.Start()) {
             std::cout << "Netimgui lib failed\n";
         }
+
+        project.LoadProject("/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets");
+        project.moduleDefinitionsManager.CreateFromMainFile()
     }
 
     void HandleEvent(void* event) override {
@@ -120,7 +125,7 @@ struct ImguiTest : IState {
 };
 
 int main() {
-    Engine e({"Test Netimgui"});
+    Engine e({.mainWindowTitle = "Test Netimgui"});
     e.Start<ImguiTest>();
     return 0;
 }
