@@ -45,9 +45,14 @@ struct SimpleGame : public LittleCore::MainState {
 
     LittleCore::CustomSimulation<MoverSystem> simulation;
 
+    virtual ~SimpleGame() {}
+
     void OnInitialize() override {
+        std::cout << "Came here 1" << std::endl;
         SerializedTypes<Velocity, Rotater>();
+        std::cout << "Came here 2" << std::endl;
         AddSimulation(simulation);
+        std::cout << "Came here 3" << std::endl;
     }
 
     void OnUpdate(float dt) override {
