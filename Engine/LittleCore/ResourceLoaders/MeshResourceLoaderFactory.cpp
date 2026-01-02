@@ -3,6 +3,7 @@
 //
 
 #include "MeshResourceLoaderFactory.hpp"
+#include "MeshLoader.hpp"
 
 using namespace LittleCore;
 
@@ -11,6 +12,5 @@ IResourceLoaderFactory<MeshResourceLoader>::Loader LittleCore::MeshResourceLoade
 }
 
 bool MeshResourceLoaderFactory::IsPathSupported(const std::string& path) {
-    MeshLoader meshLoader;
-    return meshLoader.IsValidMesh(path);
+    return MeshLoader::IsValidMesh(path);
 }

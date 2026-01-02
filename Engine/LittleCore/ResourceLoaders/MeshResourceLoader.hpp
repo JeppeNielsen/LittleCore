@@ -5,7 +5,6 @@
 
 #pragma once
 #include "Mesh.hpp"
-#include "MeshLoader.hpp"
 
 namespace LittleCore {
     class MeshResourceLoader : public IResourceLoader<Mesh> {
@@ -14,7 +13,5 @@ namespace LittleCore {
         void Unload(Mesh& resource) override;
         bool IsLoaded() override;
         void Reload(Mesh& resource) override;
-
-        MeshLoader meshLoader;
     };
 }

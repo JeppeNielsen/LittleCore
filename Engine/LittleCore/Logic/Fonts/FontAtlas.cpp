@@ -1,4 +1,5 @@
 #include "FontAtlas.hpp"
+#include "MaxRectsPacker.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -7,6 +8,7 @@
 #include "stb_truetype.h"
 
 #include "ImageLoader.hpp"
+
 
 using namespace LittleCore;
 

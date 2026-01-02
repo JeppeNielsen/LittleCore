@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include <string>
 
-#include "MaxRectsPacker.hpp"
 
 struct stbtt_fontinfo;
 

@@ -3,13 +3,13 @@
 //
 
 #include "MeshResourceLoader.hpp"
-
+#include "MeshLoader.hpp"
 
 using namespace LittleCore;
 using namespace bgfx;
 
 void MeshResourceLoader::Load(Mesh& resource) {
-    meshLoader.LoadMesh(path, resource);
+    MeshLoader::LoadMesh(path, resource);
 }
 
 void MeshResourceLoader::Unload(Mesh& resource) {
