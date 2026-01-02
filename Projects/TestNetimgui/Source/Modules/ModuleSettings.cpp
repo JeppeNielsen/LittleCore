@@ -5,5 +5,10 @@
 #include "ModuleSettings.hpp"
 
 ModuleCompiler ModuleSettings::CreateCompiler() {
-    return ModuleCompiler("/Users/jeppe/Jeppes/Scripting/clang/bin/clang++");
+
+    //../../Scripting/clang18/lib
+    ///Users/jeppe/Jeppes/Scripting/clang18
+    ///Users/jeppe/Jeppes/Scripting/clang18/bin
+    return ModuleCompiler("/Users/jeppe/Jeppes/Scripting/clang18/bin/clang++");
+    //return ModuleCompiler("/Users/jeppe/Jeppes/Scripting/clang/bin/clang++");
 }

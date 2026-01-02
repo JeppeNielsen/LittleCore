@@ -48,8 +48,22 @@ ModuleCompilerResult ModuleCompiler::Compile(const ModuleCompilerContext &contex
         }
     }
 
+    if (!context.frameworks.empty()) {
+        clang += " ";
+        for (auto framework: context.frameworks) {
+            clang += "-framework " + framework + " ";
+        }
+    }
+
+    std::string clangRoot = "/Users/jeppe/Jeppes/Scripting/clang18";
+
     clang += "-isysroot `xcrun -sdk macosx --show-sdk-path` ";
-    clang += "-std=c++17 -dynamiclib -Wno-return-type-c-linkage -O0 ";
+    clang += "-std=c++23 -Wno-return-type-c-linkage -O0 ";
+    clang += "-arch arm64 ";
+    clang += "-mmacosx-version-min=13.0 ";
+    clang += "-nostdinc++ -isystem "+clangRoot+"/include/c++/v1 ";
+    clang += "-L\""+clangRoot+"/lib\" -Wl,-rpath,\""+clangRoot+"/lib\" ";
+    clang += "-lc++ -lc++abi ";
     clang += "-o " + context.outputPath + " ";
 
     std::cout << clang << std::endl;

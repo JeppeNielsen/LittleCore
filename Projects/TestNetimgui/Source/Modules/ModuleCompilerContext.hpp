@@ -12,5 +12,6 @@ struct ModuleCompilerContext {
     std::vector<std::string> defines;
     std::vector<std::string> libPaths;
     std::vector<std::string> libs;
+    std::vector<std::string> frameworks;
     std::string outputPath;
 };

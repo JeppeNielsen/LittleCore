@@ -16,7 +16,7 @@ bool ModuleDefinition::LibraryExists() const {
 }
 
 std::string ModuleDefinition::LibraryPath() const {
-    std::string libName = id + ".so";
+    std::string libName = id + "";
     std::__fs::filesystem::path libPath = settings.libraryFolder;
     return libPath.concat(libName);
 }

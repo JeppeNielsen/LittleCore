@@ -33,7 +33,9 @@ struct ImguiTest : IState {
         }
 
         project.LoadProject("/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets");
-        project.moduleDefinitionsManager.CreateFromMainFile()
+        project.moduleDefinitionsManager.CreateFromMainFile("Main", "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/main.cpp");
+
+
     }
 
     void HandleEvent(void* event) override {
@@ -102,9 +104,24 @@ struct ImguiTest : IState {
 
     }
 
+    void Compile() {
+        auto& definition = project.moduleDefinitionsManager.Definitions().at("Main");
+
+        auto result = definition->Build();
+
+        for(auto error : result.errors) {
+            std::cout<< error<<"\n";
+        }
+
+    }
+
     void OnGUI() {
         ImGui::DockSpaceOverViewport();
-        ImGui::Begin("My test window");
+        ImGui::Begin("Editor");
+
+        if (ImGui::Button("Compile")) {
+            Compile();
+        }
 
         if (ImGui::Button("Start process")) {
             StartProgram();
