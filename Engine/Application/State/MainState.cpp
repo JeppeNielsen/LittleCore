@@ -61,14 +61,15 @@ struct MainState::Parameters {
             resourceManager(project.resourcePathMapper) {}
 
 
-    void Initialize(void* mainWindow, const ImGuiController::RenderFunction& onGui) {
+    void Initialize(void* mainWindow, const ImGuiController::RenderFunction& onGui, const MainStateContext& context) {
 
         gui.Initialize(mainWindow, onGui);
 
-        gui.LoadFont("/Users/jeppe/Jeppes/LittleCore/Projects/TestImGui/Source/Fonts/LucidaG.ttf", 12);
+        //gui.LoadFont("/Users/jeppe/Jeppes/LittleCore/Projects/TestImGui/Source/Fonts/LucidaG.ttf", 12);
+        gui.LoadFont(context.engineRoot + "Fonts/LucidaG.ttf", 12);
 
         netimguiClientController.Start();
-        netimguiClientController.Connect("Test client", "localhost");
+        netimguiClientController.Connect(context.name, "localhost");
 
         while (netimguiClientController.IsConnectionPending()) {
             std::this_thread::sleep_for(std::chrono::milliseconds (16));
@@ -77,7 +78,7 @@ struct MainState::Parameters {
             std::cout << "couldn't connect\n";
         }
 
-        project.rootPath = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets/";
+        project.rootPath = context.projectRoot;
         project.resourcePathMapper.RefreshFromRootPath(project.rootPath);
 
         resourceManager.CreateLoaderFactory<ShaderResourceLoaderFactory>();
@@ -138,7 +139,7 @@ void MainState::Initialize() {
         ImGui::DockSpaceOverViewport();
         parameters->DrawUI();
         OnGui();
-    });
+    }, context);
     OnInitialize();
 }
 

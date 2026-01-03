@@ -10,12 +10,14 @@
 #include "GuiResourceDrawers.hpp"
 #include "DefaultEntityGuiDrawer.hpp"
 #include "DefaultRegistrySerializer.hpp"
+#include "MainStateContext.hpp"
 
 namespace LittleCore {
     class MainState : public IState {
     public:
         MainState();
         virtual ~MainState();
+        MainStateContext context;
     private:
         void Initialize() override;
         void Update(float dt) override;
