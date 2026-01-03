@@ -7,7 +7,7 @@
 
 
 Project::Project() :
-        moduleDefinitionsManager(moduleSettings)
+        moduleDefinitionsManager(moduleSettings, projectSettings)
 {
 
 }
@@ -17,7 +17,6 @@ void Project::Reset() {
     moduleSettings = {};
 
     std::string engineRoot = "/Users/jeppe/Jeppes/LittleCore/";
-
 
     moduleSettings.context.hppFiles.push_back(engineRoot + "External/imgui/");
     moduleSettings.context.hppFiles.push_back(engineRoot + "External/imgui/misc/cpp/");

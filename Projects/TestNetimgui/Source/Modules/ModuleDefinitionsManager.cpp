@@ -3,13 +3,15 @@
 //
 
 #include "ModuleDefinitionsManager.hpp"
+#include "ProjectSettings.hpp"
 
-ModuleDefinitionsManager::ModuleDefinitionsManager(ModuleSettings& moduleSettings) : moduleSettings(moduleSettings) {
+ModuleDefinitionsManager::ModuleDefinitionsManager(ModuleSettings& moduleSettings, ProjectSettings& projectSettings) :
+moduleSettings(moduleSettings), projectSettings(projectSettings) {
 
 }
 
 ModuleDefinition& ModuleDefinitionsManager::CreateFromMainFile(const std::string &id, const std::string &mainPath) {
-    definitions.insert({id, std::make_unique<ModuleDefinition>(moduleSettings, id, mainPath)});
+    definitions.insert({id, std::make_unique<ModuleDefinition>(moduleSettings, projectSettings, id, mainPath)});
     return *definitions[id].get();
 }
 

@@ -10,7 +10,7 @@ using namespace LittleCore;
 
 bool IsPathModuleFile(const std::string& path) {
     auto allText = FileHelper::ReadAllText(path);
-    auto pos = allText.find("CreateModule");
+    auto pos = allText.find("MainState");
     return pos!=std::string::npos;
 }
 

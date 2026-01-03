@@ -10,5 +10,6 @@
 
 struct ProjectSettings {
     std::string rootPath;
+    std::string engineRoot;
     void ModifyModules(ModuleCompilerContext& moduleCompilerContext, ModuleDefinitionsManager& moduleDefinitionsManager);
 };

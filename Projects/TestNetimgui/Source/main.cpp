@@ -27,15 +27,16 @@ struct ImguiTest : IState {
             OnGUI();
         });
 
-        gui.LoadFont("/Users/jeppe/Jeppes/LittleCore/Projects/TestImGui/Source/Fonts/LucidaG.ttf", 12);
+
         if (!netimguiController.Start()) {
             std::cout << "Netimgui lib failed\n";
         }
+        project.projectSettings.engineRoot = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimgui/Assets/";
+
+        gui.LoadFont(project.projectSettings.engineRoot + "Fonts/LucidaG.ttf", 12);
 
         project.LoadProject("/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets");
-        project.moduleDefinitionsManager.CreateFromMainFile("Main", "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/main.cpp");
-
-
+        project.moduleDefinitionsManager.CreateFromMainFile("SimpleGame", "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets/Code/SimpleGame.cpp");
     }
 
     void HandleEvent(void* event) override {
@@ -51,27 +52,10 @@ struct ImguiTest : IState {
         }
 
         if (pid == 0) { // Child
-
-
-            const char *path = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Build/bin/ARM64/Debug/TestNetimguiClient";
-            system(path);
-
-
-/*
-            char *argv[] = { (char*)path,
-                             const_cast<char*>("-g"), // do not activate
-                             const_cast<char*>("-j"), // launch hidden
-                             const_cast<char*>("-a"),
-                             nullptr };
-
-            execvp(path, argv);
-            // If execvp returns, it failed:
-            std::perror("execvp");
-            _exit(127);
-            */
+            auto& definition = project.moduleDefinitionsManager.Definitions().at("SimpleGame");
+            std::string exePath = definition->LibraryPath();
+            system(exePath.c_str());
         }
-
-
     }
 
     void StartProgram2() {
@@ -105,13 +89,14 @@ struct ImguiTest : IState {
     }
 
     void Compile() {
-        auto& definition = project.moduleDefinitionsManager.Definitions().at("Main");
+        auto& definition = project.moduleDefinitionsManager.Definitions().at("SimpleGame");
 
-        auto result = definition->Build();
+        definition->StartBuild();
 
-        for(auto error : result.errors) {
+        /*for(auto error : result.errors) {
             std::cout<< error<<"\n";
-        }
+        }*/
+
 
     }
 
@@ -132,7 +117,9 @@ struct ImguiTest : IState {
     }
 
     void Update(float dt) override {
-
+        for(auto& m : project.moduleDefinitionsManager.Definitions()) {
+            m.second->Update();
+        }
     }
 
     void Render() override {

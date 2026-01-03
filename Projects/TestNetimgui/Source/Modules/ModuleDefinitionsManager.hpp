@@ -9,12 +9,14 @@
 #include "ModuleSettings.hpp"
 #include "ModuleDefinition.hpp"
 
+class ProjectSettings;
+
 class ModuleDefinitionsManager {
 public:
 
     using DefinitionsList =  std::map<std::string, std::unique_ptr<ModuleDefinition>>;
 
-    ModuleDefinitionsManager(ModuleSettings& moduleSettings);
+    ModuleDefinitionsManager(ModuleSettings& moduleSettings, ProjectSettings& projectSettings);
 
     ModuleDefinition& CreateFromMainFile(const std::string& id, const std::string& mainPath);
 
@@ -22,6 +24,7 @@ public:
 
 private:
     ModuleSettings& moduleSettings;
+    ProjectSettings& projectSettings;
     DefinitionsList definitions;
 
 };
