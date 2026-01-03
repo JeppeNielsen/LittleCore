@@ -12,9 +12,12 @@ namespace LittleCore {
     public:
         Engine(EngineSettings settings);
         template<typename T>
-        void Start() {
-            MainLoop([this] (){
+        void Start(const std::function<void(T& state)>& onCreated = nullptr) {
+            MainLoop([this, &onCreated] (){
                 state = new T();
+                if (onCreated) {
+                    onCreated(*(T*)state);
+                }
             },[this]() {
                 delete state;
             });
