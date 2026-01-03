@@ -14,7 +14,7 @@
     $input a_position, a_color0, a_texcoord0
     $output v_color0, vertexPosition, v_texcoord0
 
-    #include "../../../../External/bgfx/examples/common/common.sh"
+    #include "../../../../../External/bgfx/examples/common/common.sh"
 
     void main()
     {
@@ -30,7 +30,7 @@
 
     $input v_color0, vertexPosition, v_texcoord0
 
-    #include "../../../../External/bgfx/examples/common/common.sh"
+    #include "../../../../../External/bgfx/examples/common/common.sh"
     SAMPLER2D(colorTexture,  0);
 
     uniform vec4 color;
