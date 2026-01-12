@@ -44,7 +44,6 @@ project "Application"
     "ImGui",
     "ShaderCompiler",
     "Netimgui",
-    "Application"
   }
 
    filter "configurations:Debug"
