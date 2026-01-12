@@ -17,6 +17,6 @@ namespace LittleCore {
         Renderer& renderer;
         NetimguiClientController& netimguiClientController;
         EntityGuiDrawerBase* guiDrawer;
-
+        bool hierarchyChangedLastFrame;
     };
 }

@@ -81,6 +81,10 @@ void SceneWindow::DrawCamera(EditorSimulation& simulation, EditorCamera& camera)
 
     bool gizmoClickStarted = gizmoDrawerContext.wasHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 
+    if (gizmoDrawerContext.wasActive) {
+        simulation.context.hierarchyChangedLastFrame = true;
+    }
+
     if (!gizmoDrawerContext.wasActive) {
         guiWindowInputController.RunforSimulation(camera.simulation);
 

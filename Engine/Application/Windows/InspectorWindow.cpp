@@ -15,14 +15,14 @@ void InspectorWindow::Draw(EditorSimulation& simulation) {
     ImGui::Begin("Inspector");
     for (auto entity : simulation.selection.selection) {
         if (simulation.simulation.registry.valid(entity)) {
-            DrawEntity(simulation, entity);
+            simulation.context.hierarchyChangedLastFrame |= DrawEntity(simulation, entity);
         }
     }
     ImGui::End();
 
 }
 
-void InspectorWindow::DrawEntity(EditorSimulation& simulation, entt::entity e) {
+bool InspectorWindow::DrawEntity(EditorSimulation& simulation, entt::entity e) {
 
     ImGui::PushID((int)e);
 
@@ -31,10 +31,12 @@ void InspectorWindow::DrawEntity(EditorSimulation& simulation, entt::entity e) {
     std::string text = "Entity: " + (uint32_t)e;
 
     GuiHelper::DrawHeader(text.c_str());
-    simulation.context.guiDrawer->Draw(simulation.simulation.registry, e);
+    bool didChange = simulation.context.guiDrawer->Draw(simulation.simulation.registry, e);
 
     ImGui::PopID();
 
-    simulation.context.guiDrawer->DrawComponentMenu(simulation.simulation.registry, e);
+    didChange |= simulation.context.guiDrawer->DrawComponentMenu(simulation.simulation.registry, e);
+
+    return didChange;
 }
 

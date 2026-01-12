@@ -12,6 +12,7 @@ namespace LittleCore {
         std::string rootPath;
         ResourcePathMapper resourcePathMapper;
         ResourceHashMapper resourceHashMapper;
+        bool hierarchyChangedLastFrame;
 
     };
 }

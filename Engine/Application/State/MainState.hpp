@@ -11,6 +11,7 @@
 #include "DefaultEntityGuiDrawer.hpp"
 #include "DefaultRegistrySerializer.hpp"
 #include "MainStateContext.hpp"
+#include "Project.hpp"
 
 namespace LittleCore {
     class MainState : public IState {
@@ -25,9 +26,9 @@ namespace LittleCore {
         void HandleEvent(void* event) override;
         void AddEntityGuiDrawer(EntityGuiDrawerBase* entityGuiDrawerBase);
         void AddRegistrySerializer(RegistrySerializerBase* registrySerializerBase);
-    private:
         struct Parameters;
         Parameters* parameters;
+        Project project;
     protected:
         void AddSimulation(SimulationBase& simulation);
         virtual void OnGui();
@@ -44,6 +45,8 @@ namespace LittleCore {
             DefaultRegistrySerializer<T...>* registrySerializer = new DefaultRegistrySerializer<T...>();
             AddRegistrySerializer(registrySerializer);
         }
+
+        Project& GetProject();
 
     };
 }

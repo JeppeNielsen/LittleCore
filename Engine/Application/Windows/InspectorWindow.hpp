@@ -13,7 +13,7 @@ namespace LittleCore {
     public:
 
         void Draw(EditorSimulation& simulation);
-        void DrawEntity(EditorSimulation& simulation, entt::entity entity);
+        bool DrawEntity(EditorSimulation& simulation, entt::entity entity);
 
     };
 }

@@ -17,6 +17,7 @@ pickingSystem(simulation.registry){
 }
 
 void EditorSimulation::DrawGUI() {
+    context.hierarchyChangedLastFrame = false;
 
     hierarchyWindow.Draw(*this);
     sceneView.Draw(*this);

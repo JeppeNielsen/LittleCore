@@ -42,23 +42,23 @@ struct MainState::Parameters {
     EditorSimulationRegistry editorSimulationRegistry;
     NetimguiClientController netimguiClientController;
     ImGuiController gui;
-    Project project;
     ProjectWindow projectWindow;
     DefaultResourceManager resourceManager;
     EntityGuiDrawerContext drawerContext;
     EntityGuiDrawerBase* entityGuiDrawer;
     RegistrySerializerBase* registrySerializer;
+    LittleCore::Project& project;
 
     ~Parameters() {
         delete entityGuiDrawer;
         delete registrySerializer;
     }
 
-    Parameters() :
+    Parameters(LittleCore::Project& project) :
             drawerContext(resourceManager),
             editorSimulationContext(renderer, netimguiClientController),
             editorSimulationRegistry(editorSimulationContext),
-            resourceManager(project.resourcePathMapper) {}
+            resourceManager(project.resourcePathMapper), project(project) {}
 
 
     void Initialize(void* mainWindow, const ImGuiController::RenderFunction& onGui, const MainStateContext& context) {
@@ -127,7 +127,7 @@ struct MainState::Parameters {
 
 
 MainState::MainState() {
-    parameters = new Parameters();
+    parameters = new Parameters(project);
 }
 
 MainState::~MainState() {
@@ -138,6 +138,7 @@ void MainState::Initialize() {
     parameters->Initialize(mainWindow, [this](){
         ImGui::DockSpaceOverViewport();
         parameters->DrawUI();
+        project.hierarchyChangedLastFrame = parameters->editorSimulationContext.hierarchyChangedLastFrame;
         OnGui();
     }, context);
     OnInitialize();
@@ -186,4 +187,8 @@ std::string MainState::Load(entt::registry& registry, const std::string& data) c
         .resourceManager = &parameters->resourceManager
     };
     return parameters->registrySerializer->Deserialize(registry, data, context);
+}
+
+Project& MainState::GetProject() {
+    return project;
 }
