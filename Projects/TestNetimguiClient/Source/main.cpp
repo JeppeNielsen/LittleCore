@@ -3,17 +3,17 @@
 //
 
 #include "Engine.hpp"
-#include "Assets/Code/SimpleGame.cpp"
+#include "Assets/Code/PrefabEditor.cpp"
 
 int main() {
     using namespace LittleCore;
     Engine engine({
-        .mainWindowTitle = "Editor",
+        .mainWindowTitle = "Prefab editor",
         .showWindow = true
     });
-    engine.Start<SimpleGame>([](SimpleGame& state) {
+    engine.Start<PrefabEditor>([](PrefabEditor& state) {
         state.context.projectRoot = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets";
         state.context.engineRoot = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimgui/Assets/";
-        state.context.name = "SimpleGame";
+        state.context.name = "PrefabEditor";
     });
 }
