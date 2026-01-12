@@ -29,6 +29,10 @@ void FindRoots(entt::registry& registry, std::vector<entt::entity>& roots) {
 }
 
 void PrefabResourceLoader::Load(PrefabResource& resource) {
+    if (path == "") {
+        return;
+    }
+
     auto json = FileHelper::ReadAllText(path);
     SerializationContext context {
         .resourceManager = (DefaultResourceManager*)defaultResourceManager
