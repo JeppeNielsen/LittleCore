@@ -7,8 +7,8 @@
                1,
                {
                   "position": {
-                     "x": 2.8638916,
-                     "y": -4.127178,
+                     "x": 3.7541504,
+                     "y": -5.017434,
                      "z": 0
                   },
                   "rotation": {
@@ -28,8 +28,8 @@
                2,
                {
                   "position": {
-                     "x": 0,
-                     "y": 0,
+                     "x": -9.756556,
+                     "y": 0.14243156,
                      "z": 0
                   },
                   "rotation": {
@@ -48,15 +48,24 @@
          ]
       },
       {
-         "type": "Wobbler",
-         "components": []
+         "type": "LittleCore::Hierarchy",
+         "components": [
+            [
+               1,
+               {
+                  "parent": 2
+               }
+            ],
+            [
+               2,
+               {
+                  "parent": 4294967295
+               }
+            ]
+         ]
       },
       {
          "type": "LittleCore::Camera",
-         "components": []
-      },
-      {
-         "type": "Rotatable",
          "components": []
       },
       {
@@ -249,8 +258,8 @@
                {
                   "bounds": {
                      "center": {
-                        "x": 5.832855,
-                        "y": 0.61491287,
+                        "x": -3.8880906,
+                        "y": 0.72173417,
                         "z": 0
                      },
                      "extends": {
@@ -266,8 +275,8 @@
                {
                   "bounds": {
                      "center": {
-                        "x": 5.7182994,
-                        "y": 0.78,
+                        "x": -4.038256,
+                        "y": 0.9224315,
                         "z": 0
                      },
                      "extends": {
@@ -276,23 +285,6 @@
                         "z": 0
                      }
                   }
-               }
-            ]
-         ]
-      },
-      {
-         "type": "LittleCore::Hierarchy",
-         "components": [
-            [
-               1,
-               {
-                  "parent": 2
-               }
-            ],
-            [
-               2,
-               {
-                  "parent": 4294967295
                }
             ]
          ]

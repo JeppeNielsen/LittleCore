@@ -4,7 +4,7 @@
          "type": "LittleCore::LocalTransform",
          "components": [
             [
-               1048576,
+               5242882,
                {
                   "position": {
                      "x": 0,
@@ -18,9 +18,9 @@
                      "w": 1
                   },
                   "scale": {
-                     "x": 0.2,
-                     "y": 0.2,
-                     "z": 0.2
+                     "x": 1,
+                     "y": 1,
+                     "z": 1
                   }
                }
             ]
@@ -30,7 +30,7 @@
          "type": "LittleCore::Hierarchy",
          "components": [
             [
-               1048576,
+               5242882,
                {
                   "parent": 4294967295
                }
@@ -43,29 +43,43 @@
       },
       {
          "type": "LittleCore::Texturable",
-         "components": []
-      },
-      {
-         "type": "LittleCore::Renderable",
-         "components": []
-      },
-      {
-         "type": "LittleCore::Mesh",
-         "components": []
-      },
-      {
-         "type": "LittleCore::Prefab",
          "components": [
             [
-               1048576,
+               5242882,
                {
-                  "resource": {
-                     "id": ""
-                  },
-                  "components": []
+                  "id": "608BAF707DB04411AC899009FA5F1EB2"
                }
             ]
          ]
+      },
+      {
+         "type": "LittleCore::Renderable",
+         "components": [
+            [
+               5242882,
+               {
+                  "shader": {
+                     "id": "65886F92DEC94836A9E2FEA6C3483543"
+                  },
+                  "blendMode": 0
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Mesh",
+         "components": [
+            [
+               5242882,
+               {
+                  "id": "43E9F8CEAEE146BB9B0062C1093203DD"
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Prefab",
+         "components": []
       },
       {
          "type": "LittleCore::PrefabExposedComponents",
@@ -77,13 +91,25 @@
       },
       {
          "type": "LittleCore::Colorable",
-         "components": []
+         "components": [
+            [
+               5242882,
+               {
+                  "color": {
+                     "x": 0,
+                     "y": 0.3157897,
+                     "z": 1,
+                     "w": 1
+                  }
+               }
+            ]
+         ]
       },
       {
          "type": "LittleCore::WorldTransform",
          "components": [
             [
-               1048576,
+               5242882,
                {
                   "world": {
                      
@@ -99,18 +125,18 @@
          "type": "LittleCore::LocalBoundingBox",
          "components": [
             [
-               1048576,
+               5242882,
                {
                   "bounds": {
                      "center": {
                         "x": 0,
-                        "y": 10.842308,
-                        "z": 1.1741018
+                        "y": 0,
+                        "z": 0
                      },
                      "extends": {
-                        "x": 33.272804,
-                        "y": 11.8714905,
-                        "z": 28.875534
+                        "x": 1,
+                        "y": 1,
+                        "z": 0
                      }
                   }
                }
@@ -121,18 +147,18 @@
          "type": "LittleCore::WorldBoundingBox",
          "components": [
             [
-               1048576,
+               5242882,
                {
                   "bounds": {
                      "center": {
                         "x": 0,
-                        "y": 2.1684616,
-                        "z": 0.23482037
+                        "y": 0,
+                        "z": 0
                      },
                      "extends": {
-                        "x": 6.654561,
-                        "y": 2.374298,
-                        "z": 5.775107
+                        "x": 1,
+                        "y": 1,
+                        "z": 0
                      }
                   }
                }

@@ -1,0 +1,580 @@
+{
+   "components": [
+      {
+         "type": "LittleCore::LocalTransform",
+         "components": [
+            [
+               6,
+               {
+                  "position": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1
+                  }
+               }
+            ],
+            [
+               5,
+               {
+                  "position": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1
+                  }
+               }
+            ],
+            [
+               2097152,
+               {
+                  "position": {
+                     "x": 0,
+                     "y": 0,
+                     "z": -28
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1
+                  }
+               }
+            ],
+            [
+               1048579,
+               {
+                  "position": {
+                     "x": 0.44908595,
+                     "y": -0.89999795,
+                     "z": 1
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 35.629456,
+                     "y": 20,
+                     "z": 1
+                  }
+               }
+            ],
+            [
+               1048587,
+               {
+                  "position": {
+                     "x": 18,
+                     "y": 0,
+                     "z": 0
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1
+                  }
+               }
+            ],
+            [
+               4194308,
+               {
+                  "position": {
+                     "x": -18,
+                     "y": 0,
+                     "z": 0
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": -0.010779576,
+                     "w": 0.9999419
+                  },
+                  "scale": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Hierarchy",
+         "components": [
+            [
+               6,
+               {
+                  "parent": 5
+               }
+            ],
+            [
+               5,
+               {
+                  "parent": 4294967295
+               }
+            ],
+            [
+               2097152,
+               {
+                  "parent": 4294967295
+               }
+            ],
+            [
+               1048579,
+               {
+                  "parent": 4294967295
+               }
+            ],
+            [
+               1048587,
+               {
+                  "parent": 5
+               }
+            ],
+            [
+               4194308,
+               {
+                  "parent": 5
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Camera",
+         "components": [
+            [
+               2097152,
+               {
+                  "orthoSize": 1,
+                  "fieldOfView": 60,
+                  "isOrthographic": false,
+                  "near": 1,
+                  "far": 60,
+                  "viewRect": {
+                     "min": {
+                        "x": 0,
+                        "y": 0
+                     },
+                     "max": {
+                        "x": 1,
+                        "y": 1
+                     }
+                  },
+                  "clearBackground": true,
+                  "clearColor": 1687547391
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Texturable",
+         "components": [
+            [
+               1048579,
+               {
+                  "id": "608BAF707DB04411AC899009FA5F1EB2"
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Renderable",
+         "components": [
+            [
+               1048579,
+               {
+                  "shader": {
+                     "id": "65886F92DEC94836A9E2FEA6C3483543"
+                  },
+                  "blendMode": 0
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Mesh",
+         "components": [
+            [
+               1048579,
+               {
+                  "id": "43E9F8CEAEE146BB9B0062C1093203DD"
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Prefab",
+         "components": [
+            [
+               6,
+               {
+                  "resource": {
+                     "id": "BC66421E973741D4B0C2E3D899F4A28C"
+                  },
+                  "components": []
+               }
+            ],
+            [
+               1048587,
+               {
+                  "resource": {
+                     "id": "9D743CED3709410284F5E307B6845A08"
+                  },
+                  "components": []
+               }
+            ],
+            [
+               4194308,
+               {
+                  "resource": {
+                     "id": "9D743CED3709410284F5E307B6845A08"
+                  },
+                  "components": []
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::PrefabExposedComponents",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Label",
+         "components": []
+      },
+      {
+         "type": "LittleCore::Colorable",
+         "components": [
+            [
+               1048579,
+               {
+                  "color": {
+                     "x": 0.5263158,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::WorldTransform",
+         "components": [
+            [
+               6,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ],
+            [
+               5,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ],
+            [
+               2097152,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ],
+            [
+               1048579,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ],
+            [
+               1048587,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ],
+            [
+               4194308,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::LocalBoundingBox",
+         "components": [
+            [
+               6,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
+               5,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
+               2097152,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
+               1048579,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
+               1048587,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
+               4194308,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     }
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::WorldBoundingBox",
+         "components": [
+            [
+               6,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
+               5,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
+               2097152,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0,
+                        "y": 0,
+                        "z": -28
+                     },
+                     "extends": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
+               1048579,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0.44908583,
+                        "y": -0.89999807,
+                        "z": 1
+                     },
+                     "extends": {
+                        "x": 35.629456,
+                        "y": 20,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
+               1048587,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 18,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
+               4194308,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": -18,
+                        "y": 0,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                     }
+                  }
+               }
+            ]
+         ]
+      }
+   ]
+}

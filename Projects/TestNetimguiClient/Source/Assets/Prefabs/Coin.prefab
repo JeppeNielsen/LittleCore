@@ -4,7 +4,7 @@
          "type": "LittleCore::LocalTransform",
          "components": [
             [
-               1048576,
+               0,
                {
                   "position": {
                      "x": 0,
@@ -18,9 +18,9 @@
                      "w": 1
                   },
                   "scale": {
-                     "x": 0.2,
-                     "y": 0.2,
-                     "z": 0.2
+                     "x": 2,
+                     "y": 2,
+                     "z": 2
                   }
                }
             ]
@@ -30,7 +30,7 @@
          "type": "LittleCore::Hierarchy",
          "components": [
             [
-               1048576,
+               0,
                {
                   "parent": 4294967295
                }
@@ -43,29 +43,43 @@
       },
       {
          "type": "LittleCore::Texturable",
-         "components": []
-      },
-      {
-         "type": "LittleCore::Renderable",
-         "components": []
-      },
-      {
-         "type": "LittleCore::Mesh",
-         "components": []
-      },
-      {
-         "type": "LittleCore::Prefab",
          "components": [
             [
-               1048576,
+               0,
                {
-                  "resource": {
-                     "id": ""
-                  },
-                  "components": []
+                  "id": "990F2B3DACCE4336BAED15C6BE6C4AC5"
                }
             ]
          ]
+      },
+      {
+         "type": "LittleCore::Renderable",
+         "components": [
+            [
+               0,
+               {
+                  "shader": {
+                     "id": "65886F92DEC94836A9E2FEA6C3483543"
+                  },
+                  "blendMode": 1
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Mesh",
+         "components": [
+            [
+               0,
+               {
+                  "id": "FA8AFB7BA10E484B9BFCF18FAD9C3D09"
+               }
+            ]
+         ]
+      },
+      {
+         "type": "LittleCore::Prefab",
+         "components": []
       },
       {
          "type": "LittleCore::PrefabExposedComponents",
@@ -77,13 +91,25 @@
       },
       {
          "type": "LittleCore::Colorable",
-         "components": []
+         "components": [
+            [
+               0,
+               {
+                  "color": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1,
+                     "w": 1
+                  }
+               }
+            ]
+         ]
       },
       {
          "type": "LittleCore::WorldTransform",
          "components": [
             [
-               1048576,
+               0,
                {
                   "world": {
                      
@@ -99,18 +125,18 @@
          "type": "LittleCore::LocalBoundingBox",
          "components": [
             [
-               1048576,
+               0,
                {
                   "bounds": {
                      "center": {
                         "x": 0,
-                        "y": 10.842308,
-                        "z": 1.1741018
+                        "y": 0,
+                        "z": 0
                      },
                      "extends": {
-                        "x": 33.272804,
-                        "y": 11.8714905,
-                        "z": 28.875534
+                        "x": 1,
+                        "y": 1,
+                        "z": 0
                      }
                   }
                }
@@ -121,18 +147,18 @@
          "type": "LittleCore::WorldBoundingBox",
          "components": [
             [
-               1048576,
+               0,
                {
                   "bounds": {
                      "center": {
                         "x": 0,
-                        "y": 2.1684616,
-                        "z": 0.23482037
+                        "y": 4.618597,
+                        "z": 0
                      },
                      "extends": {
-                        "x": 6.654561,
-                        "y": 2.374298,
-                        "z": 5.775107
+                        "x": 2,
+                        "y": 2,
+                        "z": 0
                      }
                   }
                }
