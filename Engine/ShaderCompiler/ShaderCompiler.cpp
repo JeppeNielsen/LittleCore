@@ -70,6 +70,10 @@ struct FileCleanUp {
 
 bool ShaderCompiler::Compile(const ShaderCompilerSettings &settings) {
 
+    if (settings.shaderInputPath == "") {
+        return false;
+    }
+
     FileCleanUp fileCleanUp(settings);
 
     std::string shaderSource = FileHelper::ReadAllText(settings.shaderInputPath);
