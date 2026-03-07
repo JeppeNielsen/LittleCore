@@ -28,7 +28,7 @@ bool InspectorWindow::DrawEntity(EditorSimulation& simulation, entt::entity e) {
 
     //auto text = std::format("Entity: {}", (uint32_t)e);
 
-    std::string text = "Entity: " + (uint32_t)e;
+    std::string text = "Entity: " + std::to_string((int)e);
 
     GuiHelper::DrawHeader(text.c_str());
     bool didChange = simulation.context.guiDrawer->Draw(simulation.simulation.registry, e);
