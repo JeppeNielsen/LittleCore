@@ -33,6 +33,10 @@ void PrefabResourceLoader::Load(PrefabResource& resource) {
         return;
     }
 
+    if (!FileHelper::FileExists(path)) {
+        return;
+    }
+
     auto json = FileHelper::ReadAllText(path);
     SerializationContext context {
         .resourceManager = (DefaultResourceManager*)defaultResourceManager
