@@ -5,10 +5,15 @@
 #include "RegistryHelper.hpp"
 #include <vector>
 #include "Hierarchy.hpp"
+#include "IgnoreSerialization.hpp"
 
 using namespace LittleCore;
 
 void FindAllChildren(entt::registry& registry, entt::entity entity, std::vector<entt::entity>& children) {
+    if (registry.any_of<IgnoreSerialization>(entity)) {
+        return;
+    }
+
     children.push_back(entity);
 
     Hierarchy& hierarchy = registry.get<Hierarchy>(entity);
