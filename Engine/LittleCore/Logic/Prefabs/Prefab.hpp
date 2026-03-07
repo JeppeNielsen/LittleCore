@@ -20,9 +20,10 @@ namespace LittleCore {
         void Cloned(const Prefab& other, const std::unordered_map<entt::entity, entt::entity>& originalToDuplicate) {
             resource = other.resource;
             components = other.components;
-            for (int i = 0; i < roots.size(); ++i) {
-                roots[i]=RegistryHelper::GetDuplicated(originalToDuplicate, roots[i]);
-            }
+            roots.clear();
+            //for (int i = 0; i < roots.size(); ++i) {
+            //    roots[i]=RegistryHelper::GetDuplicated(originalToDuplicate, roots[i]);
+            //}
             for (int i = 0; i < components.size(); ++i) {
                 components[i].entity = RegistryHelper::GetDuplicated(originalToDuplicate, components[i].entity);
             }

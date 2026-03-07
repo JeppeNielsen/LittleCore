@@ -6,6 +6,7 @@
 #include "RegistryHelper.hpp"
 #include "IgnoreSerialization.hpp"
 #include "PrefabExposedComponents.hpp"
+#include <iostream>
 
 using namespace LittleCore;
 
@@ -15,6 +16,20 @@ PrefabSystem::PrefabSystem(entt::registry& registry) : SystemBase(registry),
             .group<Prefab, Hierarchy>()) {
 }
 
+int CalcDepth(entt::registry& registry, entt::entity entity) {
+    int depth = 0;
+
+    entt::entity currentEntity = entity;
+    while (true) {
+        Hierarchy& hierarchy = registry.get<Hierarchy>(currentEntity);
+        if (hierarchy.parent == entt::null || !registry.valid(hierarchy.parent)) {
+            return depth;
+        }
+        depth++;
+        currentEntity = hierarchy.parent;
+    }
+}
+
 void PrefabSystem::Update() {
     if (observer.empty()) {
         return;
@@ -22,6 +37,11 @@ void PrefabSystem::Update() {
 
     while (!observer.empty()) {
         std::vector<entt::entity> changed(observer.begin(), observer.end());
+
+        std::sort(changed.begin(), changed.end(), [this](const entt::entity a, const entt::entity b) {
+            return CalcDepth(registry, a) > CalcDepth(registry,b);
+        });
+
         observer.clear();
         for (auto e : changed) {
             RefreshInstance(e);
@@ -49,6 +69,8 @@ void PrefabSystem::RefreshInstance(entt::entity entity) {
 
     for(auto rootToDuplicate : resource.roots) {
         auto root = RegistryHelper::Duplicate(*resource.registry, rootToDuplicate, registry, [&] (auto source, auto dest){
+
+            std::cout << "Entity: " << (int)entity << ", duplicate  path: " << prefab.resource.storage->loader->path << "\n";
 
             registry.emplace<IgnoreSerialization>(dest);
 
