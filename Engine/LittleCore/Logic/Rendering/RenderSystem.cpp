@@ -45,10 +45,20 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
     std::vector<entt::entity> entities;
     renderOctreeSystem.Query(frustum, entities);
 
-    std::sort(entities.begin(), entities.end(), [this](entt::entity entityA, entt::entity entityB) {
-        const auto& renderableA = registry.get<Renderable>(entityA);
-        const auto& renderableB = registry.get<Renderable>(entityB);
-        return renderableA.shader < renderableB.shader;
+    std::sort(entities.begin(), entities.end(), [this, &camera, &cameraTransform](entt::entity entityA, entt::entity entityB) {
+
+        const WorldTransform& worldTransformA = registry.get<WorldTransform>(entityA);
+        const float distanceA = camera.GetDistance(cameraTransform.worldInverse, worldTransformA.world);
+
+        const WorldTransform& worldTransformB = registry.get<WorldTransform>(entityB);
+        const float distanceB = camera.GetDistance(cameraTransform.worldInverse, worldTransformB.world);
+
+        if (std::abs(distanceA - distanceB) <= 0.01f) {
+            const auto& renderableA = registry.get<Renderable>(entityA);
+            const auto& renderableB = registry.get<Renderable>(entityB);
+            return renderableA.shader < renderableB.shader;
+        }
+        return distanceA > distanceB;
     });
 
     bgfx::ProgramHandle prevShader = BGFX_INVALID_HANDLE;
@@ -62,9 +72,15 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
     entt::entity currentRenderable = entt::null;
     entt::entity prevRenderable = entt::null;
 
+    std::cout << "Render started\n";
+
     bool startedBatch = false;
     for (int i = 0; i < entities.size(); ++i) {
         auto entity = entities[i];
+
+        const WorldTransform& worldTransformA = registry.get<WorldTransform>(entity);
+        const float distanceA = camera.GetDistance(cameraTransform.worldInverse, worldTransformA.world);
+        std::cout << std::to_string((int)entity) << " -> " << distanceA << "\n";
 
         const Mesh* mesh = registry.get<Mesh>(entity)->operator->();
         if (mesh->vertices.empty() || mesh->triangles.empty()) {
@@ -113,6 +129,8 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
     }
     renderer->EndBatch(viewId, currentShader, currentBlendMode);
     renderer->EndRender(viewId);
+
+    std::cout << "\n";
 }
 
 void RenderSystem::Update() {

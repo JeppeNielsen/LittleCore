@@ -87,3 +87,25 @@ Ray Camera::GetRay(const WorldTransform& transform,
 bool Camera::IsOrthographic() const {
     return isOrthographic;
 }
+
+float Camera::GetDistance(const mat4x4& worldInverse, const mat4x4& world) const {
+
+    const vec4 distanceToCameraPosition = vec4(
+            world[3][0],
+            world[3][1],
+            world[3][2],
+            1
+    );
+
+    const vec4 localPosition = worldInverse * distanceToCameraPosition;
+
+    float distanceToCamera = localPosition.z;
+
+    return distanceToCamera;
+    //float fInvW = 1.0f / ( viewProjection[0][3] * distanceToCameraPosition.x + viewProjection[1][3] * distanceToCameraPosition.y + viewProjection[2][3] * distanceToCameraPosition.z + viewProjection[3][3] );
+    //float distanceToCamera = ( viewProjection[0][2] * distanceToCameraPosition.x + viewProjection[1][2] * distanceToCameraPosition.y + viewProjection[2][2] * distanceToCameraPosition.z + viewProjection[3][2] ) * fInvW;
+    //float fInvW = 1.0f / ( viewProjection[3][0] * distanceToCameraPosition.x + viewProjection[3][1] * distanceToCameraPosition.y + viewProjection[3][2] * distanceToCameraPosition.z + viewProjection[3][3] );
+    //float distanceToCamera = ( viewProjection[2][0] * distanceToCameraPosition.x + viewProjection[2][1] * distanceToCameraPosition.y + viewProjection[2][2] * distanceToCameraPosition.z + viewProjection[2][3] ) * fInvW;
+
+    //return distanceToCamera;
+}

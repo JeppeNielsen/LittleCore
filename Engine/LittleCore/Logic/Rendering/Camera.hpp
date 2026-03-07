@@ -35,5 +35,7 @@ namespace LittleCore {
 
         bool IsOrthographic() const;
 
+        float GetDistance(const mat4x4& viewProjection, const mat4x4& world) const;
+
     };
 }
