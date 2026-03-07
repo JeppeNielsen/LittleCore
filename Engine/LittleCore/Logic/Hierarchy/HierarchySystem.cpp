@@ -26,8 +26,13 @@ void HierarchySystem::Update() {
         }
 
         if (hierarchy.parent != entt::null) {
-            auto& parentHierarchy = registry.get<Hierarchy>(hierarchy.parent);
-            parentHierarchy.children.push_back(entity);
+            if (!registry.any_of<Hierarchy>(hierarchy.parent)) {
+                std::cout << "Parent " << (int)hierarchy.parent << " does not have a hierarchy component\n";
+            } else {
+
+                auto& parentHierarchy = registry.get<Hierarchy>(hierarchy.parent);
+                parentHierarchy.children.push_back(entity);
+            }
         }
 
         hierarchy.previousParent = hierarchy.parent;
