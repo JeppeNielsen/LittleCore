@@ -14,7 +14,7 @@ using namespace LittleCore;
 
 struct FontAtlas::Page {
     uint16_t w = 0, h = 0;
-    bgfx::TextureHandle tex = BGFX_INVALID_HANDLE;
+    sg_image tex = {SG_INVALID_ID};
 
     std::vector<uint8_t> bitmap; // CPU-side R8, for reference/debugging
 
@@ -99,9 +99,7 @@ bool FontAtlas::initFromMemory(const void* ttfData, size_t ttfSize, float pixelH
 
 void FontAtlas::destroy() {
     for (auto& p: m_pages) {
-        if (bgfx::isValid(p.tex))
-            bgfx::destroy(p.tex);
-        p.tex = BGFX_INVALID_HANDLE;
+        lc_sg_destroy(p.tex);
     }
 
     m_pages.clear();
@@ -122,8 +120,8 @@ float FontAtlas::pixelHeight() const { return m_pixelHeight; }
 
 uint32_t FontAtlas::pageCount() const { return (uint32_t)m_pages.size(); }
 
-bgfx::TextureHandle FontAtlas::pageTexture(uint16_t pageIndex) const {
-    return (pageIndex < m_pages.size()) ? m_pages[pageIndex].tex : (bgfx::TextureHandle) BGFX_INVALID_HANDLE;
+sg_image FontAtlas::pageTexture(uint16_t pageIndex) const {
+    return (pageIndex < m_pages.size()) ? m_pages[pageIndex].tex : sg_image{SG_INVALID_ID};
 }
 
 bool FontAtlas::ensureGlyph(uint32_t codepoint) {
@@ -219,16 +217,14 @@ bool FontAtlas::createPage() {
 
     p.packer.reset(p.w, p.h);
 
-    //const bgfx::Memory* mem = bgfx::copy(p.bitmap.data(), (uint32_t)p.bitmap.size());
-    p.tex = bgfx::createTexture2D(
-            p.w, p.h,
-            false, 1,
-            bgfx::TextureFormat::R8,
-            BGFX_TEXTURE_NONE,
-            nullptr
-    );
+    sg_image_desc desc{};
+    desc.width = p.w;
+    desc.height = p.h;
+    desc.usage = SG_USAGE_DYNAMIC;
+    desc.pixel_format = SG_PIXELFORMAT_R8;
+    p.tex = sg_make_image(desc);
 
-    if (!bgfx::isValid(p.tex))
+    if (!lc_sg_valid(p.tex))
         return false;
 
     m_pages.push_back(std::move(p));
@@ -325,17 +321,10 @@ bool FontAtlas::rasterizeAndPackGlyph(uint32_t codepoint) {
     //LittleCore::ImageLoader::SaveTga("FontAtlas.tga", output.data(), page.w, page.h);
      */
 
-    // Upload only the glyph region (gw x gh) at (gx, gy)
-    // pitch = gw bytes for R8
-    const bgfx::Memory* mem = bgfx::copy(sdf, (uint32_t) (gw * gh));
-    bgfx::updateTexture2D(
-            page.tex,
-            0, 0,
-            gx, gy,
-            (uint16_t) gw, (uint16_t) gh,
-            mem,
-            (uint16_t) gw
-    );
+    // Sokol updates full dynamic images; upload the full atlas bitmap.
+    sg_image_data data{};
+    data.subimage[0][0] = {page.bitmap.data(), page.bitmap.size()};
+    sg_update_image(page.tex, data);
 
     stbtt_FreeSDF(sdf, nullptr);
 

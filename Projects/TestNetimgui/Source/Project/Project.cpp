@@ -27,8 +27,8 @@ void Project::Reset() {
     //glm
     moduleSettings.context.hppFiles.push_back(engineRoot + "External/glm/");
 
-    //bgfx
-    moduleSettings.context.hppFiles.push_back(engineRoot + "External/bgfx/include/");
+    //sokol
+    moduleSettings.context.hppFiles.push_back(engineRoot + "External/sokol/");
 
     moduleSettings.context.hppFiles.push_back(engineRoot + "External/bx/include/");
 
@@ -111,9 +111,7 @@ void Project::Reset() {
 
     /*
      links {
-      "SDL",
-      "bgfx",
-      "bimg",
+      "sokol",
       "bx",
       "LittleCore",
       "ImGui",
@@ -122,21 +120,13 @@ void Project::Reset() {
      */
 
 
-    moduleSettings.context.libs.push_back("SDL");
-    moduleSettings.context.libs.push_back("bgfx");
-    moduleSettings.context.libs.push_back("bimg");
+    moduleSettings.context.libs.push_back("sokol");
     moduleSettings.context.libs.push_back("bx");
     moduleSettings.context.libs.push_back("LittleCore");
     moduleSettings.context.libs.push_back("ImGui");
     moduleSettings.context.libs.push_back("Netimgui");
     moduleSettings.context.libs.push_back("Application");
     moduleSettings.context.libs.push_back("ShaderCompiler");
-    moduleSettings.context.libs.push_back("shaderc");
-    moduleSettings.context.libs.push_back("spirv-cross");
-    moduleSettings.context.libs.push_back("spirv-opt");
-    moduleSettings.context.libs.push_back("glslang");
-    moduleSettings.context.libs.push_back("glsl-optimizer");
-    moduleSettings.context.libs.push_back("fcpp");
 
 
     /*

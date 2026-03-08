@@ -12,7 +12,7 @@ bool TexturableEditor::Draw(entt::registry &registry, entt::entity entity, Littl
     bool changed = false;
     GuiHelper::DrawHeader("Texturable");
 
-    auto info = resourceManager->GetInfo(component.texture);
+    auto info = resourceManager->GetInfo(component.handle);
 
     if (!info.isMissing) {
         std::filesystem::path filePath = info.path;
@@ -25,7 +25,7 @@ bool TexturableEditor::Draw(entt::registry &registry, entt::entity entity, Littl
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ResourcePath")) {
             std::string path(static_cast<const char*>(payload->Data), payload->DataSize);
             auto id = resourceManager->pathMapper.GetGuid(path);
-            component.texture = resourceManager->Create<LittleCore::TextureResource>(id);
+            component.handle = resourceManager->Create<LittleCore::Texturable>(id);
         }
         ImGui::EndDragDropTarget();
     }

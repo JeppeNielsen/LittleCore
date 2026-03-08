@@ -75,5 +75,6 @@ project "TestShaderCompiler"
          "CoreAudio.framework", 
          "AudioToolbox.framework",
          "Metal.framework",
+         "MetalKit.framework",
          "OpenGL.framework"
       }

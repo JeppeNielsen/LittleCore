@@ -6,7 +6,6 @@
 #include "MeshLoader.hpp"
 
 using namespace LittleCore;
-using namespace bgfx;
 
 void MeshResourceLoader::Load(Mesh& resource) {
     MeshLoader::LoadMesh(path, resource);

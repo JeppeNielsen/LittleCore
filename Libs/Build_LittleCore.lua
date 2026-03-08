@@ -14,14 +14,13 @@ project "LittleCore"
 
    includedirs {
       "../Engine/LittleCore/**",
-      "../External/sdl/include",
-      "../External/bgfx/include",
+      "../External/sokol",
+      "../Engine/Sokol",
       "../External/bx/include",
       "../External/entt/src",
       "../External/glaze/include",
       "../External/glm",
       "../External/stb",
-      "../External/sdl/include",
       "../External/hash-library",
       "../External/ufbx",
       "../External/msdfgen",
@@ -30,14 +29,13 @@ project "LittleCore"
 
    externalincludedirs {
       "../Engine/LittleCore/**",
-      "../External/sdl/include",
-      "../External/bgfx/include",
+      "../External/sokol",
+      "../Engine/Sokol",
       "../External/bx/include",
       "../External/entt/src",
       "../External/glaze/include",
       "../External/glm",
       "../External/stb",
-      "../External/sdl/include",
       "../External/hash-library",
       "../External/ufbx",
       "../External/msdfgen",
@@ -45,7 +43,7 @@ project "LittleCore"
    }
 
    links {
-      "bgfx"
+      "sokol"
    }
   
    filter "configurations:Debug"

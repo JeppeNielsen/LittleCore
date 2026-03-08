@@ -5,7 +5,7 @@ location "Build"
 workspace "LittleCore"
    startproject "TestGlaze"
 
-include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_sokol.lua"
 include "../Libs/Build_LittleCore.lua"
 
 solution "LittleCore"
@@ -62,15 +62,15 @@ project "TestGlaze"
       "../../External/glaze/include",
       "../../Engine/LittleCore/**",
       "../../External/glm",
-      "../../External/bgfx/include",
+      "../../External/sokol",
+      "../../Engine/Sokol",
       "../../External/bx/include",
       "../../External/msdfgen/"
    }
 
    links { 
       "LittleCore",
-      "bgfx",
-      "bimg",
+      "sokol",
       "bx"
    }
 
@@ -88,5 +88,6 @@ project "TestGlaze"
          "CoreAudio.framework", 
          "AudioToolbox.framework",
          "Metal.framework",
+         "MetalKit.framework",
          "OpenGL.framework"
       }

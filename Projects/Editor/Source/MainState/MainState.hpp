@@ -21,7 +21,7 @@
 #include "../Windows/InspectorWindow.hpp"
 #include "../Windows/ProjectWindow.hpp"
 #include "../Rendering/TextureRenderer.hpp"
-#include "BgfxRenderer.hpp"
+#include "SokolRenderer.hpp"
 #include "DefaultResourceManager.hpp"
 
 struct MainState : LittleCore::IState, public IProjectCompilerHandler {
@@ -45,7 +45,7 @@ struct MainState : LittleCore::IState, public IProjectCompilerHandler {
     InspectorWindow inspectorWindow;
     ProjectWindow projectWindow;
 
-    LittleCore::BGFXRenderer bgfxRenderer;
+    LittleCore::SokolRenderer renderer;
     TextureRenderer textureRenderer;
     EditorRenderer editorRenderer;
     ResourceLoader resourceLoader;

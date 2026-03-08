@@ -6,23 +6,21 @@
 #include "ImageLoader.hpp"
 
 using namespace LittleCore;
-using namespace bgfx;
 
 void TextureResourceLoader::Load(Texturable& texturable) {
-
-    ImageLoader::TryLoadImage(path, [&texturable](unsigned char * data, int width, int height) {
-        const bgfx::Memory* mem_image = bgfx::makeRef(data, sizeof(unsigned char)*width*height*4);
-        texturable.texture = bgfx::createTexture2D(width, height, false, 0, TextureFormat::RGBA8, BGFX_TEXTURE_NONE, mem_image);
+    ImageLoader::TryLoadImage(path, [&texturable](unsigned char* data, int width, int height) {
+        sg_image_desc desc{};
+        desc.width = width;
+        desc.height = height;
+        desc.pixel_format = SG_PIXELFORMAT_RGBA8;
+        desc.usage = SG_USAGE_IMMUTABLE;
+        desc.data.subimage[0][0] = {data, sizeof(unsigned char) * width * height * 4};
+        texturable.texture = sg_make_image(&desc);
     });
-
 }
 
 void TextureResourceLoader::Unload(Texturable& texturable) {
-
-    if (texturable.texture.idx != bgfx::kInvalidHandle) {
-        bgfx::destroy(texturable.texture);
-        texturable.texture = BGFX_INVALID_HANDLE;
-    }
+    lc_sg_destroy(texturable.texture);
 }
 
 bool TextureResourceLoader::IsLoaded() {

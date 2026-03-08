@@ -14,6 +14,7 @@
 #include "ImGuiController.hpp"
 #include "MovableSystem.hpp"
 #include "SDLInputHandler.hpp"
+#include "Texturable.hpp"
 
 using namespace LittleCore;
 
@@ -21,22 +22,21 @@ using Resources = ResourceManager<TextureResourceLoaderFactory, ShaderResourceLo
 
 class TestRendering : public IState {
     ResourcePathMapper resourcePathMapper;
-    entt::registry registry;
     CustomSimulation<MovableSystem> simulation;
-    BGFXRenderer bgfxRenderer;
+    SokolRenderer renderer;
     Resources resources;
     entt::entity cameraEntity;
     ResourceHandle<ShaderResource> shader;
-    ResourceHandle<TextureResource> texture;
-    ResourceHandle<TextureResource> texture2;
+    ResourceHandle<Texturable> texture;
+    ResourceHandle<Texturable> texture2;
     float time;
     ImGuiController imGuiController;
     SDLInputHandler inputHandler;
 
     const uint16_t renderTextureWidth = 1024;
     const uint16_t renderTextureHeight = 512;
-    bgfx::TextureHandle renderTexture;
-    bgfx::FrameBufferHandle framebuffer;
+    sg_image renderTexture = {SG_INVALID_ID};
+    sg_attachments framebuffer = {SG_INVALID_ID};
     entt::entity quad1;
     entt::entity quad2;
 

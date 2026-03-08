@@ -5,8 +5,7 @@ location "Build"
 workspace "LittleCore"
    startproject "Engine"
 
-include "../Libs/Build_sdl.lua"
-include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_sokol.lua"
 include "../Libs/Build_ShaderCompiler.lua"
 include "../Libs/Build_LittleCore.lua"
 include "../Libs/Build_ImGui.lua"
@@ -65,8 +64,8 @@ project "TestNetimguiClient"
       "Source/**",
       "../../External/netImgui/Code/Client",
       "../../Engine/LittleCore/**",
-      "../../External/sdl/include",
-      "../../External/bgfx/include",
+      "../../External/sokol",
+      "../../Engine/Sokol",
       "../../External/bx/include",
       "../../External/entt/src",
       "../../Engine/ImGui",
@@ -79,9 +78,7 @@ project "TestNetimguiClient"
    }
 
    links { 
-      "SDL", 
-      "bgfx",
-      "bimg",
+      "sokol",
       "bx",
       "LittleCore",
       "ImGui",
@@ -103,6 +100,7 @@ project "TestNetimguiClient"
          "CoreAudio.framework", 
          "AudioToolbox.framework",
          "Metal.framework",
+         "MetalKit.framework",
          "OpenGL.framework"
       }
 

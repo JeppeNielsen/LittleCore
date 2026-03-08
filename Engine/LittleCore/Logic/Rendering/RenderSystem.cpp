@@ -28,7 +28,7 @@ void RenderSystem::Render(Renderer* renderer) {
     }
 }
 
-void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTransform,
+void RenderSystem::Render(uint16_t viewId, const WorldTransform &cameraTransform,
                                       const Camera &camera, Renderer* renderer) {
 
     float width = renderer->screenSize.x * (camera.viewRect.max.x - camera.viewRect.min.x);
@@ -61,8 +61,8 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
         return distanceA > distanceB;
     });
 
-    bgfx::ProgramHandle prevShader = BGFX_INVALID_HANDLE;
-    bgfx::ProgramHandle currentShader = BGFX_INVALID_HANDLE;
+    sg_shader prevShader = {SG_INVALID_ID};
+    sg_shader currentShader = {SG_INVALID_ID};
 
     BlendMode currentBlendMode = BlendMode::Off;
     BlendMode prevBlendMode = BlendMode::Off;
@@ -90,8 +90,8 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
         const Renderable& renderable = registry.get<Renderable>(entity);
         const Texturable* texturable = registry.try_get<Texturable>(entity);
 
-        currentShader = renderable.shader ? (bgfx::ProgramHandle) renderable.shader->handle
-                                          : (bgfx::ProgramHandle) BGFX_INVALID_HANDLE;
+        currentShader = renderable.shader ? (sg_shader) renderable.shader->handle
+                                          : (sg_shader){SG_INVALID_ID};
         currentBlendMode = renderable.blendMode;
 
         currentHash = renderable.uniforms.CalculateHash();
@@ -107,7 +107,7 @@ void RenderSystem::Render(bgfx::ViewId viewId, const WorldTransform &cameraTrans
             startedBatch = true;
         } else {
 
-            if (currentShader.idx != prevShader.idx ||
+            if (currentShader.id != prevShader.id ||
                 currentBlendMode != prevBlendMode ||
                 currentHash != previousHash) {
                 renderer->SetUniforms(registry.get<Renderable>(prevRenderable).uniforms);

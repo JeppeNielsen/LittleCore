@@ -3,9 +3,10 @@
 //
 
 #include "ImGuiController.hpp"
-#include "imgui_impl_sdl3.h"
-#include <SDL3/SDL.h>
-#include "Backend/imgui_impl_sdl_bgfx.hpp"
+#include "SokolDirect.hpp"
+#include <sokol_app.h>
+#include <sokol_gfx.h>
+#include <util/sokol_imgui.h>
 
 using namespace LittleCore;
 
@@ -14,68 +15,71 @@ ImGuiController::~ImGuiController() {
 }
 
 void ImGuiController::Initialize(void* mainWindow, const ImGuiController::RenderFunction& renderFunction) {
-    this->mainWindow = mainWindow;
+    if (isInitialized) {
+        Destroy();
+    }
+
+    (void)mainWindow;
     this->renderFunction = renderFunction;
 
-    ImGui::CreateContext();
+    simgui_setup({
+        .color_format = static_cast<sg_pixel_format>(sapp_color_format()),
+        .depth_format = static_cast<sg_pixel_format>(sapp_depth_format()),
+        .sample_count = sapp_sample_count()
+    });
 
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-    io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
-    io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
-    io.WantCaptureMouse = true;
-    io.WantCaptureKeyboard = true;
-    io.WantTextInput = true;
 
     ImGui::StyleColorsLight();
 
-    ImGuiStyle &style = ImGui::GetStyle();
-
-    /*style.WindowRounding = 0.0f;
-    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-    style.FrameBorderSize = 0.f;
-    style.FramePadding = ImVec2(1.f, 1.f);
-*/
-    ImGui_Impl_sdl_bgfx_Init(0);
-    SetRenderFunction([this] () {
-        Render();
-    });
-    ImGui_ImplSDL3_InitForMetal((SDL_Window *) mainWindow);
+    isInitialized = true;
 }
 
 void ImGuiController::HandleEvent(void *event) {
-    SDL_Event* sdlEvent = (SDL_Event*)event;
-    ImGui_ImplSDL3_ProcessEvent(sdlEvent);
+    const auto* sappEvent = static_cast<const sapp_event*>(event);
+    if (sappEvent == nullptr || !isInitialized) {
+        return;
+    }
+    simgui_handle_event(sappEvent);
 }
 
 void ImGuiController::Render() {
+    if (!isInitialized) {
+        return;
+    }
 
-    ImGui_Impl_sdl_bgfx_Resize((SDL_Window*)mainWindow);
+    const int width = sapp_width();
+    const int height = sapp_height();
+    if (width <= 0 || height <= 0) {
+        return;
+    }
 
-    ImGui_ImplSDL3_NewFrame();
-    ImGui_Impl_sdl_bgfx_NewFrame();
-
-    ImGui::NewFrame();
-
+    const float dpiScale = sapp_dpi_scale();
+    const double deltaTime = sapp_frame_duration();
+    simgui_new_frame({
+        .width = width,
+        .height = height,
+        .delta_time = deltaTime > 0.0 ? deltaTime : (1.0 / 60.0),
+        .dpi_scale = dpiScale > 0.0f ? dpiScale : 1.0f
+    });
     renderFunction();
-
-    ImGui::Render();
-
-    ImGui_Impl_sdl_bgfx_Render(0, ImGui::GetDrawData(), 0);
-
-    ImGui::UpdatePlatformWindows();
-    ImGui::RenderPlatformWindowsDefault();
-
-    bgfx::touch(0);
-
-    bgfx::frame();
+    if (lc_sg_begin_window_pass()) {
+        simgui_render();
+        lc_sg_end_pass();
+    } else {
+        ImGui::Render();
+    }
 }
 
 void ImGuiController::Destroy() {
-    ImGui_ImplSDL3_Shutdown();
-    ImGui_Impl_sdl_bgfx_Shutdown();
+    if (!isInitialized) {
+        return;
+    }
+
+    simgui_shutdown();
+    isInitialized = false;
 }
 
 ImFont* ImGuiController::LoadFont(const std::string &fontPath, float fontSize) {
@@ -90,6 +94,10 @@ ImFont* ImGuiController::LoadFont(const std::string &fontPath, float fontSize) {
 }
 
 void ImGuiController::Draw(uint16_t viewId, ImDrawData* draw_data) {
-    ImGui_Impl_sdl_bgfx_Render(viewId, draw_data, 0);
+    (void)viewId;
+    (void)draw_data;
+    if (!isInitialized) {
+        return;
+    }
+    simgui_render();
 }
-

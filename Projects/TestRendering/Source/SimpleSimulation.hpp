@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "BgfxRenderer.hpp"
+#include "SokolRenderer.hpp"
 #include <entt/entt.hpp>
 #include <InputSystem.hpp>
 #include "HierarchySystem.hpp"
@@ -19,7 +19,7 @@ namespace LittleCore {
 
         void Update();
 
-        void Render(BGFXRenderer &bgfxRenderer);
+        void Render(SokolRenderer &renderer);
 
         InputSystem& Input();
     private:

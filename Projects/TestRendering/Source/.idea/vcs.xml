@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/../../.." vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/ImGuizmo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/bx" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/entt" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/glaze" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/glm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/googletest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/hash-library" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/imgui" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/netImgui" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/sokol" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/sokol-tools" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/stb" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../../External/ufbx" vcs="Git" />
+  </component>
+</project>

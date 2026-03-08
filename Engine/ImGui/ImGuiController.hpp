@@ -28,7 +28,7 @@ namespace LittleCore {
         void Draw(uint16_t viewId, ImDrawData* draw_data);
 
     private:
-        void* mainWindow;
         RenderFunction renderFunction;
+        bool isInitialized = false;
     };
 }

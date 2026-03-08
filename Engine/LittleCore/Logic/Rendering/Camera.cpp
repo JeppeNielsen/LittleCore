@@ -8,20 +8,19 @@
 
 #include "Camera.hpp"
 #include "Math.hpp"
-#include "bgfx/bgfx.h"
+#include "SokolDirect.hpp"
 #include <bx/math.h>
 
 using namespace LittleCore;
 
 bool gethomogeneousDepth() {
-    //return bgfx::getCaps()->homogeneousDepth;
     return true;
 }
 
 mat4x4 Camera::GetProjection(float aspect) const {
 
     //float proj[16];
-    //bx::mtxProj(proj, 60.0f, 1.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+    //bx::mtxProj(proj, 60.0f, 1.0f, 0.1f, 100.0f, gethomogeneousDepth());
     //return glm::make_mat4x4(proj);
 
    //return ortho(-ViewSize.x, ViewSize.x, -ViewSize.y, ViewSize.y, Near, Far);

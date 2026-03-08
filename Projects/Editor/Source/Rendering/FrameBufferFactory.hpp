@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include <bgfx/bgfx.h>
+#include "SokolDirect.hpp"
 #include <string>
 #include <unordered_map>
 
@@ -12,8 +12,10 @@ public:
 
     struct FrameBuffer {
         std::string id;
-        bgfx::TextureHandle renderTexture;
-        bgfx::FrameBufferHandle framebuffer;
+        int width = 0;
+        int height = 0;
+        sg_image renderTexture = {SG_INVALID_ID};
+        sg_attachments framebuffer = {SG_INVALID_ID};
     };
 
     FrameBuffer& CreateBuffer(const std::string& id, int width, int height);

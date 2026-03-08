@@ -7,12 +7,10 @@
 #include "TupleHelper.hpp"
 #include "PrefabSystem.hpp"
 #include "MainState.hpp"
-#include <SDL3/SDL.h>
 #include "PrefabDrawer.hpp"
 #include "PrefabExposedComponentsDrawer.hpp"
 #include "DefaultSimulation.hpp"
-#include "SDLInputHandler.hpp"
-#include "BgfxRenderer.hpp"
+#include "SokolRenderer.hpp"
 #include "DefaultResourceManager.hpp"
 #include <glm/glm.hpp>
 #include <thread>
@@ -37,7 +35,7 @@ using namespace LittleCore;
 
 struct MainState::Parameters {
 
-    BGFXRenderer renderer;
+    SokolRenderer renderer;
     EditorSimulationContext editorSimulationContext;
     EditorSimulationRegistry editorSimulationRegistry;
     NetimguiClientController netimguiClientController;

@@ -15,10 +15,9 @@ project "Netimgui"
    includedirs {
       "../Engine/ImGui",
       "../Engine/Netimgui",
-      "../External/sdl/include",
-      "../External/bgfx/include",
+      "../External/sokol",
+      "../Engine/Sokol",
       "../External/bx/include",
-      "../External/sdl/include",
       "../External/imgui",
       "../External/imgui/backends",
       "../External/netImgui/Code/ServerApp/Source/",
@@ -30,10 +29,9 @@ project "Netimgui"
    externalincludedirs {
       "../Engine/ImGui/**",
       "../Engine/Netimgui/**",
-      "../External/sdl/include",
-      "../External/bgfx/include",
+      "../External/sokol",
+      "../Engine/Sokol",
       "../External/bx/include",
-      "../External/sdl/include",
       "../External/imgui"
    }
 

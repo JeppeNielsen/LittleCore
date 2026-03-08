@@ -83,7 +83,7 @@ namespace LittleCore {
 
         virtual void HandleEvent(void* event, InputHandler& inputHandler);
         virtual void Render(Renderer& renderer);
-        virtual void Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer);
+        virtual void Render(uint16_t viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer);
         virtual void Reload();
         virtual void SetResources(RegistrySerializerBase& registrySerializer, DefaultResourceManager& resourceManager);
 
@@ -128,7 +128,7 @@ namespace LittleCore {
             });
         }
 
-        void Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer) override {
+        void Render(uint16_t viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer) override {
             TupleHelper::for_each(renderSystems.systems, [&] (auto& renderSystem) {
                 renderSystem.Render(viewId, cameraTransform, camera, renderer);
             });

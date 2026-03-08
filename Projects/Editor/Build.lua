@@ -5,8 +5,7 @@ location "Build"
 workspace "LittleCore"
    startproject "LittleEditor"
 
-include "../Libs/Build_sdl.lua"
-include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_sokol.lua"
 include "../Libs/Build_ShaderCompiler.lua"
 include "../Libs/Build_LittleCore.lua"
 include "../Libs/Build_ImGui.lua"
@@ -61,18 +60,17 @@ project "LittleEditor"
    includedirs {
         "../../Engine/LittleCore/**",
         "../../Engine/ImGui",
-        "../../External/sdl/include",
-        "../../External/bgfx/include",
+        "../../External/sokol",
+      "../../Engine/Sokol",
         "../../External/bx/include",
         "../../External/entt/single_include",
         "../../External/glm",
+        "../../External/glaze/include",
         "../../External/imgui"
    }
 
    links { 
-      "SDL", 
-      "bgfx",
-      "bimg",
+      "sokol",
       "bx",
       "LittleCore",
       "ShaderCompiler",
@@ -92,6 +90,7 @@ project "LittleEditor"
          "CoreAudio.framework", 
          "AudioToolbox.framework",
          "Metal.framework",
+         "MetalKit.framework",
          "OpenGL.framework"
       }
    SetClangPath()

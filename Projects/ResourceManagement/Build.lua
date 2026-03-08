@@ -5,8 +5,7 @@ location "Build"
 workspace "LittleCore"
    startproject "ResourceManagement"
 
-include "../Libs/Build_sdl.lua"
-include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_sokol.lua"
 
 solution "LittleCore"
    configurations { "Release", "Debug" }
@@ -56,16 +55,14 @@ project "ResourceManagement"
    }
 
    includedirs {
-      "../../External/sdl/include",
-      "../../External/bgfx/include",
+      "../../External/sokol",
+      "../../Engine/Sokol",
       "../../External/bx/include",
       "../../External/entt/single_include",
    }
 
    links { 
-      "SDL", 
-      "bgfx",
-      "bimg",
+      "sokol",
       "bx"
    }
 
@@ -82,6 +79,7 @@ project "ResourceManagement"
          "CoreAudio.framework", 
          "AudioToolbox.framework",
          "Metal.framework",
+         "MetalKit.framework",
          "OpenGL.framework"
       }
 

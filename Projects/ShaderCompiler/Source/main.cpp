@@ -10,7 +10,7 @@ int main() {
     ShaderCompilerSettings settings;
     settings.platform = ShaderPlatform::OSX;
     settings.shaderInputPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/TestShader.shader";
-    settings.includePath = "/Users/jeppe/Jeppes/LittleCore/External/bgfx/src/";
+    settings.includePath = "/Users/jeppe/Jeppes/LittleCore/External/sokol/";
 
     settings.varyingsWorkingPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/Temp/varyings.temp";
     settings.vertexWorkingPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/Temp/vertex.temp";

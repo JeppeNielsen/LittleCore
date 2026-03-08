@@ -12,6 +12,7 @@ namespace LittleCore {
     public:
         static InputKey FromId(int id);
         static int ToId(InputKey id);
+        static InputKey FromSappKeyCode(int keyCode);
 
     };
 

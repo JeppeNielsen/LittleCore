@@ -5,7 +5,7 @@ location "Build"
 workspace "LittleCore"
    startproject "TestJson"
 
-include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_sokol.lua"
 include "../Libs/Build_LittleCore.lua"
 
 solution "LittleCore"
@@ -60,14 +60,14 @@ project "TestJson"
       "../../External/json/single_include",
       "../../Engine/LittleCore/**",
       "../../External/glm",
-      "../../External/bgfx/include",
+      "../../External/sokol",
+      "../../Engine/Sokol",
       "../../External/bx/include"
    }
 
    links { 
       "LittleCore",
-      "bgfx",
-      "bimg",
+      "sokol",
       "bx"
    }
 
@@ -85,5 +85,6 @@ project "TestJson"
          "CoreAudio.framework", 
          "AudioToolbox.framework",
          "Metal.framework",
+         "MetalKit.framework",
          "OpenGL.framework"
       }

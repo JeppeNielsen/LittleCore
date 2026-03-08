@@ -14,12 +14,12 @@ namespace LittleCore {
     struct Renderer {
 
         virtual ~Renderer() {};
-        virtual void BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection, const Camera& camera) = 0;
-        virtual void EndRender(bgfx::ViewId viewId) = 0;
+        virtual void BeginRender(uint16_t viewId, glm::mat4x4 view, glm::mat4x4 projection, const Camera& camera) = 0;
+        virtual void EndRender(uint16_t viewId) = 0;
 
-        virtual void BeginBatch(bgfx::ViewId viewId) = 0;
+        virtual void BeginBatch(uint16_t viewId) = 0;
         virtual void RenderMesh(const Mesh& mesh, const glm::mat4x4& world) = 0;
-        virtual void EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram, BlendMode blendMode) = 0;
+        virtual void EndBatch(uint16_t viewId, sg_shader shaderProgram, BlendMode blendMode) = 0;
         virtual void SetUniforms(const LittleCore::RenderableUniforms& uniforms) = 0;
 
         vec2 screenSize;

@@ -3,10 +3,10 @@
 //
 
 #pragma once
-#include <bgfx/bgfx.h>
+#include "SokolDirect.hpp"
 
 namespace LittleCore {
     struct ShaderResource {
-        bgfx::ProgramHandle handle = BGFX_INVALID_HANDLE;
+        sg_shader handle = {SG_INVALID_ID};
     };
 }

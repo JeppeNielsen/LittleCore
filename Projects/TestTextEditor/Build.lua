@@ -5,8 +5,7 @@ location "Build"
 workspace "LittleCore"
    startproject "TestTextEditor"
 
-include "../Libs/Build_sdl.lua"
-include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_sokol.lua"
 include "../Libs/Build_LittleCore.lua"
 include "../Libs/Build_ImGui.lua"
 
@@ -61,8 +60,8 @@ project "TestTextEditor"
       "Source/**",
       "../../Engine/LittleCore/**",
       "../../Engine/ImGui",
-      "../../External/sdl/include",
-      "../../External/bgfx/include",
+      "../../External/sokol",
+      "../../Engine/Sokol",
       "../../External/bx/include",
       "../../External/entt/single_include",
       "../../External/glm",
@@ -73,9 +72,7 @@ project "TestTextEditor"
    libdirs { "../../../Scripting/clang/lib" }
 
    links { 
-      "SDL", 
-      "bgfx",
-      "bimg",
+      "sokol",
       "bx",
       "LittleCore",
       "ImGui"
@@ -95,6 +92,7 @@ project "TestTextEditor"
          "CoreAudio.framework", 
          "AudioToolbox.framework",
          "Metal.framework",
+         "MetalKit.framework",
          "OpenGL.framework",
          "libclang.dylib"
       }

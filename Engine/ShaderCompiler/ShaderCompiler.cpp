@@ -5,55 +5,8 @@
 #include "ShaderCompiler.hpp"
 #include "ShaderParser.hpp"
 #include "FileHelper.hpp"
-#include "shaderc.h"
 
 using namespace LittleCore;
-
-
-bool CompileVertex(const ShaderCompilerSettings& settings) {
-    const char *args[14];
-
-    args[0] = "-f";
-    args[1] = settings.vertexWorkingPath.c_str(); //"/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/vs_cubes.sc";
-    args[2] = "-o";
-    args[3] = settings.vertexOutputPath.c_str(); //"/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/vs_cubes.bin";
-    args[4] = "--platform";
-    args[5] = "osx";
-    args[6] = "-p";
-    args[7] = "metal";
-    args[8] = "--type";
-    args[9] = "vertex";
-    args[10] = "-i";
-    args[11] = settings.includePath.c_str(); //"/Users/jeppe/Jeppes/LittleCore/External/bgfx/src/";
-    args[12] = "--varyingdef";
-    args[13] = settings.varyingsWorkingPath.c_str(); //"/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/varying.def.sc";
-    int res = bgfx::compileShader(14, args);
-
-    return res == bx::kExitSuccess;
-}
-
-
-bool CompileFragment(const ShaderCompilerSettings& settings) {
-    const char *args[14];
-
-    args[0] = "-f";
-    args[1] = settings.fragmentWorkingPath.c_str(); //"/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/fs_cubes.sc";
-    args[2] = "-o";
-    args[3] = settings.fragmentOutputPath.c_str(); //"/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/fs_cubes.bin";
-    args[4] = "--platform";
-    args[5] = "osx";
-    args[6] = "-p";
-    args[7] = "metal";
-    args[8] = "--type";
-    args[9] = "fragment";
-    args[10] = "-i";
-    args[11] = settings.includePath.c_str();//"/Users/jeppe/Jeppes/LittleCore/External/bgfx/src/";
-    args[12] = "--varyingdef";
-    args[13] = settings.varyingsWorkingPath.c_str();//"/Users/jeppe/Jeppes/LittleCore/Projects/Cubes/Shaders/Source/varying.def.sc";
-
-    int res = bgfx::compileShader(14, args);
-    return res == bx::kExitSuccess;
-}
 
 struct FileCleanUp {
     FileCleanUp(const ShaderCompilerSettings& settings) : settings(settings) {}
@@ -102,15 +55,16 @@ bool ShaderCompiler::Compile(const ShaderCompilerSettings &settings) {
         return false;
     }
 
-    if (!CompileVertex(settings)) {
+    // Temporary migration behavior: write parsed shader stages directly until
+    // the sokol-shdc integration replaces the previous sokol shader compiler path.
+    if (!FileHelper::TryWriteAllText(settings.vertexOutputPath, parserResult.vertex)) {
         return false;
     }
-    if (!CompileFragment(settings)) {
+    if (!FileHelper::TryWriteAllText(settings.fragmentOutputPath, parserResult.fragment)) {
         return false;
     }
 
     return true;
 }
-
 
 

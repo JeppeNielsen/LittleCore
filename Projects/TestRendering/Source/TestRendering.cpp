@@ -3,12 +3,15 @@
 //
 
 #include "TestRendering.hpp"
-#include <SDL3/SDL.h>
+#include <sokol_app.h>
 #include "imgui.h"
+#include <cstdint>
 #include "Movable.hpp"
 #include "DefaultSimulation.hpp"
 #include "Texturable.hpp"
 #include <iostream>
+#define SOKOL_IMGUI_NO_SOKOL_APP
+#include <util/sokol_imgui.h>
 
 entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, glm::vec3 scale, entt::entity parent = entt::null) {
 
@@ -44,29 +47,28 @@ struct Settings {
 };
 
 void TestRendering::Initialize() {
-
-    entt::registry localRegistry;
-
-    DefaultSimulation sim(localRegistry);
-
-    sim.Update();
+    DefaultSimulation sim;
+    sim.Update(0.0f);
+    auto& registry = simulation.registry;
 
     imGuiController.Initialize(mainWindow, [this]() {
         ImGui::DockSpaceOverViewport();
 
         ImGui::Begin("Game");
-        ImTextureID textureId = (ImTextureID)(uintptr_t)renderTexture.idx;
-        ImGui::Image(textureId, ImVec2((float)renderTextureWidth, (float)renderTextureHeight));
+        if (renderTexture.id != SG_INVALID_ID) {
+            ImTextureID textureId = static_cast<ImTextureID>(simgui_imtextureid(renderTexture));
+            ImGui::Image(textureId, ImVec2((float)renderTextureWidth, (float)renderTextureHeight));
+        }
 
         ImGui::End();
 
         ImGui::Begin("Scene 2");
-        ImTextureID textureId2 = (ImTextureID)(uintptr_t)renderTexture.idx;
-
-        for (int i = 0; i < 10; ++i) {
-            ImGui::Image(textureId2, ImVec2((float)256, (float)256));
+        if (renderTexture.id != SG_INVALID_ID) {
+            ImTextureID textureId2 = static_cast<ImTextureID>(simgui_imtextureid(renderTexture));
+            for (int i = 0; i < 10; ++i) {
+                ImGui::Image(textureId2, ImVec2((float)256, (float)256));
+            }
         }
-
 
         ImGui::End();
     });
@@ -115,20 +117,20 @@ void TestRendering::Initialize() {
     }
 
     shader = resources.Create<ShaderResource>("4EBD82BDCBCA4F78B597C8B2DF9A08F7");
-    texture = resources.Create<TextureResource>("B62D424BF40F46359248CDE498930422");
-    texture2 = resources.Create<TextureResource>("0C73A4153FCA4854A1CFBB8BCC33E1AC");
+    texture = resources.Create<Texturable>("B62D424BF40F46359248CDE498930422");
+    texture2 = resources.Create<Texturable>("0C73A4153FCA4854A1CFBB8BCC33E1AC");
 
    quad1 = CreateQuadNew(registry, {0, 0, 0}, {1,1,1});
    registry.get<Renderable>(quad1).shader = shader;
-   registry.get<Texturable>(quad1).texture = texture;
+   registry.get<Texturable>(quad1).handle = texture;
 
     quad2 = CreateQuadNew(registry, {3, 0, 0}, {1,0.05,1});
     registry.get<Renderable>(quad2).shader = shader;
-    registry.get<Texturable>(quad2).texture = texture2;
+    registry.get<Texturable>(quad2).handle = texture2;
 
     auto quad3 = CreateQuadNew(registry, {3, 2, 0}, {0.05, 1,1});
     registry.get<Renderable>(quad3).shader = shader;
-    registry.get<Texturable>(quad3).texture = texture;
+    registry.get<Texturable>(quad3).handle = texture;
 
 
     auto& quadMovable = registry.emplace<Movable>(quad1);
@@ -154,19 +156,19 @@ void TestRendering::Initialize() {
     registry.emplace<Input>(quad1);
 
 
-    int width;
-    int height;
-    SDL_GetWindowSizeInPixels((SDL_Window*)mainWindow, &width, &height);
-    bgfxRenderer.screenSize = {width, height};
+    renderer.screenSize = {sapp_widthf(), sapp_heightf()};
 
 
-    renderTexture = bgfx::createTexture2D(
-            renderTextureWidth, renderTextureHeight,
-            false, 1, bgfx::TextureFormat::RGBA8,
-            BGFX_TEXTURE_RT
-    );
+    sg_image_desc imageDesc{};
+    imageDesc.render_target = true;
+    imageDesc.width = renderTextureWidth;
+    imageDesc.height = renderTextureHeight;
+    imageDesc.pixel_format = SG_PIXELFORMAT_RGBA8;
+    renderTexture = sg_make_image(imageDesc);
 
-    framebuffer = bgfx::createFrameBuffer(1, &renderTexture, true);
+    sg_attachments_desc attachmentsDesc{};
+    attachmentsDesc.colors[0].image = renderTexture;
+    framebuffer = sg_make_attachments(attachmentsDesc);
 
 }
 
@@ -180,26 +182,31 @@ void TestRendering::Update(float dt) {
     //registry.patch<Camera>(cameraEntity).fieldOfView = 40;
 
 
-    simulation.Update();
+    simulation.Update(dt);
 }
 
 void TestRendering::Render() {
 
-    bgfx::setViewFrameBuffer(0, framebuffer);
-    //bgfx::setViewRect(0, 0, 0, renderTextureWidth, renderTextureHeight);
-    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
+    sg_pass_action passAction{};
+    passAction.colors[0].load_action = SG_LOADACTION_CLEAR;
+    passAction.colors[0].store_action = SG_STOREACTION_STORE;
+    passAction.colors[0].clear_value = {0.188f, 0.188f, 0.188f, 1.0f};
+    passAction.depth.load_action = SG_LOADACTION_CLEAR;
+    passAction.depth.store_action = SG_STOREACTION_DONTCARE;
+    passAction.depth.clear_value = 1.0f;
 
-    bgfx::touch(0);
+    sg_pass pass{};
+    pass.action = passAction;
+    pass.attachments = framebuffer;
+    sg_begin_pass(pass);
 
-    simulation.Render(bgfxRenderer);
-    bgfx::frame();
-
-    bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
+    simulation.Render(renderer);
+    sg_end_pass();
 
     imGuiController.Render();
 }
 
-TestRendering::TestRendering() : simulation(registry), resources(resourcePathMapper) {
+TestRendering::TestRendering() : resources(resourcePathMapper) {
 
 }
 

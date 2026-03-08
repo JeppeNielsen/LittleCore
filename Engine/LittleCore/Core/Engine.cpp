@@ -3,88 +3,93 @@
 //
 
 #include "Engine.hpp"
-#include "Timer.hpp"
-#include <SDL3/SDL.h>
-#include <iostream>
-#include <bgfx/bgfx.h>
-#include <bgfx/platform.h>
+#include <sokol_app.h>
+#include "SokolDirect.hpp"
 
 using namespace LittleCore;
 
-Engine::Engine(EngineSettings settings) : settings(settings){
+Engine::Engine(EngineSettings settings) : settings(std::move(settings)) {
 
+}
+
+void Engine::AppInit(void* userData) {
+    static_cast<Engine*>(userData)->OnAppInit();
+}
+
+void Engine::AppFrame(void* userData) {
+    static_cast<Engine*>(userData)->OnAppFrame();
+}
+
+void Engine::AppCleanup(void* userData) {
+    static_cast<Engine*>(userData)->OnAppCleanup();
+}
+
+void Engine::AppEvent(const sapp_event* event, void* userData) {
+    static_cast<Engine*>(userData)->OnAppEvent(event);
+}
+
+void Engine::OnAppInit() {
+    if (!lc_sg_setup()) {
+        sapp_request_quit();
+        return;
+    }
+    graphicsInitialized = true;
+
+    if (onInitializeCallback) {
+        onInitializeCallback();
+    }
+
+    if (state) {
+        state->mainWindow = nullptr;
+        state->Initialize();
+    }
+}
+
+void Engine::OnAppFrame() {
+    if (!graphicsInitialized || !state) {
+        return;
+    }
+
+    const float dt = static_cast<float>(sapp_frame_duration());
+    state->Update(dt);
+    state->Render();
+    lc_sg_commit_frame();
+}
+
+void Engine::OnAppCleanup() {
+    if (onDestroyCallback) {
+        onDestroyCallback();
+    }
+
+    if (graphicsInitialized) {
+        lc_sg_shutdown();
+        graphicsInitialized = false;
+    }
+}
+
+void Engine::OnAppEvent(const sapp_event* event) {
+    if (state) {
+        state->HandleEvent((void*)event);
+    }
 }
 
 void Engine::MainLoop(const std::function<void()>& onInitialize, const std::function<void()>& onDestroy) {
+    onInitializeCallback = onInitialize;
+    onDestroyCallback = onDestroy;
 
-    const int width = 800;
-    const int height = 600;
+    sapp_desc desc{};
+    desc.init_userdata_cb = &Engine::AppInit;
+    desc.frame_userdata_cb = &Engine::AppFrame;
+    desc.cleanup_userdata_cb = &Engine::AppCleanup;
+    desc.event_userdata_cb = &Engine::AppEvent;
+    desc.user_data = this;
 
-    SDL_Init(0);
+    desc.width = 800;
+    desc.height = 600;
+    desc.high_dpi = true;
+    desc.sample_count = 1;
+    desc.enable_clipboard = true;
+    desc.window_title = settings.mainWindowTitle.c_str();
 
-    SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_MAXIMIZED;
-
-    if (!settings.showWindow) {
-        flags |= SDL_WINDOW_HIDDEN;
-    }
-
-    auto window = SDL_CreateWindow(settings.mainWindowTitle.c_str(), width, height, flags);
-
-    SDL_StartTextInput();
-
-    bgfx::renderFrame();
-
-    bgfx::Init init;
-    init.type = bgfx::RendererType::Count;
-    init.resolution.width = width;
-    init.resolution.height = height;
-    init.resolution.reset = BGFX_RESET_VSYNC;
-    init.platformData.ndt = nullptr;
-    init.platformData.nwh = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
-    init.platformData.context = nullptr;
-    init.platformData.backBuffer = nullptr;
-    init.platformData.backBufferDS = nullptr;
-
-    bgfx::init(init);
-    bgfx::setDebug(BGFX_DEBUG_TEXT);
-    bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x6495ED, 1.f, 0);
-
-    onInitialize();
-
-    state->mainWindow = window;
-    state->Initialize();
-
-    Timer timer;
-    timer.Start();
-
-    bool exit = false;
-    while (!exit) {
-
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            state->HandleEvent(&event);
-            const bool is_main_window = event.window.windowID == SDL_GetWindowID(window);
-
-            if (event.type == SDL_EVENT_QUIT)
-                exit = true;
-            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && is_main_window)
-                exit = true;
-        }
-
-        float dt = timer.Stop();
-        timer.Start();
-
-        state->Update(dt);
-
-        bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
-        state->Render();
-        bgfx::frame();
-    }
-
-    onDestroy();
-
-    bgfx::shutdown();
-
-    SDL_Quit();
+    sapp_run(desc);
 }
-

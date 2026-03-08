@@ -4,6 +4,10 @@
 
 #include "GameWindow.hpp"
 #include <imgui.h>
+#include <cstdint>
+#define SOKOL_IMGUI_NO_SOKOL_APP
+#include <util/sokol_imgui.h>
+#include "SokolDirect.hpp"
 #include "../EditorSimulations/EditorSimulation.hpp"
 #include "ImguiInputHandler.hpp"
 
@@ -25,13 +29,13 @@ void GameWindow::Draw(EditorSimulation& simulation) {
     if (gameSize.x>32 && gameSize.y>32) {
         frameBuffer.Render((int) gameSize.x, (int) gameSize.y, [&]() {
             simulation.simulation.Render(simulation.context.renderer);
-            bgfx::touch(0);
-            bgfx::frame();
         });
         netimguiClientController.SendTexture(frameBuffer.texture,  frameBuffer.width, frameBuffer.height);
     }
 
-    ImGui::Image((void*)(uintptr_t)(frameBuffer.texture.idx), gameSize);
+    if (lc_sg_valid(frameBuffer.texture)) {
+        ImGui::Image(static_cast<ImTextureID>(simgui_imtextureid(frameBuffer.texture)), gameSize);
+    }
 
     ImGui::End();
 

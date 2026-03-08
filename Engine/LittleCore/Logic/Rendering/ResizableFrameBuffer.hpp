@@ -4,7 +4,7 @@
 
 
 #pragma once
-#include <bgfx/bgfx.h>
+#include "SokolDirect.hpp"
 #include <functional>
 
 namespace LittleCore {
@@ -15,7 +15,7 @@ namespace LittleCore {
         void EnsureResources(uint16_t width, uint16_t height);
         uint16_t width = 0;
         uint16_t height = 0;
-        bgfx::TextureHandle texture = BGFX_INVALID_HANDLE;
-        bgfx::FrameBufferHandle frameBuffer = BGFX_INVALID_HANDLE;
+        sg_image texture = {SG_INVALID_ID};
+        sg_attachments frameBuffer = {SG_INVALID_ID};
     };
 }

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Simulation.hpp"
-#include "BgfxRenderer.hpp"
+#include "SokolRenderer.hpp"
 #include <InputSystem.hpp>
 #include "HierarchySystem.hpp"
 #include "WorldBoundingBoxSystem.hpp"

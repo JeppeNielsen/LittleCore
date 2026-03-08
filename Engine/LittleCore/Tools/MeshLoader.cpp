@@ -14,10 +14,10 @@ using namespace LittleCore;
 
 //------------------------------------------------------------------------------
 // Color packing
-// NOTE: bgfx usually expects colors in ABGR when feeding a raw uint32_t field.
+// NOTE: sokol expects colors in ABGR when feeding a raw uint32_t field.
 // If your pipeline expects RGBA instead, flip the macro.
-#ifndef PACK_ABGR_FOR_BGFX
-#define PACK_ABGR_FOR_BGFX 1
+#ifndef PACK_ABGR_FOR_SOKOL
+#define PACK_ABGR_FOR_SOKOL 1
 #endif
 
 inline uint32_t pack_color_rgba_to_u32(float r, float g, float b, float a = 1.0f)
@@ -27,9 +27,9 @@ inline uint32_t pack_color_rgba_to_u32(float r, float g, float b, float a = 1.0f
         return (uint32_t)std::lround(v * 255.0f);
     };
     uint32_t R = to8(r), G = to8(g), B = to8(b), A = to8(a);
-#if PACK_ABGR_FOR_BGFX
+#if PACK_ABGR_FOR_SOKOL
     // ABGR byte order (least-significant byte R on little-endian)
-    // Matches bgfx's common packed color convention.
+    // Matches sokol's common packed color convention.
     return (A<<24) | (B<<16) | (G<<8) | (R);
 #else
     // RGBA byte order

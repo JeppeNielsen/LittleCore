@@ -40,8 +40,8 @@ void Project::Reset() {
     //glm
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/glm/");
 
-    //bgfx
-    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bgfx/include/");
+    //sokol
+    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/sokol/");
 
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bx/include/");
 
@@ -74,24 +74,10 @@ void Project::Reset() {
     //libs
     moduleSettings.context.libPaths.push_back("/Users/jeppe/Jeppes/LittleCore/bin/Debug");
     moduleSettings.context.libs.push_back("LittleCore");
-    //moduleSettings.context.libs.push_back("bgfx");
+    moduleSettings.context.libs.push_back("sokol");
     moduleSettings.context.libs.push_back("bx");
-    //moduleSettings.context.libs.push_back("bimg");
     moduleSettings.context.libs.push_back("ImGui");
 
-
-    /*
-     *
-     * "SDL",
-      "bgfx",
-      "bimg",
-      "bx",
-      "LittleCore",
-      "ShaderCompiler",
-      "ImGui"
-     *
-     *
-     */
 
     moduleSettings.libraryFolder = "/Users/jeppe/Jeppes/LittleCore/Projects/Editor/Cache/";
 }

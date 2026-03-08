@@ -150,7 +150,7 @@ struct Console : public IModule {
 
     bool hasRendered = false;
 
-    ImTextureID textureId;
+    ImTextureID textureId = 0;
     ComponentEditorCollection<RotatableComponentEditor, PulsatorComponentEditor> componentEditorCollection;
 
     void CreateEntity() {
@@ -161,7 +161,7 @@ struct Console : public IModule {
         entities.push_back(quad);
 
         registry.get<Renderable>(quad).shader = resourceLoader->LoadShader("65886F92DEC94836A9E2FEA6C3483543");
-        registry.get<Texturable>(quad).texture = resourceLoader->LoadTexture("4BC3DABE71914C1782E4333052810803");
+        registry.get<Texturable>(quad).handle = resourceLoader->LoadTexture("4BC3DABE71914C1782E4333052810803");
     }
 
     void Initialize(EngineContext& context) override {
@@ -238,7 +238,9 @@ struct Console : public IModule {
 
         ImGui::Begin("Game");
 
-        ImGui::Image(textureId, ImVec2((float) 1024, (float) 1024));
+        if (textureId != 0) {
+            ImGui::Image(textureId, ImVec2((float) 1024, (float) 1024));
+        }
         ImGui::End();
     }
 

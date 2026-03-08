@@ -27,8 +27,8 @@ void SimpleSimulation::Update() {
     renderSystem.Update();
 }
 
-void SimpleSimulation::Render(BGFXRenderer& bgfxRenderer) {
-    renderSystem.Render(&bgfxRenderer);
+void SimpleSimulation::Render(SokolRenderer& renderer) {
+    renderSystem.Render(&renderer);
 }
 
 InputSystem& SimpleSimulation::Input() {

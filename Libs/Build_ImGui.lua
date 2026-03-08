@@ -12,27 +12,22 @@ project "ImGui"
       "../External/imgui/*.h",
       "../External/imgui/*.cpp",
       "../External/imgui/misc/cpp/imgui_stdlib.h",
-      "../External/imgui/misc/cpp/imgui_stdlib.cpp",
-      "../External/imgui/backends/imgui_impl_sdl3.h",
-      "../External/imgui/backends/imgui_impl_sdl3.cpp"
+      "../External/imgui/misc/cpp/imgui_stdlib.cpp"
    }
 
    includedirs {
       "../Engine/ImGui/**",
-      "../External/sdl/include",
-      "../External/bgfx/include",
+      "../External/sokol",
+      "../Engine/Sokol",
       "../External/bx/include",
-      "../External/sdl/include",
-      "../External/imgui",
-      "../External/imgui/backends"
+      "../External/imgui"
    }
 
    externalincludedirs {
       "../Engine/ImGui/**",
-      "../External/sdl/include",
-      "../External/bgfx/include",
+      "../External/sokol",
+      "../Engine/Sokol",
       "../External/bx/include",
-      "../External/sdl/include",
       "../External/imgui"
    }
   

@@ -13,9 +13,7 @@
 
     $input a_position, a_color0, a_texcoord0
     $output v_color0, vertexPosition, v_texcoord0
-
-    #include "../../../../External/bgfx/examples/common/common.sh"
-
+// common include removed during sokol migration
     void main()
     {
         //a_position.x += sin(a_position.x+a_position.y*3);
@@ -30,8 +28,7 @@
 {
 
     $input v_color0, vertexPosition, v_texcoord0
-
-    #include "../../../../External/bgfx/examples/common/common.sh"
+// common include removed during sokol migration
     SAMPLER2D(colorTexture,  0);
 
     void main()

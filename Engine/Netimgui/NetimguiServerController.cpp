@@ -6,36 +6,29 @@
 #include "NetImguiServer_App.h"
 #include "NetImguiServer_UI.h"
 #include "NetImguiServer_RemoteClient.h"
-#include <bgfx/bgfx.h>
+#include "SokolDirect.hpp"
+#include <cstring>
+#include <vector>
 
 using namespace LittleCore;
 
 
 static ImGuiController* staticUIController = 0;
 
-static inline bgfx::TextureHandle  toTexHandle (void* p) { return { (uint16_t)((uintptr_t)p) }; }
-static inline bgfx::FrameBufferHandle toFbHandle(void* p) { return { (uint16_t)((uintptr_t)p) }; }
-static inline void* fromTexHandle (bgfx::TextureHandle h)  { return (void*)(uintptr_t)(h.idx); }
-static inline void* fromFbHandle  (bgfx::FrameBufferHandle h){ return (void*)(uintptr_t)(h.idx); }
-
-static inline bgfx::ViewId getClientViewId(const NetImguiServer::RemoteClient::Client& client) {
-    return client.mClientIndex;//(bgfx::ViewId)((uint64_t)&client & 0x7F) + 128; // example stable per-client view id
+static inline sg_image toTexHandle(void* p) {
+    return {static_cast<uint32_t>(reinterpret_cast<uintptr_t>(p))};
 }
 
-static void setupViewForRT(bgfx::ViewId viewId,
-                           bgfx::FrameBufferHandle fb,
-                           uint16_t width,
-                           uint16_t height,
-                           const float clearColor[4])
-{
-    bgfx::setViewFrameBuffer(viewId, fb);
-    const uint32_t rgba =
-            (uint32_t(clearColor[3] * 255.f) << 24) |
-            (uint32_t(clearColor[0] * 255.f) << 16) |
-            (uint32_t(clearColor[1] * 255.f) <<  8) |
-            (uint32_t(clearColor[2] * 255.f) <<  0);
-    bgfx::setViewClear(viewId, BGFX_CLEAR_COLOR, rgba);
-    bgfx::touch(viewId);
+static inline sg_attachments toFbHandle(void* p) {
+    return {static_cast<uint32_t>(reinterpret_cast<uintptr_t>(p))};
+}
+
+static inline void* fromTexHandle(sg_image h) {
+    return reinterpret_cast<void*>(static_cast<uintptr_t>(h.id));
+}
+
+static inline void* fromFbHandle(sg_attachments h) {
+    return reinterpret_cast<void*>(static_cast<uintptr_t>(h.id));
 }
 
 namespace NetImguiServer {
@@ -69,52 +62,57 @@ namespace NetImguiServer {
                 return;
             }
 
-            const bgfx::FrameBufferHandle fb = toFbHandle(client.mpHAL_AreaRT);
-            if (!bgfx::isValid(fb)) {
+            const sg_attachments fb = toFbHandle(client.mpHAL_AreaRT);
+            if (!lc_sg_valid(fb)) {
                 return;
             }
 
-            setupViewForRT(0, fb, client.mAreaSizeX, client.mAreaSizeY, client.mBGSettings.mClearColor);
+            sg_pass_action passAction{};
+            passAction.colors[0].load_action = SG_LOADACTION_CLEAR;
+            passAction.colors[0].store_action = SG_STOREACTION_STORE;
+            passAction.colors[0].clear_value = {
+                    client.mBGSettings.mClearColor[0],
+                    client.mBGSettings.mClearColor[1],
+                    client.mBGSettings.mClearColor[2],
+                    client.mBGSettings.mClearColor[3]
+            };
+            sg_pass pass{};
+            pass.action = passAction;
+            pass.attachments = fb;
+            sg_begin_pass(pass);
             {
                 void* mainBackend = ImGui::GetIO().BackendRendererUserData;
                 NetImgui::Internal::ScopedImguiContext scopedCtx(client.mpBGContext);
                 ImGui::GetIO().BackendRendererUserData = mainBackend;
                 staticUIController->Draw(0, ImGui::GetDrawData());
-                bgfx::touch(0);
-                bgfx::frame();
             }
             if (pDrawData) {
                 staticUIController->Draw(0, pDrawData);
-                bgfx::touch(0);
-                bgfx::frame();
             }
-            bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
+            sg_end_pass();
         }
 
         bool HAL_CreateRenderTarget(uint16_t Width, uint16_t Height, void*& pOutRT, void*& pOutTexture)
         {
             HAL_DestroyRenderTarget(pOutRT, pOutTexture);
 
-            const bgfx::TextureFormat::Enum kFormat = bgfx::TextureFormat::RGBA8;
-            const uint64_t kTexFlags = BGFX_TEXTURE_RT; // RT texture; sampler filtering is set when binding.
+            sg_image_desc imageDesc{};
+            imageDesc.render_target = true;
+            imageDesc.width = Width;
+            imageDesc.height = Height;
+            imageDesc.pixel_format = SG_PIXELFORMAT_BGRA8;
+            sg_image tex = sg_make_image(imageDesc);
 
-            bgfx::TextureHandle tex = bgfx::createTexture2D(
-                    Width,
-                    Height,
-                    false,
-                    1,
-                    kFormat,
-                    kTexFlags
-            );
-
-            if (!bgfx::isValid(tex)) {
+            if (!lc_sg_valid(tex)) {
                 return false;
             }
 
-            bgfx::FrameBufferHandle fb = bgfx::createFrameBuffer(1, &tex, /* destroyTextures = */ false);
+            sg_attachments_desc attachmentsDesc{};
+            attachmentsDesc.colors[0].image = tex;
+            sg_attachments fb = sg_make_attachments(attachmentsDesc);
 
-            if (!bgfx::isValid(fb)) {
-                bgfx::destroy(tex);
+            if (!lc_sg_valid(fb)) {
+                lc_sg_destroy(tex);
                 return false;
             }
 
@@ -126,13 +124,13 @@ namespace NetImguiServer {
         void HAL_DestroyRenderTarget(void*& pRT, void*& pTexture)
         {
             if (pRT != nullptr) {
-                bgfx::FrameBufferHandle fb = toFbHandle(pRT);
-                if (bgfx::isValid(fb)) { bgfx::destroy(fb); }
+                sg_attachments fb = toFbHandle(pRT);
+                lc_sg_destroy(fb);
                 pRT = nullptr;
             }
             if (pTexture != nullptr) {
-                bgfx::TextureHandle tex = toTexHandle(pTexture);
-                if (bgfx::isValid(tex)) { bgfx::destroy(tex); }
+                sg_image tex = toTexHandle(pTexture);
+                lc_sg_destroy(tex);
                 pTexture = nullptr;
             }
         }
@@ -142,7 +140,6 @@ namespace NetImguiServer {
             NetImguiServer::App::EnqueueHALTextureDestroy(OutTexture);
 
             const size_t texelCount = size_t(Width) * size_t(Height);
-            const bgfx::TextureFormat::Enum kFormat = bgfx::TextureFormat::RGBA8;
 
             const uint8_t* uploadPtr = pPixelData;
             std::vector<uint32_t> a8ToRgbaScratch;
@@ -169,25 +166,15 @@ namespace NetImguiServer {
                     return false;
             }
 
-            const uint64_t texFlags = 0;
-            const uint32_t byteSize  = static_cast<uint32_t>(texelCount * 4u);
+            sg_image_desc imageDesc{};
+            imageDesc.width = Width;
+            imageDesc.height = Height;
+            imageDesc.pixel_format = SG_PIXELFORMAT_RGBA8;
+            imageDesc.usage = SG_USAGE_IMMUTABLE;
+            imageDesc.data.subimage[0][0] = {uploadPtr, texelCount * 4u};
+            sg_image tex = sg_make_image(imageDesc);
 
-            const bgfx::Memory* mem = bgfx::copy(uploadPtr, byteSize);
-            if (mem == nullptr) {
-                return false;
-            }
-
-            bgfx::TextureHandle tex = bgfx::createTexture2D(
-                    Width,
-                    Height,
-                    false,
-                    1,
-                    kFormat,
-                    texFlags,
-                    mem
-            );
-
-            if (!bgfx::isValid(tex)) {
+            if (!lc_sg_valid(tex)) {
                 return false;
             }
 
@@ -198,10 +185,8 @@ namespace NetImguiServer {
         void HAL_DestroyTexture(ServerTexture& OutTexture)
         {
             if (OutTexture.mpHAL_Texture != nullptr) {
-                bgfx::TextureHandle tex = toTexHandle(OutTexture.mpHAL_Texture);
-                if (bgfx::isValid(tex)) {
-                    bgfx::destroy(tex);
-                }
+                sg_image tex = toTexHandle(OutTexture.mpHAL_Texture);
+                lc_sg_destroy(tex);
             }
 
             std::memset(&OutTexture, 0, sizeof(OutTexture));
@@ -242,5 +227,3 @@ NetimguiServerController::~NetimguiServerController() {
     NetImguiServer::App::Shutdown();
     staticUIController = nullptr;
 }
-
-

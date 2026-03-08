@@ -32,7 +32,7 @@ NetimguiClientController::~NetimguiClientController() {
     NetImgui::Shutdown();
 }
 
-void NetimguiClientController::SendTexture(bgfx::TextureHandle texture, uint32_t width, uint32_t height) {
+void NetimguiClientController::SendTexture(sg_image texture, uint32_t width, uint32_t height) {
     textureSender.SendTexture(texture, width, height);
 }
 
@@ -45,4 +45,3 @@ Fiber NetimguiClientController::ConnectFlow(const std::string& clientName, const
 
     didConnect = IsConnected();
 }
-

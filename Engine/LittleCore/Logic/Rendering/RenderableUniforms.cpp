@@ -4,6 +4,7 @@
 
 #include "RenderableUniforms.hpp"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>   // std::memcmp (not needed here) / std::memcpy
 #include <string>
@@ -47,10 +48,7 @@ static inline uint64_t hashEntry(const RenderableUniforms::UniformEntry& e) noex
 
     switch (e.kind) {
         case K::Texture: {
-            // bgfx::TextureHandle is typically a small handle with .idx
-            // If yours differs, replace this with the correct stable representation.
-            uint16_t idx = e.value.tex.idx;
-            h ^= rotl64(mix64(static_cast<uint64_t>(idx)), 17);
+            h ^= rotl64(mix64(static_cast<uint64_t>(e.value.tex.id)), 17);
             break;
         }
         case K::Vec4:
@@ -82,7 +80,7 @@ const RenderableUniforms::UniformList& RenderableUniforms::GetUniforms() const {
     return uniforms;
 }
 
-void RenderableUniforms::Set(const std::string& id, bgfx::TextureHandle texture) {
+void RenderableUniforms::Set(const std::string& id, sg_image texture) {
     for (auto& e : uniforms) {
         if (e.kind == UniformEntry::Kind::Texture && e.id == id) {
             e.value.tex = texture;
@@ -149,6 +147,4 @@ void RenderableUniforms::Remove(const std::string& id) {
         uniforms.erase(it);
     }
 }
-
-
 

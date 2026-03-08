@@ -5,38 +5,58 @@
 #include "InputHandler.hpp"
 #include "SDLInputHandler.hpp"
 #include "InputKeyMapper.hpp"
-#include <SDL3/SDL.h>
+#include <sokol_app.h>
 
 using namespace LittleCore;
 
 void SDLInputHandler::HandleInput(void *eventPtr, LittleCore::Input &input) {
 
-    SDL_Event& event = *reinterpret_cast<SDL_Event*>(eventPtr);
+    const sapp_event& event = *reinterpret_cast<const sapp_event*>(eventPtr);
 
     switch (event.type) {
-        case SDL_EVENT_KEY_UP: {
-            auto keyId = InputKeyMapper::FromId(event.key.keysym.scancode);
+        case SAPP_EVENTTYPE_KEY_UP: {
+            auto keyId = InputKeyMapper::FromSappKeyCode(event.key_code);
+            if (keyId == InputKey::UNKNOWN) {
+                break;
+            }
             if (handleKeys || input.IsKeyDown(keyId)) {
                 input.keysUp.push_back(keyId);
             }
             break;
         }
-        case SDL_EVENT_KEY_DOWN:
+        case SAPP_EVENTTYPE_KEY_DOWN:
             if (handleKeys) {
-                input.keysDown.push_back(InputKeyMapper::FromId(event.key.keysym.scancode));
+                auto keyId = InputKeyMapper::FromSappKeyCode(event.key_code);
+                if (keyId != InputKey::UNKNOWN) {
+                    input.keysDown.push_back(keyId);
+                }
             }
             break;
-        case SDL_EVENT_MOUSE_MOTION:
-            input.touchPosition[0].position = vec2(event.motion.x, event.motion.y);
+        case SAPP_EVENTTYPE_MOUSE_MOVE:
+            input.touchPosition[0].position = vec2(event.mouse_x, event.mouse_y);
             break;
-        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        case SAPP_EVENTTYPE_MOUSE_DOWN:
             if (handleDownEvents) {
                 input.touchesDown.push_back({0});
             }
             break;
-        case SDL_EVENT_MOUSE_BUTTON_UP:
+        case SAPP_EVENTTYPE_MOUSE_UP:
             input.touchesUp.push_back({0});
             break;
+        case SAPP_EVENTTYPE_TOUCHES_BEGAN:
+        case SAPP_EVENTTYPE_TOUCHES_MOVED:
+        case SAPP_EVENTTYPE_TOUCHES_ENDED: {
+            if (event.num_touches > 0) {
+                input.touchPosition[0].position = vec2(event.touches[0].pos_x, event.touches[0].pos_y);
+            }
+            if (event.type == SAPP_EVENTTYPE_TOUCHES_BEGAN && handleDownEvents) {
+                input.touchesDown.push_back({0});
+            }
+            if (event.type == SAPP_EVENTTYPE_TOUCHES_ENDED) {
+                input.touchesUp.push_back({0});
+            }
+            break;
+        }
     }
 }
 

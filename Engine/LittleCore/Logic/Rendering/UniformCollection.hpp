@@ -6,20 +6,22 @@
 #pragma once
 #include <unordered_map>
 #include <string>
-#include <bgfx/bgfx.h>
+#include <cstdint>
 
 namespace LittleCore {
     class UniformCollection {
     public:
         ~UniformCollection();
 
-        using Uniforms = std::unordered_map<std::string, bgfx::UniformHandle>;
+        using UniformHandle = uint32_t;
+        using Uniforms = std::unordered_map<std::string, UniformHandle>;
 
-        bgfx::UniformHandle GetHandle(const std::string& id, bgfx::UniformType::Enum uniformType);
+        UniformHandle GetHandle(const std::string& id);
 
         void Clear();
 
     private:
         Uniforms uniforms;
+        UniformHandle nextHandle = 1;
     };
 }

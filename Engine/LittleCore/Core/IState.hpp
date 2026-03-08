@@ -10,6 +10,6 @@ namespace LittleCore {
         virtual void Update(float dt) = 0;
         virtual void Render() = 0;
         virtual void HandleEvent(void* event) = 0;
-        void* mainWindow;
+        void* mainWindow = nullptr;
     };
 }

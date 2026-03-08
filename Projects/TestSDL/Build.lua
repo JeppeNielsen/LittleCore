@@ -5,8 +5,7 @@ location "Build"
 workspace "LittleCore"
    startproject "TestSDL"
 
-include "../Libs/Build_sdl.lua"
-include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_sokol.lua"
 
 solution "LittleCore"
    configurations { "Release", "Debug" }
@@ -56,15 +55,13 @@ project "TestSDL"
    }
 
    includedirs {
-      "../../External/sdl/include",
-      "../../External/bgfx/include",
+      "../../External/sokol",
+      "../../Engine/Sokol",
       "../../External/bx/include",
    }
 
    links { 
-      "SDL", 
-      "bgfx",
-      "bimg",
+      "sokol",
       "bx"
    }
 
@@ -81,6 +78,7 @@ project "TestSDL"
          "CoreAudio.framework", 
          "AudioToolbox.framework",
          "Metal.framework",
+         "MetalKit.framework",
          "OpenGL.framework"
       }
 

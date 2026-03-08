@@ -5,8 +5,7 @@ location "Build"
 workspace "LittleCore"
    startproject "Engine"
 
-include "../Libs/Build_sdl.lua"
-include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_sokol.lua"
 include "../Libs/Build_ShaderCompiler.lua"
 include "../Libs/Build_LittleCore.lua"
 include "../Libs/Build_ImGui.lua"
@@ -61,11 +60,12 @@ project "TestRendering"
    includedirs {
       "Source/**",
       "../../Engine/LittleCore/**",
-      "../../External/sdl/include",
-      "../../External/bgfx/include",
+      "../../External/sokol",
+      "../../Engine/Sokol",
       "../../External/bx/include",
       "../../External/entt/single_include",
       "../../External/glm",
+      "../../External/glaze/include",
       "../../External/stb",
       "../../Engine/ShaderCompiler",
       "../../Engine/ImGui",
@@ -73,9 +73,7 @@ project "TestRendering"
    }
 
    links { 
-      "SDL", 
-      "bgfx",
-      "bimg",
+      "sokol",
       "bx",
       "LittleCore",
       "ShaderCompiler",
@@ -95,6 +93,7 @@ project "TestRendering"
          "CoreAudio.framework", 
          "AudioToolbox.framework",
          "Metal.framework",
+         "MetalKit.framework",
          "OpenGL.framework"
       }
 

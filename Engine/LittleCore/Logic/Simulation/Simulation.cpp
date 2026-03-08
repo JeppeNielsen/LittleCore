@@ -25,7 +25,7 @@ void SimulationBase::Render(Renderer& renderer) {
     /*empty*/
 }
 
-void SimulationBase::Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera,
+void SimulationBase::Render(uint16_t viewId, const WorldTransform& cameraTransform, const Camera& camera,
                             Renderer* renderer) {
     /*empty*/
 }

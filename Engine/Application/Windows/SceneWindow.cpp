@@ -6,6 +6,10 @@
 #include "../EditorSimulations/EditorSimulation.hpp"
 #include "../EditorSimulations/EditorCamera.hpp"
 #include "imgui.h"
+#include <cstdint>
+#define SOKOL_IMGUI_NO_SOKOL_APP
+#include <util/sokol_imgui.h>
+#include "SokolDirect.hpp"
 #include "CameraPicker.hpp"
 #include "RegistryHelper.hpp"
 #include "IgnoreSerialization.hpp"
@@ -49,13 +53,13 @@ void SceneWindow::DrawCamera(EditorSimulation& simulation, EditorCamera& camera)
     if (windowSize.x > 32 && windowSize.y > 32) {
         camera.frameBuffer.Render((int) windowSize.x, (int) windowSize.y, [&]() {
             simulation.simulation.Render(0, cameraTransform, worldCamera, &simulation.context.renderer);
-            bgfx::touch(0);
-            bgfx::frame();
         });
         netimguiClientController.SendTexture(camera.frameBuffer.texture,  camera.frameBuffer.width, camera.frameBuffer.height);
     }
 
-    ImGui::Image((void*)(uintptr_t)(camera.frameBuffer.texture.idx), windowSize);
+    if (lc_sg_valid(camera.frameBuffer.texture)) {
+        ImGui::Image(static_cast<ImTextureID>(simgui_imtextureid(camera.frameBuffer.texture)), windowSize);
+    }
 
 
 

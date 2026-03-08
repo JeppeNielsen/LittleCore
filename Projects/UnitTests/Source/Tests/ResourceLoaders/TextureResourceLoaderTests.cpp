@@ -4,6 +4,7 @@
 #include "gtest/gtest.h"
 #include "ResourceManager.hpp"
 #include "TextureResourceLoaderFactory.hpp"
+#include "SokolDirect.hpp"
 
 using namespace LittleCore;
 
@@ -11,16 +12,7 @@ namespace {
     TEST(TextureResourceLoader, TestLoad) {
 
 
-        bgfx::Init init;
-        init.type = bgfx::RendererType::Noop;
-        init.resolution.reset = BGFX_RESET_VSYNC;
-        init.platformData.ndt = nullptr;
-        init.platformData.nwh = nullptr;
-        init.platformData.context = nullptr;
-        init.platformData.backBuffer = nullptr;
-        init.platformData.backBufferDS = nullptr;
-
-        bgfx::init(init);
+        ASSERT_TRUE(lc_sg_setup());
         std::string rootPath = "../../../../Assets/";
 
         ResourcePathMapper pathMapper;
@@ -28,10 +20,10 @@ namespace {
         ResourceManager<TextureResourceLoaderFactory> resourceManager(pathMapper);
         resourceManager.CreateLoaderFactory<TextureResourceLoaderFactory>();
 
-        ResourceHandle<TextureResource> textureHandle = resourceManager.Create<TextureResource>("B62D424BF40F46359248CDE498930422");
+        ResourceHandle<Texturable> textureHandle = resourceManager.Create<Texturable>("B62D424BF40F46359248CDE498930422");
 
-        auto ig =  textureHandle->handle.idx;
-        EXPECT_NE(textureHandle->handle.idx, bgfx::kInvalidHandle);
+        EXPECT_NE(textureHandle->texture.id, SG_INVALID_ID);
+
+        lc_sg_shutdown();
     }
 }
-

@@ -41,15 +41,15 @@ namespace {
         struct TestRenderer : public Renderer {
             int renderCount = 0;
 
-            void BeginRender(bgfx::ViewId viewId, glm::mat4x4 view, glm::mat4x4 projection, const Camera& camera) override {
+            void BeginRender(uint16_t viewId, glm::mat4x4 view, glm::mat4x4 projection, const Camera& camera) override {
 
             }
 
-            void EndRender(bgfx::ViewId viewId) override {
+            void EndRender(uint16_t viewId) override {
 
             }
 
-            void BeginBatch(bgfx::ViewId viewId) override {
+            void BeginBatch(uint16_t viewId) override {
 
             }
 
@@ -57,11 +57,11 @@ namespace {
                 renderCount++;
             }
 
-            void EndBatch(bgfx::ViewId viewId, bgfx::ProgramHandle shaderProgram) override {
+            void EndBatch(uint16_t viewId, sg_shader shaderProgram, BlendMode blendMode) override {
 
             }
 
-            void SetTexture(const std::string& id, bgfx::TextureHandle texture) override {
+            void SetUniforms(const RenderableUniforms& uniforms) override {
 
             }
         };

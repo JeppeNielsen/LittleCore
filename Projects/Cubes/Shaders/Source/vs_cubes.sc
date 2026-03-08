@@ -3,11 +3,9 @@ $output v_color0, vertexPosition
 
 /*
  * Copyright 2011-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
+ * Legacy shader source license: see upstream project documentation.
  */
-
-#include "../../../External/bgfx/examples/common/common.sh"
-
+// common include removed during sokol migration
 void main()
 {
 	gl_Position = mul(u_modelViewProj, vec4(a_position, 1.0) );

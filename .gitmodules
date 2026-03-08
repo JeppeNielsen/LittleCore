@@ -4,12 +4,12 @@
 [submodule "External/bx"]
 	path = External/bx
 	url = https://github.com/bkaradzic/bx.git
-[submodule "External/bimg"]
-	path = External/bimg
-	url = https://github.com/bkaradzic/bimg.git
-[submodule "External/bgfx"]
-	path = External/bgfx
-	url = https://github.com/JeppeNielsen/bgfx.git
+[submodule "External/sokol"]
+	path = External/sokol
+	url = https://github.com/floooh/sokol.git
+[submodule "External/sokol-tools"]
+	path = External/sokol-tools
+	url = https://github.com/floooh/sokol-tools.git
 [submodule "External/glm"]
 	path = External/glm
 	url = https://github.com/JeppeNielsen/glm.git
@@ -20,9 +20,6 @@
 	path = External/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
-[submodule "External/sdl"]
-	path = External/sdl
-	url = https://github.com/libsdl-org/SDL.git
 [submodule "External/glaze"]
 	path = External/glaze
 	url = https://github.com/stephenberry/glaze.git

@@ -1,5 +1,5 @@
 #pragma once
-#include <bgfx/bgfx.h>
+#include "SokolDirect.hpp"
 #include <cstdint>
 #include <vector>
 #include <unordered_map>
@@ -49,7 +49,7 @@ namespace LittleCore {
 
         uint32_t pageCount() const;
 
-        bgfx::TextureHandle pageTexture(uint16_t pageIndex) const;
+        sg_image pageTexture(uint16_t pageIndex) const;
 
         bool ensureGlyph(uint32_t codepoint);
 

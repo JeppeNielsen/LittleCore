@@ -1,28 +1,29 @@
 
 #include <iostream>
 #include "Engine.hpp"
-#include <bgfx/bgfx.h>
+#include "SokolDirect.hpp"
 
 using namespace LittleCore;
 
 struct MainState : IState {
+    void Initialize() override {}
 
     void Update(float dt) override {
         std::cout << dt << std::endl;
     }
 
     void Render() override {
-        bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x6495ED, 1.f, 0);
-        bgfx::touch(0);
+        // Rendering is driven by the engine render systems.
+    }
 
-
-
+    void HandleEvent(void* event) override {
+        (void)event;
     }
 
 };
 
 int main() {
-    Engine e;
+    Engine e({"Engine"});
     e.Start<MainState>();
     return 0;
 }

@@ -5,8 +5,7 @@ location "Build"
 workspace "LittleCore"
    startproject "Engine"
 
-include "../Libs/Build_sdl.lua"
-include "../Libs/Build_bgfx.lua"
+include "../Libs/Build_sokol.lua"
 include "../Libs/Build_LittleCore.lua"
 
 solution "LittleCore"
@@ -60,8 +59,8 @@ project "Engine"
    includedirs {
       "Source/**",
       "../../Engine/LittleCore/**",
-      "../../External/sdl/include",
-      "../../External/bgfx/include",
+      "../../External/sokol",
+      "../../Engine/Sokol",
       "../../External/bx/include",
       "../../External/entt/single_include",
       "../../External/glm",
@@ -70,9 +69,7 @@ project "Engine"
    }
 
    links { 
-      "SDL", 
-      "bgfx",
-      "bimg",
+      "sokol",
       "bx",
       "LittleCore"
    }
@@ -90,6 +87,7 @@ project "Engine"
          "CoreAudio.framework", 
          "AudioToolbox.framework",
          "Metal.framework",
+         "MetalKit.framework",
          "OpenGL.framework"
       }
 

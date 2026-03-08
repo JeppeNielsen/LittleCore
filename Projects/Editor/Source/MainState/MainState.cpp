@@ -19,7 +19,7 @@ MainState::MainState() :
         hierarchyWindow(registryManager),
         inspectorWindow(registryManager, componentDrawer, componentFactory, project.defaultResourceManager),
         projectWindow(project),
-        textureRenderer(bgfxRenderer),
+        textureRenderer(renderer),
         editorRenderer([this](const std::string& id, int width, int height, EditorRenderer::Callback callback) {
             textureRenderer.Render(id, width, height, callback);
         }, [this] (const std::string& id)  {

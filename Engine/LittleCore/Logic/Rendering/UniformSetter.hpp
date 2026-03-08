@@ -4,7 +4,7 @@
 
 
 #pragma once
-#include <bgfx/bgfx.h>
+#include "SokolDirect.hpp"
 #include "UniformCollection.hpp"
 #include "Math.hpp"
 #include <entt/entt.hpp>
@@ -18,24 +18,25 @@ namespace LittleCore {
         UniformCollection* uniformCollection;
 
     public:
-        void Set(const std::string& id, const bgfx::TextureHandle texture, uint8_t stage) {
-           auto uniform = uniformCollection->GetHandle(id, bgfx::UniformType::Enum::Sampler);
-           bgfx::setTexture(stage, uniform, texture);
+        void Set(const std::string& id, const sg_image texture, uint8_t stage) {
+            (void)id;
+            (void)texture;
+            (void)stage;
         }
 
         void Set(const std::string& id, const vec4& vector) {
-            auto uniform = uniformCollection->GetHandle(id, bgfx::UniformType::Enum::Vec4);
-            bgfx::setUniform(uniform, glm::value_ptr(vector));
+            (void)id;
+            (void)vector;
         }
 
         void Set(const std::string& id, const mat3x3& matrix) {
-            auto uniform = uniformCollection->GetHandle(id, bgfx::UniformType::Enum::Mat3);
-            bgfx::setUniform(uniform, glm::value_ptr(matrix));
+            (void)id;
+            (void)matrix;
         }
 
         void Set(const std::string& id, const mat4x4& matrix) {
-            auto uniform = uniformCollection->GetHandle(id, bgfx::UniformType::Enum::Mat4);
-            bgfx::setUniform(uniform, glm::value_ptr(matrix));
+            (void)id;
+            (void)matrix;
         }
 
     };

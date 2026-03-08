@@ -24,7 +24,7 @@ namespace LittleCore {
 
         void Update();
         void Render(Renderer* renderer);
-        void Render(bgfx::ViewId viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer);
+        void Render(uint16_t viewId, const WorldTransform& cameraTransform, const Camera& camera, Renderer* renderer);
 
     private:
         entt::registry& registry;
