@@ -2,3 +2,5 @@ Projects/Editor/Cache
 Projects/Editor/.idea
 *.fragment
 Projects/TestNetimgui/Cache
+Projects/TestRendering/Source/cmake-build-debug
+Projects/TestRendering/Source/CMakeLists.txt

@@ -63,7 +63,7 @@ project "TestRendering"
       "../../External/sokol",
       "../../Engine/Sokol",
       "../../External/bx/include",
-      "../../External/entt/single_include",
+      "../../External/entt/src",
       "../../External/glm",
       "../../External/glaze/include",
       "../../External/stb",
