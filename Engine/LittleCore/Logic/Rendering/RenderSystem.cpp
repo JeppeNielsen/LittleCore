@@ -72,7 +72,7 @@ void RenderSystem::Render(uint16_t viewId, const WorldTransform &cameraTransform
     entt::entity currentRenderable = entt::null;
     entt::entity prevRenderable = entt::null;
 
-    std::cout << "Render started\n";
+    //std::cout << "Render started\n";
 
     bool startedBatch = false;
     for (int i = 0; i < entities.size(); ++i) {
@@ -80,7 +80,7 @@ void RenderSystem::Render(uint16_t viewId, const WorldTransform &cameraTransform
 
         const WorldTransform& worldTransformA = registry.get<WorldTransform>(entity);
         const float distanceA = camera.GetDistance(cameraTransform.worldInverse, worldTransformA.world);
-        std::cout << std::to_string((int)entity) << " -> " << distanceA << "\n";
+       // std::cout << std::to_string((int)entity) << " -> " << distanceA << "\n";
 
         const Mesh* mesh = registry.get<Mesh>(entity)->operator->();
         if (mesh->vertices.empty() || mesh->triangles.empty()) {

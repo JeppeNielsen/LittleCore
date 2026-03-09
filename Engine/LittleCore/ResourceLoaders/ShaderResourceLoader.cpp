@@ -49,7 +49,7 @@ namespace {
             "vertex StageData vs_main(VertexIn in [[stage_in]], constant VsParams& params [[buffer(0)]]) {\n"
             "    StageData out;\n"
             "    out.position = params.mvp * float4(in.position, 1.0);\n"
-            "    out.color = in.color0;\n"
+            "    out.color = float4(in.color0.r, in.color0.g,in.color0.b,1);\n"
             "    return out;\n"
             "}\n";
         const char* fsSrcA =

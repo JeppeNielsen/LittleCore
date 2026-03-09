@@ -23,9 +23,9 @@ entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, glm::ve
     registry.emplace<Hierarchy>(quad).parent = parent;
     auto& mesh = registry.emplace<Mesh>(quad);
     mesh.vertices.push_back({{-1,-1,0}, 0xFFFFFF , {0,0}});
-    mesh.vertices.push_back({{1,-1,0}, 0xFFFFFF , {0,1} });
-    mesh.vertices.push_back({{1,1,0}, 0xFFFFFF, {1,1}});
-    mesh.vertices.push_back({{-1,1,0}, 0xFFFFFF,{1,0}});
+    mesh.vertices.push_back({{1,-1,0}, 0xFF0000 , {0,1} });
+    mesh.vertices.push_back({{1,1,0}, 0x00FF00, {1,1}});
+    mesh.vertices.push_back({{-1,1,0}, 0x0000FF,{1,0}});
     mesh.triangles.push_back(0);
     mesh.triangles.push_back(1);
     mesh.triangles.push_back(2);
@@ -65,7 +65,7 @@ void TestRendering::Initialize() {
         ImGui::Begin("Scene 2");
         if (renderTexture.id != SG_INVALID_ID) {
             ImTextureID textureId2 = static_cast<ImTextureID>(simgui_imtextureid(renderTexture));
-            for (int i = 0; i < 10; ++i) {
+            for (int i = 0; i < 1; ++i) {
                 ImGui::Image(textureId2, ImVec2((float)256, (float)256));
             }
         }
@@ -80,7 +80,7 @@ void TestRendering::Initialize() {
 
     {
         auto cameraObject = registry.create();
-        registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -10};
+        registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -20};
         registry.emplace<WorldTransform>(cameraObject);
         registry.emplace<Hierarchy>(cameraObject);
         auto& moveable = registry.emplace<Movable>(cameraObject);
@@ -110,7 +110,7 @@ void TestRendering::Initialize() {
         auto &camera = registry.emplace<Camera>(cameraObject);
         camera.fieldOfView = 60.0f;
         camera.near = 1;
-        camera.far = 20;
+        camera.far = 1000;
         camera.viewRect = {{0,    0},
                            {1.0f, 1.0f}};
         cameraEntity = cameraObject;
@@ -124,11 +124,11 @@ void TestRendering::Initialize() {
    registry.get<Renderable>(quad1).shader = shader;
    registry.get<Texturable>(quad1).handle = texture;
 
-    quad2 = CreateQuadNew(registry, {3, 0, 0}, {1,0.05,1});
+    quad2 = CreateQuadNew(registry, {3, 0, 0}, {0.5,0.5,1}, quad1);
     registry.get<Renderable>(quad2).shader = shader;
     registry.get<Texturable>(quad2).handle = texture2;
 
-    auto quad3 = CreateQuadNew(registry, {3, 2, 0}, {0.05, 1,1});
+    auto quad3 = CreateQuadNew(registry, {3, 2, 0}, {0.5, 0.5,1}, quad2);
     registry.get<Renderable>(quad3).shader = shader;
     registry.get<Texturable>(quad3).handle = texture;
 
@@ -173,12 +173,14 @@ void TestRendering::Initialize() {
 }
 
 void TestRendering::Update(float dt) {
+    auto& registry = simulation.registry;
+
    // registry.patch<LocalTransform>(quad2).position = {0, -1 + sinf(time*0.5f) *1, 0};
-    //registry.patch<LocalTransform>(quad1).position = {2 + sinf(time)*2,0,0};
+    registry.patch<LocalTransform>(quad1).position = {-2 + sinf(time)*4,2,0};
 
     time += dt;
 
-    //registry.patch<LocalTransform>(cameraEntity).rotation = glm::quat({0, 0, time});
+    registry.patch<LocalTransform>(quad1).rotation = glm::quat({0, 0, time});
     //registry.patch<Camera>(cameraEntity).fieldOfView = 40;
 
 
@@ -190,7 +192,7 @@ void TestRendering::Render() {
     sg_pass_action passAction{};
     passAction.colors[0].load_action = SG_LOADACTION_CLEAR;
     passAction.colors[0].store_action = SG_STOREACTION_STORE;
-    passAction.colors[0].clear_value = {0.188f, 0.188f, 0.188f, 1.0f};
+    passAction.colors[0].clear_value = {0.9f, 0.188f, 0.188f, 1.0f};
     passAction.depth.load_action = SG_LOADACTION_CLEAR;
     passAction.depth.store_action = SG_STOREACTION_DONTCARE;
     passAction.depth.clear_value = 1.0f;

@@ -8,6 +8,15 @@
 #include <cstring>
 
 namespace {
+    std::size_t CalculateBufferCapacity(std::size_t requiredBytes) {
+        constexpr std::size_t minimumCapacity = 1024;
+        std::size_t capacity = minimumCapacity;
+        while (capacity < requiredBytes) {
+            capacity *= 2;
+        }
+        return capacity;
+    }
+
     void ApplyBlendMode(sg_pipeline_desc& pipelineDesc, LittleCore::BlendMode blendMode) {
         auto& blend = pipelineDesc.colors[0].blend;
         switch (blendMode) {
@@ -64,6 +73,11 @@ SokolRenderer::SokolRenderer() {
 }
 
 SokolRenderer::~SokolRenderer() {
+    for (auto& buffers : reusableBatchBuffers) {
+        lc_sg_destroy(buffers.vertex);
+        lc_sg_destroy(buffers.index);
+    }
+
     if (defaultSampler.id != SG_INVALID_ID) {
         sg_destroy_sampler(defaultSampler);
         defaultSampler = {SG_INVALID_ID};
@@ -73,6 +87,13 @@ SokolRenderer::~SokolRenderer() {
 void SokolRenderer::BeginRender(uint16_t, glm::mat4x4 view, glm::mat4x4 projection, const Camera& camera) {
     stats = {};
     viewProjection = projection * view;
+
+    const uint32_t frameIndex = sg_query_frame_stats().frame_index;
+    if (!hasBatchBufferFrame || batchBufferFrameIndex != frameIndex) {
+        hasBatchBufferFrame = true;
+        batchBufferFrameIndex = frameIndex;
+        nextBatchBufferIndex = 0;
+    }
 
     const int renderWidth = std::max(0, static_cast<int>(screenSize.x));
     const int renderHeight = std::max(0, static_cast<int>(screenSize.y));
@@ -122,6 +143,8 @@ void SokolRenderer::RenderMesh(const Mesh& mesh, const glm::mat4x4& world) {
         Vertex transformed = vertex;
         const vec4 worldPosition = world * vec4(vertex.position, 1.0f);
         transformed.position = vec3(worldPosition);
+        transformed.color = vertex.color;
+        transformed.uv = vertex.uv;
         batchedVertices.push_back(transformed);
     }
 
@@ -147,28 +170,18 @@ void SokolRenderer::EndBatch(uint16_t, sg_shader shaderProgram, BlendMode blendM
         return;
     }
 
-    sg_buffer_desc vertexBufferDesc = {};
-    vertexBufferDesc.type = SG_BUFFERTYPE_VERTEXBUFFER;
-    vertexBufferDesc.data.ptr = batchedVertices.data();
-    vertexBufferDesc.data.size = batchedVertices.size() * sizeof(Vertex);
-    sg_buffer vertexBuffer = sg_make_buffer(vertexBufferDesc);
-
-    sg_buffer_desc indexBufferDesc = {};
-    indexBufferDesc.type = SG_BUFFERTYPE_INDEXBUFFER;
-    indexBufferDesc.data.ptr = batchedIndices.data();
-    indexBufferDesc.data.size = batchedIndices.size() * sizeof(uint32_t);
-    sg_buffer indexBuffer = sg_make_buffer(indexBufferDesc);
-
-    if (vertexBuffer.id == SG_INVALID_ID || indexBuffer.id == SG_INVALID_ID) {
-        if (vertexBuffer.id != SG_INVALID_ID) {
-            sg_destroy_buffer(vertexBuffer);
-        }
-        if (indexBuffer.id != SG_INVALID_ID) {
-            sg_destroy_buffer(indexBuffer);
-        }
+    const std::size_t vertexBufferSize = batchedVertices.size() * sizeof(Vertex);
+    const std::size_t indexBufferSize = batchedIndices.size() * sizeof(std::uint32_t);
+    BatchBuffers* batchBuffers = AcquireBatchBuffers(vertexBufferSize, indexBufferSize);
+    if (batchBuffers == nullptr) {
         sg_destroy_pipeline(pipeline);
         return;
     }
+
+    const sg_range vertexRange{batchedVertices.data(), vertexBufferSize};
+    const sg_range indexRange{batchedIndices.data(), indexBufferSize};
+    sg_update_buffer(batchBuffers->vertex, vertexRange);
+    sg_update_buffer(batchBuffers->index, indexRange);
 
     if (currentTexture.id != SG_INVALID_ID && defaultSampler.id == SG_INVALID_ID) {
         sg_sampler_desc samplerDesc = {};
@@ -179,8 +192,8 @@ void SokolRenderer::EndBatch(uint16_t, sg_shader shaderProgram, BlendMode blendM
     }
 
     sg_bindings bindings = {};
-    bindings.vertex_buffers[0] = vertexBuffer;
-    bindings.index_buffer = indexBuffer;
+    bindings.vertex_buffers[0] = batchBuffers->vertex;
+    bindings.index_buffer = batchBuffers->index;
     if (currentTexture.id != SG_INVALID_ID && defaultSampler.id != SG_INVALID_ID) {
         bindings.images[0] = currentTexture;
         bindings.samplers[0] = defaultSampler;
@@ -206,13 +219,51 @@ void SokolRenderer::EndBatch(uint16_t, sg_shader shaderProgram, BlendMode blendM
     sg_draw(0, static_cast<int>(batchedIndices.size()), 1);
     stats.numRenderCalls++;
 
-    sg_destroy_buffer(vertexBuffer);
-    sg_destroy_buffer(indexBuffer);
     sg_destroy_pipeline(pipeline);
 
     batchedVertices.clear();
     batchedIndices.clear();
     currentTexture = {SG_INVALID_ID};
+}
+
+bool SokolRenderer::EnsureBuffer(sg_buffer& buffer, std::size_t& capacityBytes, sg_buffer_type type, std::size_t requiredBytes) {
+    if (lc_sg_valid(buffer) && capacityBytes >= requiredBytes) {
+        return true;
+    }
+
+    lc_sg_destroy(buffer);
+    capacityBytes = 0;
+
+    sg_buffer_desc bufferDesc{};
+    bufferDesc.type = type;
+    bufferDesc.usage = SG_USAGE_STREAM;
+    bufferDesc.size = CalculateBufferCapacity(requiredBytes);
+    buffer = sg_make_buffer(bufferDesc);
+    if (!lc_sg_valid(buffer)) {
+        return false;
+    }
+
+    capacityBytes = bufferDesc.size;
+    return true;
+}
+
+SokolRenderer::BatchBuffers* SokolRenderer::AcquireBatchBuffers(std::size_t requiredVertexBytes, std::size_t requiredIndexBytes) {
+    if (nextBatchBufferIndex >= reusableBatchBuffers.size()) {
+        reusableBatchBuffers.emplace_back();
+    }
+
+    BatchBuffers& buffers = reusableBatchBuffers[nextBatchBufferIndex];
+    nextBatchBufferIndex++;
+
+    if (!EnsureBuffer(buffers.vertex, buffers.vertexCapacityBytes, SG_BUFFERTYPE_VERTEXBUFFER, requiredVertexBytes)) {
+        return nullptr;
+    }
+
+    if (!EnsureBuffer(buffers.index, buffers.indexCapacityBytes, SG_BUFFERTYPE_INDEXBUFFER, requiredIndexBytes)) {
+        return nullptr;
+    }
+
+    return &buffers;
 }
 
 void SokolRenderer::SetUniforms(const RenderableUniforms& uniforms) {
