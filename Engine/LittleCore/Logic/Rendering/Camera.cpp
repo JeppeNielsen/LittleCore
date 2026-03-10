@@ -19,23 +19,13 @@ bool gethomogeneousDepth() {
 
 mat4x4 Camera::GetProjection(float aspect) const {
 
-    //float proj[16];
-    //bx::mtxProj(proj, 60.0f, 1.0f, 0.1f, 100.0f, gethomogeneousDepth());
-    //return glm::make_mat4x4(proj);
-
-   //return ortho(-ViewSize.x, ViewSize.x, -ViewSize.y, ViewSize.y, Near, Far);
-   //return ortho(0.0f, ViewSize.x, 0.0f, ViewSize.y, Near, Far);
-
-    float proj[16];
-
     if (!IsOrthographic()) {
-        bx::mtxProj(proj, fieldOfView, aspect, near, far, gethomogeneousDepth());
+       return glm::perspectiveLH(glm::radians(fieldOfView), aspect, near, far);
     } else {
         float xSize = orthoSize * 0.5f;
         float ySize = xSize * aspect;
-        bx::mtxOrtho(proj, -xSize,xSize,-ySize,ySize, near, far, 0,gethomogeneousDepth());
+        return glm::orthoLH( -xSize,xSize,-ySize,ySize, near, far);
     }
-    return glm::make_mat4x4(proj);
 }
 
 /*
