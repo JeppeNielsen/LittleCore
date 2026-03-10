@@ -14,6 +14,7 @@ project "LittleCore"
 
    includedirs {
       "../Engine/LittleCore/**",
+      "../Engine/ShaderCompiler",
       "../External/sokol",
       "../Engine/Sokol",
       "../External/bx/include",
@@ -29,6 +30,7 @@ project "LittleCore"
 
    externalincludedirs {
       "../Engine/LittleCore/**",
+      "../Engine/ShaderCompiler",
       "../External/sokol",
       "../Engine/Sokol",
       "../External/bx/include",

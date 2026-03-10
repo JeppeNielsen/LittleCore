@@ -1,30 +1,18 @@
-
 #include <iostream>
 #include "ShaderCompiler.hpp"
-#include "ShaderCompilerSettings.hpp"
 
 using namespace LittleCore;
 
 int main() {
-
-    ShaderCompilerSettings settings;
-    settings.platform = ShaderPlatform::OSX;
-    settings.shaderInputPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/TestShader.shader";
-    settings.includePath = "/Users/jeppe/Jeppes/LittleCore/External/sokol/";
-
-    settings.varyingsWorkingPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/Temp/varyings.temp";
-    settings.vertexWorkingPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/Temp/vertex.temp";
-    settings.fragmentWorkingPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/Temp/fragment.temp";
-
-    settings.vertexOutputPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/TestShader.vertex";
-    settings.fragmentOutputPath = "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/TestShader.fragment";
-
-    ShaderCompiler compiler;
-
-    if (compiler.Compile(settings)) {
+    std::string errorMessage;
+    if (ShaderCompiler::CompileSokolBare(
+            "/Users/jeppe/Jeppes/LittleCore/Projects/TestRendering/Assets/Shaders/TestShader.shader",
+            "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/Temp/compiled",
+            "metal_macos",
+            &errorMessage)) {
         std::cout << "Compilation success!\n";
     } else {
-        std::cout << "Compilation failed\n";
+        std::cout << "Compilation failed: " << errorMessage << "\n";
     }
 
     return 0;

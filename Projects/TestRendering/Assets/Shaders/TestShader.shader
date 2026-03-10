@@ -1,42 +1,36 @@
-{
+@vs vs
+layout(binding=0) uniform vs_params {
+    mat4 u_modelViewProj;
+};
 
-    vec4 v_color0    : COLOR0    = vec4(1.0, 0.0, 0.0, 1.0);
-    vec3 vertexPosition : POSITION;
-    vec2 v_texcoord0 : TEXCOORD0;
-    vec3 a_position  : POSITION;
-    vec4 a_color0    : COLOR0;
-    vec2 a_texcoord0 : TEXCOORD0;
+layout(location=0) in vec3 a_position;
+layout(location=1) in vec4 a_color0;
+layout(location=2) in vec2 a_texcoord0;
 
+layout(location=0) out vec4 v_color0;
+layout(location=1) out vec2 v_texcoord0;
+
+void main() {
+    gl_Position = u_modelViewProj * vec4(a_position, 1.0);
+    v_color0 = a_color0;
+    v_texcoord0 = a_texcoord0;
 }
+@end
 
-{
+@fs fs
+layout(binding=0) uniform texture2D colorTexture;
+layout(binding=0) uniform sampler colorTextureSampler;
 
-    $input a_position, a_color0, a_texcoord0
-    $output v_color0, vertexPosition, v_texcoord0
-// common include removed during sokol migration
-    void main()
-    {
-        //a_position.x += sin(a_position.x+a_position.y*3);
-    	gl_Position = mul(u_modelViewProj, vec4(a_position, 1.0) );
-    	v_color0 = a_color0;
-    	v_texcoord0 = a_texcoord0;
-    	vertexPosition = gl_Position;
-    }
+layout(location=0) in vec4 v_color0;
+layout(location=1) in vec2 v_texcoord0;
 
+layout(location=0) out vec4 frag_color;
+
+void main() {
+    vec4 mColor = texture(sampler2D(colorTexture, colorTextureSampler), v_texcoord0);
+    frag_color = vec4(mColor.rgb * v_color0.rgb, 1.0);
 }
+@end
 
-{
-
-    $input v_color0, vertexPosition, v_texcoord0
-// common include removed during sokol migration
-    SAMPLER2D(colorTexture,  0);
-
-    void main()
-    {
-        vec4 mColor = texture2D(colorTexture,v_texcoord0);
-        gl_FragColor = vec4(mColor.rgb * v_color0, 1);
-    }
-
-}
-
+@program TestShader vs fs
 
