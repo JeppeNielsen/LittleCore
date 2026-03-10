@@ -22,10 +22,10 @@ entt::entity CreateQuadNew(entt::registry& registry, glm::vec3 position, glm::ve
     registry.emplace<WorldTransform>(quad);
     registry.emplace<Hierarchy>(quad).parent = parent;
     auto& mesh = registry.emplace<Mesh>(quad);
-    mesh.vertices.push_back({{-1,-1,0}, 0xFFFFFF , {0,0}});
-    mesh.vertices.push_back({{1,-1,0}, 0xFF0000 , {0,1} });
-    mesh.vertices.push_back({{1,1,0}, 0x00FF00, {1,1}});
-    mesh.vertices.push_back({{-1,1,0}, 0x0000FF,{1,0}});
+    mesh.vertices.push_back({{-1,-1,0}, 0xFFFFFFFF , {0,0}});
+    mesh.vertices.push_back({{1,-1,0}, 0xFFFFFFFF , {0,1} });
+    mesh.vertices.push_back({{1,1,0}, 0xFFFFFFFF, {1,1}});
+    mesh.vertices.push_back({{-1,1,0}, 0xFFFFFFFF,{1,0}});
     mesh.triangles.push_back(0);
     mesh.triangles.push_back(1);
     mesh.triangles.push_back(2);
@@ -79,7 +79,7 @@ void TestRendering::Initialize() {
 
 
     {
-        auto cameraObject = registry.create();
+        cameraObject = registry.create();
         registry.emplace<LocalTransform>(cameraObject).position = {0, 0, -20};
         registry.emplace<WorldTransform>(cameraObject);
         registry.emplace<Hierarchy>(cameraObject);
@@ -105,7 +105,7 @@ void TestRendering::Initialize() {
                                 });
 
 
-        registry.emplace<Input>(cameraObject);
+        //registry.emplace<Input>(cameraObject);
 
         auto &camera = registry.emplace<Camera>(cameraObject);
         camera.fieldOfView = 60.0f;
@@ -156,7 +156,7 @@ void TestRendering::Initialize() {
     registry.emplace<Input>(quad1);
 
 
-    renderer.screenSize = {sapp_widthf(), sapp_heightf()};
+    renderer.screenSize = {1024, 1024};// {sapp_widthf(), sapp_heightf()};
 
 
     sg_image_desc imageDesc{};
@@ -176,7 +176,9 @@ void TestRendering::Update(float dt) {
     auto& registry = simulation.registry;
 
    // registry.patch<LocalTransform>(quad2).position = {0, -1 + sinf(time*0.5f) *1, 0};
-    registry.patch<LocalTransform>(quad1).position = {-2 + sinf(time)*4,2,0};
+    //registry.patch<LocalTransform>(quad1).position = {-2 + sinf(time)*4,6,0};
+    registry.patch<LocalTransform>(cameraObject).position = {0, 0, -20};
+    registry.patch<LocalTransform>(quad1).position = {0,0,0};
 
     time += dt;
 

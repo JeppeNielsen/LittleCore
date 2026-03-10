@@ -34,11 +34,12 @@ class TestRendering : public IState {
     SDLInputHandler inputHandler;
 
     const uint16_t renderTextureWidth = 1024;
-    const uint16_t renderTextureHeight = 512;
+    const uint16_t renderTextureHeight = 1024;
     sg_image renderTexture = {SG_INVALID_ID};
     sg_attachments framebuffer = {SG_INVALID_ID};
     entt::entity quad1;
     entt::entity quad2;
+    entt::entity cameraObject;
 
 public:
     TestRendering();
