@@ -14,6 +14,7 @@ namespace {
         sg_shader_desc shdDesc = {};
         shdDesc.attrs[0].glsl_name = "position";
         shdDesc.attrs[1].glsl_name = "color0";
+        shdDesc.attrs[2].glsl_name = "uv0";
         shdDesc.vertex_func.source = vsSource;
         shdDesc.fragment_func.source = fsSource;
         shdDesc.vertex_func.entry = vsEntry;
@@ -28,6 +29,23 @@ namespace {
         ub->glsl_uniforms[0].type = SG_UNIFORMTYPE_MAT4;
         ub->glsl_uniforms[0].array_count = 1;
 
+        sg_shader_image* image = &shdDesc.images[0];
+        image->stage = SG_SHADERSTAGE_FRAGMENT;
+        image->image_type = SG_IMAGETYPE_2D;
+        image->sample_type = SG_IMAGESAMPLETYPE_FLOAT;
+        image->msl_texture_n = 0;
+
+        sg_shader_sampler* sampler = &shdDesc.samplers[0];
+        sampler->stage = SG_SHADERSTAGE_FRAGMENT;
+        sampler->sampler_type = SG_SAMPLERTYPE_FILTERING;
+        sampler->msl_sampler_n = 0;
+
+        sg_shader_image_sampler_pair* imageSamplerPair = &shdDesc.image_sampler_pairs[0];
+        imageSamplerPair->stage = SG_SHADERSTAGE_FRAGMENT;
+        imageSamplerPair->image_slot = 0;
+        imageSamplerPair->sampler_slot = 0;
+        imageSamplerPair->glsl_name = "colorTexture";
+
         return sg_make_shader(shdDesc);
     }
 
@@ -38,6 +56,7 @@ namespace {
             "struct VertexIn {\n"
             "    float3 position [[attribute(0)]];\n"
             "    float4 color0 [[attribute(1)]];\n"
+            "    float2 uv0 [[attribute(2)]];\n"
             "};\n"
             "struct VsParams {\n"
             "    float4x4 mvp;\n"
@@ -45,11 +64,13 @@ namespace {
             "struct StageData {\n"
             "    float4 position [[position]];\n"
             "    float4 color;\n"
+            "    float2 uv;\n"
             "};\n"
             "vertex StageData vs_main(VertexIn in [[stage_in]], constant VsParams& params [[buffer(0)]]) {\n"
             "    StageData out;\n"
             "    out.position = params.mvp * float4(in.position, 1.0);\n"
-            "    out.color = float4(in.color0.r, in.color0.g,in.color0.b,1);\n"
+            "    out.color = in.color0;\n"
+            "    out.uv = in.uv0;\n"
             "    return out;\n"
             "}\n";
         const char* fsSrcA =
@@ -58,9 +79,11 @@ namespace {
             "struct StageData {\n"
             "    float4 position [[position]];\n"
             "    float4 color;\n"
+            "    float2 uv;\n"
             "};\n"
-            "fragment float4 fs_main(StageData in [[stage_in]]) {\n"
-            "    return in.color;\n"
+            "fragment float4 fs_main(StageData in [[stage_in]], texture2d<float> colorTexture [[texture(0)]], sampler colorSampler [[sampler(0)]]) {\n"
+            "    float4 col = in.color * colorTexture.sample(colorSampler, in.uv);\n"
+            "    return col;\n" //\n"
             "}\n";
 
         const char* vsSrcB =
@@ -69,18 +92,21 @@ namespace {
             "struct VertexIn {\n"
             "    float3 position [[attribute(0)]];\n"
             "    float4 color0 [[attribute(1)]];\n"
+            "    float2 uv0 [[attribute(2)]];\n"
             "};\n"
             "struct VsParams {\n"
             "    float4x4 mvp;\n"
             "};\n"
             "struct VertexOut {\n"
             "    float4 color [[user(locn0)]];\n"
+            "    float2 uv [[user(locn1)]];\n"
             "    float4 position [[position]];\n"
             "};\n"
             "vertex VertexOut vs_main(VertexIn in [[stage_in]], constant VsParams& params [[buffer(0)]]) {\n"
             "    VertexOut out;\n"
             "    out.position = params.mvp * float4(in.position, 1.0);\n"
             "    out.color = in.color0;\n"
+            "    out.uv = in.uv0;\n"
             "    return out;\n"
             "}\n";
         const char* fsSrcB =
@@ -88,9 +114,10 @@ namespace {
             "using namespace metal;\n"
             "struct FragmentIn {\n"
             "    float4 color [[user(locn0)]];\n"
+            "    float2 uv [[user(locn1)]];\n"
             "};\n"
-            "fragment float4 fs_main(FragmentIn in [[stage_in]]) {\n"
-            "    return in.color;\n"
+            "fragment float4 fs_main(FragmentIn in [[stage_in]], texture2d<float> colorTexture [[texture(0)]], sampler colorSampler [[sampler(0)]]) {\n"
+            "    return float4(0,1,0,1);\n"//in.color * colorTexture.sample(colorSampler, in.uv);\n"
             "}\n";
 
         struct ShaderVariant {
@@ -120,19 +147,24 @@ namespace {
             "#version 300 es\n"
             "layout(location=0) in vec3 position;\n"
             "layout(location=1) in vec4 color0;\n"
+            "layout(location=2) in vec2 uv0;\n"
             "uniform mat4 mvp;\n"
             "out vec4 color;\n"
+            "out vec2 uv;\n"
             "void main() {\n"
             "    gl_Position = mvp * vec4(position, 1.0);\n"
             "    color = color0;\n"
+            "    uv = uv0;\n"
             "}\n";
         const char* fsSrc =
             "#version 300 es\n"
             "precision mediump float;\n"
             "in vec4 color;\n"
+            "in vec2 uv;\n"
+            "uniform sampler2D colorTexture;\n"
             "out vec4 frag_color;\n"
             "void main() {\n"
-            "    frag_color = color;\n"
+            "    frag_color = color * texture(colorTexture, uv);\n"
             "}\n";
         return CreateDefaultMeshShaderVariant(vsSrc, fsSrc, "main", "main");
     }
@@ -142,18 +174,23 @@ namespace {
                 "#version 330\n"
                 "layout(location=0) in vec3 position;\n"
                 "layout(location=1) in vec4 color0;\n"
+                "layout(location=2) in vec2 uv0;\n"
                 "uniform mat4 mvp;\n"
                 "out vec4 color;\n"
+                "out vec2 uv;\n"
                 "void main() {\n"
                 "    gl_Position = mvp * vec4(position, 1.0);\n"
                 "    color = color0;\n"
+                "    uv = uv0;\n"
                 "}\n";
         const char* fsSrc =
                 "#version 330\n"
                 "in vec4 color;\n"
+                "in vec2 uv;\n"
+                "uniform sampler2D colorTexture;\n"
                 "out vec4 frag_color;\n"
                 "void main() {\n"
-                "    frag_color = color;\n"
+                "    frag_color = color * texture(colorTexture, uv);\n"
                 "}\n";
         return CreateDefaultMeshShaderVariant(vsSrc, fsSrc, "main", "main");
     }

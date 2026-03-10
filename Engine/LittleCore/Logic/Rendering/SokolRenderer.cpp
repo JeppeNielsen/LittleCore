@@ -21,6 +21,7 @@ namespace {
         auto& blend = pipelineDesc.colors[0].blend;
         switch (blendMode) {
             case LittleCore::BlendMode::Off:
+                blend.enabled = false;
                 break;
             case LittleCore::BlendMode::Alpha:
                 blend.enabled = true;
@@ -53,6 +54,7 @@ namespace {
         pipelineDesc.sample_count = 1;
         pipelineDesc.depth.pixel_format = SG_PIXELFORMAT_NONE;
         pipelineDesc.colors[0].pixel_format = SG_PIXELFORMAT_RGBA8;
+        pipelineDesc.colors[0].write_mask = SG_COLORMASK_RGB; // don't write alpha
         pipelineDesc.layout.buffers[0].stride = sizeof(LittleCore::Vertex);
         pipelineDesc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
         pipelineDesc.layout.attrs[0].offset = offsetof(LittleCore::Vertex, position);
@@ -60,6 +62,7 @@ namespace {
         pipelineDesc.layout.attrs[1].offset = offsetof(LittleCore::Vertex, color);
         pipelineDesc.layout.attrs[2].format = SG_VERTEXFORMAT_FLOAT2;
         pipelineDesc.layout.attrs[2].offset = offsetof(LittleCore::Vertex, uv);
+
         ApplyBlendMode(pipelineDesc, blendMode);
         return sg_make_pipeline(pipelineDesc);
     }
@@ -77,6 +80,8 @@ SokolRenderer::~SokolRenderer() {
         lc_sg_destroy(buffers.vertex);
         lc_sg_destroy(buffers.index);
     }
+
+    lc_sg_destroy(defaultWhiteTexture);
 
     if (defaultSampler.id != SG_INVALID_ID) {
         sg_destroy_sampler(defaultSampler);
@@ -183,26 +188,39 @@ void SokolRenderer::EndBatch(uint16_t, sg_shader shaderProgram, BlendMode blendM
     sg_update_buffer(batchBuffers->vertex, vertexRange);
     sg_update_buffer(batchBuffers->index, indexRange);
 
-    if (currentTexture.id != SG_INVALID_ID && defaultSampler.id == SG_INVALID_ID) {
-        sg_sampler_desc samplerDesc = {};
+    const sg_shader_desc shaderDesc = sg_query_shader_desc(shaderProgram);
+    const bool shaderUsesTexture =
+        shaderDesc.images[0].stage != SG_SHADERSTAGE_NONE &&
+        shaderDesc.samplers[0].stage != SG_SHADERSTAGE_NONE;
+
+    if (shaderUsesTexture && defaultSampler.id == SG_INVALID_ID) {
+        sg_sampler_desc samplerDesc{};
         samplerDesc.min_filter = SG_FILTER_LINEAR;
         samplerDesc.mag_filter = SG_FILTER_LINEAR;
         samplerDesc.mipmap_filter = SG_FILTER_LINEAR;
         defaultSampler = sg_make_sampler(samplerDesc);
     }
 
+    sg_image textureToBind = currentTexture;
+    if (shaderUsesTexture && textureToBind.id == SG_INVALID_ID) {
+        if (!EnsureDefaultWhiteTexture()) {
+            sg_destroy_pipeline(pipeline);
+            return;
+        }
+        textureToBind = defaultWhiteTexture;
+    }
+
     sg_bindings bindings = {};
     bindings.vertex_buffers[0] = batchBuffers->vertex;
     bindings.index_buffer = batchBuffers->index;
-    if (currentTexture.id != SG_INVALID_ID && defaultSampler.id != SG_INVALID_ID) {
-        bindings.images[0] = currentTexture;
+    if (shaderUsesTexture && textureToBind.id != SG_INVALID_ID && defaultSampler.id != SG_INVALID_ID) {
+        bindings.images[0] = textureToBind;
         bindings.samplers[0] = defaultSampler;
     }
 
     sg_apply_pipeline(pipeline);
     sg_apply_bindings(bindings);
 
-    const sg_shader_desc shaderDesc = sg_query_shader_desc(shaderProgram);
     if (shaderDesc.uniform_blocks[0].stage != SG_SHADERSTAGE_NONE && shaderDesc.uniform_blocks[0].size > 0) {
         const uint32_t uniformSize = shaderDesc.uniform_blocks[0].size;
         if (uniformSize <= sizeof(glm::mat4x4)) {
@@ -245,6 +263,23 @@ bool SokolRenderer::EnsureBuffer(sg_buffer& buffer, std::size_t& capacityBytes, 
 
     capacityBytes = bufferDesc.size;
     return true;
+}
+
+bool SokolRenderer::EnsureDefaultWhiteTexture() {
+    if (lc_sg_valid(defaultWhiteTexture)) {
+        return true;
+    }
+
+    constexpr std::uint8_t whitePixel[] = {255, 255, 255, 255};
+
+    sg_image_desc imageDesc{};
+    imageDesc.width = 1;
+    imageDesc.height = 1;
+    imageDesc.pixel_format = SG_PIXELFORMAT_RGBA8;
+    imageDesc.usage = SG_USAGE_IMMUTABLE;
+    imageDesc.data.subimage[0][0] = {whitePixel, sizeof(whitePixel)};
+    defaultWhiteTexture = sg_make_image(imageDesc);
+    return lc_sg_valid(defaultWhiteTexture);
 }
 
 SokolRenderer::BatchBuffers* SokolRenderer::AcquireBatchBuffers(std::size_t requiredVertexBytes, std::size_t requiredIndexBytes) {

@@ -30,6 +30,7 @@ namespace LittleCore {
         };
 
         bool EnsureBuffer(sg_buffer& buffer, std::size_t& capacityBytes, sg_buffer_type type, std::size_t requiredBytes);
+        bool EnsureDefaultWhiteTexture();
         BatchBuffers* AcquireBatchBuffers(std::size_t requiredVertexBytes, std::size_t requiredIndexBytes);
 
         glm::mat4x4 viewProjection = glm::mat4x4(1.0f);
@@ -40,6 +41,7 @@ namespace LittleCore {
         std::uint32_t batchBufferFrameIndex = 0;
         std::size_t nextBatchBufferIndex = 0;
         sg_image currentTexture = {SG_INVALID_ID};
+        sg_image defaultWhiteTexture = {SG_INVALID_ID};
         sg_sampler defaultSampler = {SG_INVALID_ID};
     };
 
