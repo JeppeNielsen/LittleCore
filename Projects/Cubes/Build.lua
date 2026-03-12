@@ -20,7 +20,6 @@ solution "LittleCore"
       defines
       {
          "NDEBUG",
-         "BX_CONFIG_DEBUG=0",
          "XWIN_COCOA=1"
       }
       optimize "Full"
@@ -28,7 +27,6 @@ solution "LittleCore"
       defines
       {
          "_DEBUG",
-         "BX_CONFIG_DEBUG=1",
          "XWIN_COCOA=1"
       }
 
@@ -61,7 +59,6 @@ project "Cubes"
       "../../Engine/ImGui",
       "../../External/sokol",
       "../../Engine/Sokol",
-      "../../External/bx/include",
       "../../External/entt/single_include",
       "../../External/glm",
       "../../External/imgui"
@@ -69,7 +66,6 @@ project "Cubes"
 
    links { 
         "sokol",
-        "bx",
         "LittleCore",
         "ImGui"
    }
@@ -91,4 +87,3 @@ project "Cubes"
          "OpenGL.framework"
       }
 
-   setBxCompat()

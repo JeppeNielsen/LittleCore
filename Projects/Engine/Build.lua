@@ -19,7 +19,6 @@ solution "LittleCore"
       defines
       {
          "NDEBUG",
-         "BX_CONFIG_DEBUG=0",
          "XWIN_COCOA=1"
       }
       optimize "Full"
@@ -27,7 +26,6 @@ solution "LittleCore"
       defines
       {
          "_DEBUG",
-         "BX_CONFIG_DEBUG=1",
          "XWIN_COCOA=1"
       }
 
@@ -61,7 +59,6 @@ project "Engine"
       "../../Engine/LittleCore/**",
       "../../External/sokol",
       "../../Engine/Sokol",
-      "../../External/bx/include",
       "../../External/entt/single_include",
       "../../External/glm",
       "../../External/googletest/googletest/include",
@@ -70,7 +67,6 @@ project "Engine"
 
    links { 
       "sokol",
-      "bx",
       "LittleCore"
    }
 
@@ -91,4 +87,3 @@ project "Engine"
          "OpenGL.framework"
       }
 
-   setBxCompat()

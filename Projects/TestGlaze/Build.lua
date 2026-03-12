@@ -19,7 +19,6 @@ solution "LittleCore"
       defines
       {
          "NDEBUG",
-         "BX_CONFIG_DEBUG=0",
          "XWIN_COCOA=1",
          "MSDFGEN_PUBLIC="
       }
@@ -28,7 +27,6 @@ solution "LittleCore"
       defines
       {
          "_DEBUG",
-         "BX_CONFIG_DEBUG=1",
          "XWIN_COCOA=1",
          "MSDFGEN_PUBLIC="
       }
@@ -64,14 +62,12 @@ project "TestGlaze"
       "../../External/glm",
       "../../External/sokol",
       "../../Engine/Sokol",
-      "../../External/bx/include",
       "../../External/msdfgen/"
    }
 
    links { 
       "LittleCore",
       "sokol",
-      "bx"
    }
 
 

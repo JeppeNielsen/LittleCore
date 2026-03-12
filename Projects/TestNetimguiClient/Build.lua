@@ -23,7 +23,6 @@ solution "LittleCore"
       defines
       {
          "NDEBUG",
-         "BX_CONFIG_DEBUG=0",
          "XWIN_COCOA=1"
       }
       optimize "Full"
@@ -31,7 +30,6 @@ solution "LittleCore"
       defines
       {
          "_DEBUG",
-         "BX_CONFIG_DEBUG=1",
          "XWIN_COCOA=1"
       }
 
@@ -66,7 +64,6 @@ project "TestNetimguiClient"
       "../../Engine/LittleCore/**",
       "../../External/sokol",
       "../../Engine/Sokol",
-      "../../External/bx/include",
       "../../External/entt/src",
       "../../Engine/ImGui",
       "../../External/imgui",
@@ -79,7 +76,6 @@ project "TestNetimguiClient"
 
    links { 
       "sokol",
-      "bx",
       "LittleCore",
       "ImGui",
       "ShaderCompiler",
@@ -105,5 +101,4 @@ project "TestNetimguiClient"
       }
 
    SetClangPath()
-   setBxCompat()
 

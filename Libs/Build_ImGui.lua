@@ -19,7 +19,6 @@ project "ImGui"
       "../Engine/ImGui/**",
       "../External/sokol",
       "../Engine/Sokol",
-      "../External/bx/include",
       "../External/imgui"
    }
 
@@ -27,7 +26,6 @@ project "ImGui"
       "../Engine/ImGui/**",
       "../External/sokol",
       "../Engine/Sokol",
-      "../External/bx/include",
       "../External/imgui"
    }
   

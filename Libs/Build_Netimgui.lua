@@ -17,7 +17,6 @@ project "Netimgui"
       "../Engine/Netimgui",
       "../External/sokol",
       "../Engine/Sokol",
-      "../External/bx/include",
       "../External/imgui",
       "../External/imgui/backends",
       "../External/netImgui/Code/ServerApp/Source/",
@@ -31,7 +30,6 @@ project "Netimgui"
       "../Engine/Netimgui/**",
       "../External/sokol",
       "../Engine/Sokol",
-      "../External/bx/include",
       "../External/imgui"
    }
 

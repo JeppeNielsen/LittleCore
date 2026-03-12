@@ -9,7 +9,6 @@
 #include "Camera.hpp"
 #include "Math.hpp"
 #include "SokolDirect.hpp"
-#include <bx/math.h>
 
 using namespace LittleCore;
 

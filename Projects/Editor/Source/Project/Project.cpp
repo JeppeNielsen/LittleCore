@@ -43,9 +43,7 @@ void Project::Reset() {
     //sokol
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/sokol/");
 
-    moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/bx/include/");
 
-    moduleSettings.context.defines.push_back("BX_CONFIG_DEBUG=0");
 
     //stb
     moduleSettings.context.hppFiles.push_back("/Users/jeppe/Jeppes/LittleCore/External/stb/");
@@ -75,7 +73,6 @@ void Project::Reset() {
     moduleSettings.context.libPaths.push_back("/Users/jeppe/Jeppes/LittleCore/bin/Debug");
     moduleSettings.context.libs.push_back("LittleCore");
     moduleSettings.context.libs.push_back("sokol");
-    moduleSettings.context.libs.push_back("bx");
     moduleSettings.context.libs.push_back("ImGui");
 
 

@@ -30,7 +30,6 @@ void Project::Reset() {
     //sokol
     moduleSettings.context.hppFiles.push_back(engineRoot + "External/sokol/");
 
-    moduleSettings.context.hppFiles.push_back(engineRoot + "External/bx/include/");
 
     //stb
     moduleSettings.context.hppFiles.push_back(engineRoot + "External/stb/");
@@ -112,7 +111,6 @@ void Project::Reset() {
     /*
      links {
       "sokol",
-      "bx",
       "LittleCore",
       "ImGui",
       "Netimgui"
@@ -121,7 +119,6 @@ void Project::Reset() {
 
 
     moduleSettings.context.libs.push_back("sokol");
-    moduleSettings.context.libs.push_back("bx");
     moduleSettings.context.libs.push_back("LittleCore");
     moduleSettings.context.libs.push_back("ImGui");
     moduleSettings.context.libs.push_back("Netimgui");
@@ -143,7 +140,6 @@ void Project::Reset() {
     moduleSettings.context.frameworks.push_back("Metal");
     moduleSettings.context.frameworks.push_back("OpenGL");
 
-    moduleSettings.context.defines.push_back("BX_CONFIG_DEBUG=0");
     moduleSettings.context.defines.push_back("XWIN_COCOA=1");
     moduleSettings.context.defines.push_back("NDEBUG");
 

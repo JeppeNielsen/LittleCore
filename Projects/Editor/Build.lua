@@ -21,7 +21,6 @@ solution "LittleCore"
       defines
       {
          "NDEBUG",
-         "BX_CONFIG_DEBUG=0",
          "XWIN_COCOA=1"
       }
       optimize "Full"
@@ -29,7 +28,6 @@ solution "LittleCore"
       defines
       {
          "_DEBUG",
-         "BX_CONFIG_DEBUG=1",
          "XWIN_COCOA=1"
       }
 
@@ -62,7 +60,6 @@ project "LittleEditor"
         "../../Engine/ImGui",
         "../../External/sokol",
       "../../Engine/Sokol",
-        "../../External/bx/include",
         "../../External/entt/single_include",
         "../../External/glm",
         "../../External/glaze/include",
@@ -71,7 +68,6 @@ project "LittleEditor"
 
    links { 
       "sokol",
-      "bx",
       "LittleCore",
       "ShaderCompiler",
       "ImGui"
@@ -94,4 +90,3 @@ project "LittleEditor"
          "OpenGL.framework"
       }
    SetClangPath()
-   setBxCompat()
