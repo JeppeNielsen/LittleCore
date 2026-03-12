@@ -25,7 +25,8 @@ void ImGuiController::Initialize(void* mainWindow, const ImGuiController::Render
     simgui_setup({
         .color_format = static_cast<sg_pixel_format>(sapp_color_format()),
         .depth_format = static_cast<sg_pixel_format>(sapp_depth_format()),
-        .sample_count = sapp_sample_count()
+        .sample_count = sapp_sample_count(),
+        .ini_filename = "imgui.ini"
     });
 
     ImGuiIO& io = ImGui::GetIO();
