@@ -26,6 +26,9 @@ void TextureRenderer::Render(const std::string &id, int width, int height, Textu
     passAction.colors[0].load_action = SG_LOADACTION_CLEAR;
     passAction.colors[0].store_action = SG_STOREACTION_STORE;
     passAction.colors[0].clear_value = {0.0f, 0.0f, 0.0f, 1.0f};
+    passAction.depth.load_action = SG_LOADACTION_CLEAR;
+    passAction.depth.store_action = SG_STOREACTION_DONTCARE;
+    passAction.depth.clear_value = 1.0f;
 
     sg_pass pass{};
     pass.action = passAction;

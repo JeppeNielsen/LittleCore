@@ -16,6 +16,7 @@ namespace LittleCore {
         uint16_t width = 0;
         uint16_t height = 0;
         sg_image texture = {SG_INVALID_ID};
+        sg_image depthTexture = {SG_INVALID_ID};
         sg_attachments frameBuffer = {SG_INVALID_ID};
     };
 }

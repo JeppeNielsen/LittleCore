@@ -9,12 +9,14 @@
 
 class FrameBufferFactory {
 public:
+    ~FrameBufferFactory();
 
     struct FrameBuffer {
         std::string id;
         int width = 0;
         int height = 0;
         sg_image renderTexture = {SG_INVALID_ID};
+        sg_image depthTexture = {SG_INVALID_ID};
         sg_attachments framebuffer = {SG_INVALID_ID};
     };
 

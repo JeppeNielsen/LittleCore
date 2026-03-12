@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
+#include <sokol_app.h>
 
 namespace {
     std::size_t CalculateBufferCapacity(std::size_t requiredBytes) {
@@ -51,8 +52,10 @@ namespace {
         sg_pipeline_desc pipelineDesc = {};
         pipelineDesc.shader = shaderProgram;
         pipelineDesc.index_type = SG_INDEXTYPE_UINT32;
-        pipelineDesc.sample_count = 1;
-        pipelineDesc.depth.pixel_format = SG_PIXELFORMAT_NONE;
+        pipelineDesc.sample_count = sapp_sample_count();
+        pipelineDesc.depth.pixel_format = static_cast<sg_pixel_format>(sapp_depth_format());
+        pipelineDesc.depth.compare = SG_COMPAREFUNC_LESS_EQUAL;
+        pipelineDesc.depth.write_enabled = blendMode == LittleCore::BlendMode::Off;
         pipelineDesc.colors[0].pixel_format = SG_PIXELFORMAT_RGBA8;
         pipelineDesc.colors[0].write_mask = SG_COLORMASK_RGB; // don't write alpha
         pipelineDesc.layout.buffers[0].stride = sizeof(LittleCore::Vertex);

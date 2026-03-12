@@ -166,8 +166,16 @@ void TestRendering::Initialize() {
     imageDesc.pixel_format = SG_PIXELFORMAT_RGBA8;
     renderTexture = sg_make_image(imageDesc);
 
+    sg_image_desc depthDesc{};
+    depthDesc.render_target = true;
+    depthDesc.width = renderTextureWidth;
+    depthDesc.height = renderTextureHeight;
+    depthDesc.pixel_format = static_cast<sg_pixel_format>(sapp_depth_format());
+    depthTexture = sg_make_image(depthDesc);
+
     sg_attachments_desc attachmentsDesc{};
     attachmentsDesc.colors[0].image = renderTexture;
+    attachmentsDesc.depth_stencil.image = depthTexture;
     framebuffer = sg_make_attachments(attachmentsDesc);
 
 }
@@ -212,6 +220,12 @@ void TestRendering::Render() {
 
 TestRendering::TestRendering() : resources(resourcePathMapper) {
 
+}
+
+TestRendering::~TestRendering() {
+    lc_sg_destroy(framebuffer);
+    lc_sg_destroy(renderTexture);
+    lc_sg_destroy(depthTexture);
 }
 
 void TestRendering::HandleEvent(void *event) {

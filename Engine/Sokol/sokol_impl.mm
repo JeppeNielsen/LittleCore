@@ -110,6 +110,9 @@ bool lc_sg_begin_window_pass() {
     pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
     pass_action.colors[0].store_action = SG_STOREACTION_STORE;
     pass_action.colors[0].clear_value = {0.12f, 0.12f, 0.12f, 1.0f};
+    pass_action.depth.load_action = SG_LOADACTION_CLEAR;
+    pass_action.depth.store_action = SG_STOREACTION_DONTCARE;
+    pass_action.depth.clear_value = 1.0f;
 
     sg_pass pass{};
     pass.action = pass_action;

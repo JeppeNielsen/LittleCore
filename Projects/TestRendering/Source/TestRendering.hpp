@@ -36,6 +36,7 @@ class TestRendering : public IState {
     const uint16_t renderTextureWidth = 1024;
     const uint16_t renderTextureHeight = 1024;
     sg_image renderTexture = {SG_INVALID_ID};
+    sg_image depthTexture = {SG_INVALID_ID};
     sg_attachments framebuffer = {SG_INVALID_ID};
     entt::entity quad1;
     entt::entity quad2;
@@ -43,6 +44,7 @@ class TestRendering : public IState {
 
 public:
     TestRendering();
+    ~TestRendering() override;
 
     void Initialize() override;
 
