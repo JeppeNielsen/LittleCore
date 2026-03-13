@@ -52,6 +52,8 @@ project "ShaderCompiler"
    includedirs {
       "../Engine/ShaderCompiler",
       "../Engine/LittleCore/Files",
+      "../Engine/Sokol",
+      "../External/sokol",
       "../External/sokol-tools/src/shdc",
       "../External/sokol-tools/ext/getopt/include",
       "../External/sokol-tools/ext/pystring",
