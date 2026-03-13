@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include <vector>
 #include "ResourceLoader.hpp"
 #include "ShaderResource.hpp"
 
@@ -14,10 +13,5 @@ namespace LittleCore {
         void Unload(ShaderResource& resource) override;
         bool IsLoaded() override;
         void Reload(ShaderResource& resource) override;
-
-        std::vector<uint8_t> vertexShader;
-        std::vector<uint8_t> fragmentShader;
-
     };
 }
-

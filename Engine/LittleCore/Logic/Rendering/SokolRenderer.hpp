@@ -18,7 +18,7 @@ namespace LittleCore {
 
         virtual void BeginBatch(uint16_t viewId) override;
         virtual void RenderMesh(const Mesh& mesh, const glm::mat4x4& world) override;
-        virtual void EndBatch(uint16_t viewId, sg_shader shaderProgram, BlendMode blendMode) override;
+        virtual void EndBatch(uint16_t viewId, const ShaderResource* shaderResource, BlendMode blendMode) override;
         virtual void SetUniforms(const LittleCore::RenderableUniforms& uniforms) override;
 
     private:
@@ -43,6 +43,7 @@ namespace LittleCore {
         sg_image currentTexture = {SG_INVALID_ID};
         sg_image defaultWhiteTexture = {SG_INVALID_ID};
         sg_sampler defaultSampler = {SG_INVALID_ID};
+        const RenderableUniforms* currentUniforms = nullptr;
     };
 
 }

@@ -9,6 +9,7 @@
 #include "RenderingStats.hpp"
 #include "BlendMode.hpp"
 #include "RenderableUniforms.hpp"
+#include "ShaderResource.hpp"
 
 namespace LittleCore {
     struct Renderer {
@@ -19,7 +20,7 @@ namespace LittleCore {
 
         virtual void BeginBatch(uint16_t viewId) = 0;
         virtual void RenderMesh(const Mesh& mesh, const glm::mat4x4& world) = 0;
-        virtual void EndBatch(uint16_t viewId, sg_shader shaderProgram, BlendMode blendMode) = 0;
+        virtual void EndBatch(uint16_t viewId, const ShaderResource* shaderResource, BlendMode blendMode) = 0;
         virtual void SetUniforms(const LittleCore::RenderableUniforms& uniforms) = 0;
 
         vec2 screenSize;

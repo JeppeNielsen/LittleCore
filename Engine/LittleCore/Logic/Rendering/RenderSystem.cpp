@@ -61,8 +61,8 @@ void RenderSystem::Render(uint16_t viewId, const WorldTransform &cameraTransform
         return distanceA > distanceB;
     });
 
-    sg_shader prevShader = {SG_INVALID_ID};
-    sg_shader currentShader = {SG_INVALID_ID};
+    const ShaderResource* prevShaderResource = nullptr;
+    const ShaderResource* currentShaderResource = nullptr;
 
     BlendMode currentBlendMode = BlendMode::Off;
     BlendMode prevBlendMode = BlendMode::Off;
@@ -90,8 +90,7 @@ void RenderSystem::Render(uint16_t viewId, const WorldTransform &cameraTransform
         const Renderable& renderable = registry.get<Renderable>(entity);
         const Texturable* texturable = registry.try_get<Texturable>(entity);
 
-        currentShader = renderable.shader ? (sg_shader) renderable.shader->handle
-                                          : (sg_shader){SG_INVALID_ID};
+        currentShaderResource = renderable.shader ? renderable.shader.operator->() : nullptr;
         currentBlendMode = renderable.blendMode;
 
         currentHash = renderable.uniforms.CalculateHash();
@@ -100,19 +99,21 @@ void RenderSystem::Render(uint16_t viewId, const WorldTransform &cameraTransform
 
         if (!startedBatch) {
             renderer->BeginBatch(viewId);
-            prevShader = currentShader;
+            prevShaderResource = currentShaderResource;
             prevBlendMode = currentBlendMode;
             previousHash = currentHash;
             prevRenderable = currentRenderable;
             startedBatch = true;
         } else {
 
-            if (currentShader.id != prevShader.id ||
+            const sg_shader currentShaderHandle = currentShaderResource ? currentShaderResource->handle : sg_shader{SG_INVALID_ID};
+            const sg_shader prevShaderHandle = prevShaderResource ? prevShaderResource->handle : sg_shader{SG_INVALID_ID};
+            if (currentShaderHandle.id != prevShaderHandle.id ||
                 currentBlendMode != prevBlendMode ||
                 currentHash != previousHash) {
                 renderer->SetUniforms(registry.get<Renderable>(prevRenderable).uniforms);
-                renderer->EndBatch(viewId, prevShader, prevBlendMode);
-                prevShader = currentShader;
+                renderer->EndBatch(viewId, prevShaderResource, prevBlendMode);
+                prevShaderResource = currentShaderResource;
                 prevBlendMode = currentBlendMode;
                 previousHash = currentHash;
                 prevRenderable = currentRenderable;
@@ -127,7 +128,7 @@ void RenderSystem::Render(uint16_t viewId, const WorldTransform &cameraTransform
     if (currentRenderable!=entt::null) {
         renderer->SetUniforms(registry.get<Renderable>(currentRenderable).uniforms);
     }
-    renderer->EndBatch(viewId, currentShader, currentBlendMode);
+    renderer->EndBatch(viewId, currentShaderResource, currentBlendMode);
     renderer->EndRender(viewId);
 
     std::cout << "\n";

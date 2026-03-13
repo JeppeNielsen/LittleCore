@@ -9,6 +9,7 @@ int main() {
             "/Users/jeppe/Jeppes/LittleCore/Projects/TestRendering/Assets/Shaders/TestShader.shader",
             "/Users/jeppe/Jeppes/LittleCore/Projects/ShaderCompiler/Shaders/Temp/compiled",
             "metal_macos",
+            nullptr,
             &errorMessage)) {
         std::cout << "Compilation success!\n";
     } else {

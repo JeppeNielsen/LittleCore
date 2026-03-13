@@ -5,7 +5,10 @@
 #include "SokolRenderer.hpp"
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
+#include <string_view>
+#include <vector>
 #include <sokol_app.h>
 
 namespace {
@@ -68,6 +71,177 @@ namespace {
 
         ApplyBlendMode(pipelineDesc, blendMode);
         return sg_make_pipeline(pipelineDesc);
+    }
+
+    uint32_t AlignTo(const uint32_t value, const uint32_t alignment) {
+        if (alignment == 0) {
+            return value;
+        }
+        const uint32_t remainder = value % alignment;
+        return remainder == 0 ? value : (value + alignment - remainder);
+    }
+
+    uint32_t GetUniformAlignment(const sg_uniform_type type, const uint16_t arrayCount, const sg_uniform_layout layout) {
+        if (layout == SG_UNIFORMLAYOUT_NATIVE) {
+            return 1;
+        }
+        if (arrayCount > 1) {
+            return 16;
+        }
+        switch (type) {
+            case SG_UNIFORMTYPE_FLOAT:
+            case SG_UNIFORMTYPE_INT:
+                return 4;
+            case SG_UNIFORMTYPE_FLOAT2:
+            case SG_UNIFORMTYPE_INT2:
+                return 8;
+            case SG_UNIFORMTYPE_FLOAT3:
+            case SG_UNIFORMTYPE_FLOAT4:
+            case SG_UNIFORMTYPE_INT3:
+            case SG_UNIFORMTYPE_INT4:
+            case SG_UNIFORMTYPE_MAT4:
+                return 16;
+            default:
+                return 1;
+        }
+    }
+
+    uint32_t GetUniformSize(const sg_uniform_type type, const uint16_t arrayCount, const sg_uniform_layout layout) {
+        if (arrayCount <= 1) {
+            switch (type) {
+                case SG_UNIFORMTYPE_FLOAT:
+                case SG_UNIFORMTYPE_INT:
+                    return 4;
+                case SG_UNIFORMTYPE_FLOAT2:
+                case SG_UNIFORMTYPE_INT2:
+                    return 8;
+                case SG_UNIFORMTYPE_FLOAT3:
+                case SG_UNIFORMTYPE_INT3:
+                    return 12;
+                case SG_UNIFORMTYPE_FLOAT4:
+                case SG_UNIFORMTYPE_INT4:
+                    return 16;
+                case SG_UNIFORMTYPE_MAT4:
+                    return 64;
+                default:
+                    return 0;
+            }
+        }
+
+        if (layout == SG_UNIFORMLAYOUT_NATIVE) {
+            const uint32_t elementSize = GetUniformSize(type, 1, layout);
+            return elementSize * arrayCount;
+        }
+
+        switch (type) {
+            case SG_UNIFORMTYPE_FLOAT:
+            case SG_UNIFORMTYPE_FLOAT2:
+            case SG_UNIFORMTYPE_FLOAT3:
+            case SG_UNIFORMTYPE_FLOAT4:
+            case SG_UNIFORMTYPE_INT:
+            case SG_UNIFORMTYPE_INT2:
+            case SG_UNIFORMTYPE_INT3:
+            case SG_UNIFORMTYPE_INT4:
+                return 16 * arrayCount;
+            case SG_UNIFORMTYPE_MAT4:
+                return 64 * arrayCount;
+            default:
+                return 0;
+        }
+    }
+
+    const LittleCore::RenderableUniforms::UniformEntry* FindUniform(const LittleCore::RenderableUniforms* uniforms,
+                                                                    const std::string_view id) {
+        if (uniforms == nullptr) {
+            return nullptr;
+        }
+        for (const auto& uniform : uniforms->GetUniforms()) {
+            if (uniform.id == id) {
+                return &uniform;
+            }
+        }
+        return nullptr;
+    }
+
+    void WriteUniformData(const sg_glsl_shader_uniform& uniformDesc,
+                          const LittleCore::RenderableUniforms* uniforms,
+                          const glm::mat4x4& viewProjection,
+                          uint8_t* destination) {
+        if (destination == nullptr || uniformDesc.glsl_name == nullptr || uniformDesc.type == SG_UNIFORMTYPE_INVALID) {
+            return;
+        }
+
+        if (uniformDesc.array_count > 1) {
+            return;
+        }
+
+        const std::string_view uniformName = uniformDesc.glsl_name;
+        if (uniformName == "u_modelViewProj" && uniformDesc.type == SG_UNIFORMTYPE_MAT4) {
+            std::memcpy(destination, &viewProjection, sizeof(viewProjection));
+            return;
+        }
+
+        const auto* uniform = FindUniform(uniforms, uniformName);
+        if (uniform == nullptr) {
+            return;
+        }
+
+        switch (uniformDesc.type) {
+            case SG_UNIFORMTYPE_FLOAT:
+                if (uniform->kind == LittleCore::RenderableUniforms::UniformEntry::Kind::Vec4) {
+                    const float value = uniform->value.v4.x;
+                    std::memcpy(destination, &value, sizeof(value));
+                }
+                break;
+            case SG_UNIFORMTYPE_FLOAT2:
+                if (uniform->kind == LittleCore::RenderableUniforms::UniformEntry::Kind::Vec4) {
+                    const float values[2] = {uniform->value.v4.x, uniform->value.v4.y};
+                    std::memcpy(destination, values, sizeof(values));
+                }
+                break;
+            case SG_UNIFORMTYPE_FLOAT3:
+                if (uniform->kind == LittleCore::RenderableUniforms::UniformEntry::Kind::Vec4) {
+                    const float values[3] = {uniform->value.v4.x, uniform->value.v4.y, uniform->value.v4.z};
+                    std::memcpy(destination, values, sizeof(values));
+                }
+                break;
+            case SG_UNIFORMTYPE_FLOAT4:
+                if (uniform->kind == LittleCore::RenderableUniforms::UniformEntry::Kind::Vec4) {
+                    std::memcpy(destination, &uniform->value.v4, sizeof(uniform->value.v4));
+                }
+                break;
+            case SG_UNIFORMTYPE_MAT4:
+                if (uniform->kind == LittleCore::RenderableUniforms::UniformEntry::Kind::Mat4x4) {
+                    std::memcpy(destination, &uniform->value.m4, sizeof(uniform->value.m4));
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    std::vector<uint8_t> BuildUniformBlockData(const LittleCore::ShaderUniformBlockInfo& uniformBlock,
+                                               const glm::mat4x4& viewProjection,
+                                               const LittleCore::RenderableUniforms* uniforms) {
+        std::vector<uint8_t> data(uniformBlock.size, 0);
+        uint32_t offset = 0;
+        for (const auto& uniformInfo : uniformBlock.uniforms) {
+            const sg_glsl_shader_uniform uniformDesc{
+                .type = uniformInfo.type,
+                .array_count = uniformInfo.arrayCount,
+                .glsl_name = uniformInfo.name.c_str(),
+            };
+
+            offset = AlignTo(offset, GetUniformAlignment(uniformDesc.type, uniformDesc.array_count, uniformBlock.layout));
+            const uint32_t uniformSize = GetUniformSize(uniformDesc.type, uniformDesc.array_count, uniformBlock.layout);
+            if (uniformSize == 0 || offset + uniformSize > data.size()) {
+                break;
+            }
+
+            WriteUniformData(uniformDesc, uniforms, viewProjection, data.data() + offset);
+            offset += uniformSize;
+        }
+        return data;
     }
 }
 
@@ -132,6 +306,7 @@ void SokolRenderer::BeginBatch(uint16_t) {
     batchedVertices.clear();
     batchedIndices.clear();
     currentTexture = {SG_INVALID_ID};
+    currentUniforms = nullptr;
 }
 
 void SokolRenderer::RenderMesh(const Mesh& mesh, const glm::mat4x4& world) {
@@ -161,8 +336,10 @@ void SokolRenderer::RenderMesh(const Mesh& mesh, const glm::mat4x4& world) {
     }
 }
 
-void SokolRenderer::EndBatch(uint16_t, sg_shader shaderProgram, BlendMode blendMode) {
+void SokolRenderer::EndBatch(uint16_t, const ShaderResource* shaderResource, BlendMode blendMode) {
+    const sg_shader shaderProgram = shaderResource != nullptr ? shaderResource->handle : sg_shader{SG_INVALID_ID};
     if (shaderProgram.id == SG_INVALID_ID || batchedVertices.empty() || batchedIndices.empty()) {
+        currentUniforms = nullptr;
         return;
     }
     const sg_resource_state shaderState = sg_query_shader_state(shaderProgram);
@@ -170,11 +347,13 @@ void SokolRenderer::EndBatch(uint16_t, sg_shader shaderProgram, BlendMode blendM
         batchedVertices.clear();
         batchedIndices.clear();
         currentTexture = {SG_INVALID_ID};
+        currentUniforms = nullptr;
         return;
     }
 
     sg_pipeline pipeline = CreatePipeline(shaderProgram, blendMode);
     if (pipeline.id == SG_INVALID_ID) {
+        currentUniforms = nullptr;
         return;
     }
 
@@ -183,6 +362,7 @@ void SokolRenderer::EndBatch(uint16_t, sg_shader shaderProgram, BlendMode blendM
     BatchBuffers* batchBuffers = AcquireBatchBuffers(vertexBufferSize, indexBufferSize);
     if (batchBuffers == nullptr) {
         sg_destroy_pipeline(pipeline);
+        currentUniforms = nullptr;
         return;
     }
 
@@ -208,6 +388,7 @@ void SokolRenderer::EndBatch(uint16_t, sg_shader shaderProgram, BlendMode blendM
     if (shaderUsesTexture && textureToBind.id == SG_INVALID_ID) {
         if (!EnsureDefaultWhiteTexture()) {
             sg_destroy_pipeline(pipeline);
+            currentUniforms = nullptr;
             return;
         }
         textureToBind = defaultWhiteTexture;
@@ -224,17 +405,14 @@ void SokolRenderer::EndBatch(uint16_t, sg_shader shaderProgram, BlendMode blendM
     sg_apply_pipeline(pipeline);
     sg_apply_bindings(bindings);
 
-    if (shaderDesc.uniform_blocks[0].stage != SG_SHADERSTAGE_NONE && shaderDesc.uniform_blocks[0].size > 0) {
-        const uint32_t uniformSize = shaderDesc.uniform_blocks[0].size;
-        if (uniformSize <= sizeof(glm::mat4x4)) {
-            sg_range uniformRange{&viewProjection, uniformSize};
-            sg_apply_uniforms(0, uniformRange);
-        } else {
-            std::vector<uint8_t> uniformData(uniformSize, 0);
-            std::memcpy(uniformData.data(), &viewProjection, sizeof(glm::mat4x4));
-            sg_range uniformRange{uniformData.data(), uniformData.size()};
-            sg_apply_uniforms(0, uniformRange);
+    for (const auto& uniformBlock : shaderResource->uniformBlocks) {
+        std::vector<uint8_t> uniformData = BuildUniformBlockData(uniformBlock, viewProjection, currentUniforms);
+        if (uniformData.empty()) {
+            continue;
         }
+
+        sg_range uniformRange{uniformData.data(), uniformData.size()};
+        sg_apply_uniforms(uniformBlock.slot, uniformRange);
     }
 
     sg_draw(0, static_cast<int>(batchedIndices.size()), 1);
@@ -245,6 +423,7 @@ void SokolRenderer::EndBatch(uint16_t, sg_shader shaderProgram, BlendMode blendM
     batchedVertices.clear();
     batchedIndices.clear();
     currentTexture = {SG_INVALID_ID};
+    currentUniforms = nullptr;
 }
 
 bool SokolRenderer::EnsureBuffer(sg_buffer& buffer, std::size_t& capacityBytes, sg_buffer_type type, std::size_t requiredBytes) {
@@ -305,6 +484,7 @@ SokolRenderer::BatchBuffers* SokolRenderer::AcquireBatchBuffers(std::size_t requ
 }
 
 void SokolRenderer::SetUniforms(const RenderableUniforms& uniforms) {
+    currentUniforms = &uniforms;
     currentTexture = {SG_INVALID_ID};
     sg_image fallbackTexture = {SG_INVALID_ID};
 
@@ -315,7 +495,7 @@ void SokolRenderer::SetUniforms(const RenderableUniforms& uniforms) {
 
         if (uniform.id == "colorTexture") {
             currentTexture = uniform.value.tex;
-            return;
+            continue;
         }
 
         if (fallbackTexture.id == SG_INVALID_ID) {
@@ -323,5 +503,7 @@ void SokolRenderer::SetUniforms(const RenderableUniforms& uniforms) {
         }
     }
 
-    currentTexture = fallbackTexture;
+    if (currentTexture.id == SG_INVALID_ID) {
+        currentTexture = fallbackTexture;
+    }
 }
