@@ -19,6 +19,8 @@ struct FontAtlas::Page {
     std::vector<uint8_t> bitmap; // CPU-side R8, for reference/debugging
 
     LittleCore::MaxRectsPacker packer;
+
+    bool isTextureDirty = false;
 };
 
 struct FontAtlas::Glyph {
@@ -309,22 +311,8 @@ bool FontAtlas::rasterizeAndPackGlyph(uint32_t codepoint) {
         std::copy(src, src + gw, dst);
     }
 
-    /*
-    std::vector<uint8_t> output;
 
-    for (int i = 0; i < page.bitmap.size(); ++i) {
-        output.push_back(page.bitmap[i]);
-        output.push_back(page.bitmap[i]);
-        output.push_back(page.bitmap[i]);
-        output.push_back(page.bitmap[i]);
-    }
-    //LittleCore::ImageLoader::SaveTga("FontAtlas.tga", output.data(), page.w, page.h);
-     */
 
-    // Sokol updates full dynamic images; upload the full atlas bitmap.
-    sg_image_data data{};
-    data.subimage[0][0] = {page.bitmap.data(), page.bitmap.size()};
-    sg_update_image(page.tex, data);
 
     stbtt_FreeSDF(sdf, nullptr);
 
@@ -348,5 +336,32 @@ bool FontAtlas::rasterizeAndPackGlyph(uint32_t codepoint) {
     g.v1 = (float) (g.y + g.h) / (float) page.h;
 
     m_glyphs[codepoint] = g;
+
+    page.isTextureDirty = true;
     return true;
+}
+
+void LittleCore::FontAtlas::UploadTextures() {
+    for(auto& page : m_pages) {
+
+        if (!page.isTextureDirty) {
+            continue;
+        }
+        page.isTextureDirty = true;
+
+        // Sokol updates full dynamic images; upload the full atlas bitmap.
+        sg_image_data data{};
+        data.subimage[0][0] = {page.bitmap.data(), page.bitmap.size()};
+        sg_update_image(page.tex, data);
+
+/*        std::vector<uint8_t> output;
+        for (int i = 0; i < page.bitmap.size(); ++i) {
+            output.push_back(page.bitmap[i]);
+            output.push_back(page.bitmap[i]);
+            output.push_back(page.bitmap[i]);
+            output.push_back(page.bitmap[i]);
+        }
+        LittleCore::ImageLoader::SaveTga("FontAtlas.tga", output.data(), page.w, page.h);
+*/
+    }
 }

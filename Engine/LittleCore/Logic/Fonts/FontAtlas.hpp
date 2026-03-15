@@ -57,6 +57,8 @@ namespace LittleCore {
 
         static std::vector<uint32_t> utf8ToCodepoints(const std::string& s);
 
+        void UploadTextures();
+
     private:
         struct Page;
         struct Glyph;
@@ -65,7 +67,6 @@ namespace LittleCore {
 
         bool rasterizeAndPackGlyph(uint32_t codepoint);
 
-    private:
         Config m_cfg{};
 
         // Keep bytes alive (safe default when loading from file)

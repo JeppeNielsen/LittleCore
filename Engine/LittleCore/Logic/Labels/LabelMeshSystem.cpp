@@ -65,6 +65,8 @@ void WriteGlyph(Mesh& mesh, Label& label, uint32_t glyphId, float& offset) {
 
 void LabelMeshSystem::Update() {
 
+    std::set<FontAtlas*> dirtyFontAtlases;
+
     for(auto entity : observer) {
         auto& label = registry.get<Label>(entity);
 
@@ -90,9 +92,14 @@ void LabelMeshSystem::Update() {
         renderable.uniforms.Set("outlineColor", label.outlineColor);
 
         registry.patch<Mesh>(entity);
+
+        dirtyFontAtlases.emplace(&label.font->atlas);
     }
     observer.clear();
 
+    for(auto dirtyFontAtlas : dirtyFontAtlases) {
+        dirtyFontAtlas->UploadTextures();
+    }
 }
 
 void LabelMeshSystem::Reload() {
