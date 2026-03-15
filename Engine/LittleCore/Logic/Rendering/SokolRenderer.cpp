@@ -21,6 +21,74 @@ namespace {
         return capacity;
     }
 
+    uint32_t GetPackedUniformElementSize(const sg_uniform_type type) {
+        switch (type) {
+            case SG_UNIFORMTYPE_FLOAT:
+                return sizeof(float);
+            case SG_UNIFORMTYPE_FLOAT2:
+                return sizeof(float) * 2;
+            case SG_UNIFORMTYPE_FLOAT3:
+                return sizeof(float) * 3;
+            case SG_UNIFORMTYPE_FLOAT4:
+                return sizeof(float) * 4;
+            case SG_UNIFORMTYPE_INT:
+                return sizeof(int);
+            case SG_UNIFORMTYPE_INT2:
+                return sizeof(int) * 2;
+            case SG_UNIFORMTYPE_INT3:
+                return sizeof(int) * 3;
+            case SG_UNIFORMTYPE_INT4:
+                return sizeof(int) * 4;
+            case SG_UNIFORMTYPE_MAT4:
+                return sizeof(glm::mat4x4);
+            default:
+                return 0;
+        }
+    }
+
+    bool IsFloatVectorUniform(const sg_uniform_type type) {
+        switch (type) {
+            case SG_UNIFORMTYPE_FLOAT:
+            case SG_UNIFORMTYPE_FLOAT2:
+            case SG_UNIFORMTYPE_FLOAT3:
+            case SG_UNIFORMTYPE_FLOAT4:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    bool IsIntVectorUniform(const sg_uniform_type type) {
+        switch (type) {
+            case SG_UNIFORMTYPE_INT:
+            case SG_UNIFORMTYPE_INT2:
+            case SG_UNIFORMTYPE_INT3:
+            case SG_UNIFORMTYPE_INT4:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    uint32_t GetUniformComponentCount(const sg_uniform_type type) {
+        switch (type) {
+            case SG_UNIFORMTYPE_FLOAT:
+            case SG_UNIFORMTYPE_INT:
+                return 1;
+            case SG_UNIFORMTYPE_FLOAT2:
+            case SG_UNIFORMTYPE_INT2:
+                return 2;
+            case SG_UNIFORMTYPE_FLOAT3:
+            case SG_UNIFORMTYPE_INT3:
+                return 3;
+            case SG_UNIFORMTYPE_FLOAT4:
+            case SG_UNIFORMTYPE_INT4:
+                return 4;
+            default:
+                return 0;
+        }
+    }
+
     void ApplyBlendMode(sg_pipeline_desc& pipelineDesc, LittleCore::BlendMode blendMode) {
         auto& blend = pipelineDesc.colors[0].blend;
         switch (blendMode) {
@@ -163,7 +231,69 @@ namespace {
         return nullptr;
     }
 
+    bool CopyUniformValue(const LittleCore::RenderableUniforms::UniformEntry& uniform,
+                          const sg_glsl_shader_uniform& uniformDesc,
+                          const sg_uniform_layout layout,
+                          uint8_t* destination) {
+        if (uniform.kind != LittleCore::RenderableUniforms::UniformEntry::Kind::Value) {
+            return false;
+        }
+
+        const uint16_t arrayCount = uniformDesc.array_count > 0 ? uniformDesc.array_count : 1;
+        if (uniform.type == uniformDesc.type && uniform.arrayCount == arrayCount) {
+            const uint32_t elementSize = GetPackedUniformElementSize(uniform.type);
+            if (elementSize == 0) {
+                return false;
+            }
+
+            const std::size_t requiredBytes = static_cast<std::size_t>(elementSize) * uniform.arrayCount;
+            if (uniform.data.size() != requiredBytes) {
+                return false;
+            }
+
+            if (uniform.arrayCount <= 1 || layout == SG_UNIFORMLAYOUT_NATIVE) {
+                std::memcpy(destination, uniform.data.data(), uniform.data.size());
+                return true;
+            }
+
+            const uint32_t arrayStride = uniform.type == SG_UNIFORMTYPE_MAT4 ? 64 : 16;
+            for (uint16_t arrayIndex = 0; arrayIndex < uniform.arrayCount; ++arrayIndex) {
+                std::memcpy(destination + (arrayStride * arrayIndex),
+                            uniform.data.data() + (elementSize * arrayIndex),
+                            elementSize);
+            }
+            return true;
+        }
+
+        if (arrayCount != 1 || uniform.arrayCount != 1) {
+            return false;
+        }
+
+        if (IsFloatVectorUniform(uniformDesc.type) && IsFloatVectorUniform(uniform.type)) {
+            const uint32_t sourceComponentCount = GetUniformComponentCount(uniform.type);
+            const uint32_t destinationComponentCount = GetUniformComponentCount(uniformDesc.type);
+            if (sourceComponentCount >= destinationComponentCount &&
+                uniform.data.size() >= static_cast<std::size_t>(sourceComponentCount * sizeof(float))) {
+                std::memcpy(destination, uniform.data.data(), destinationComponentCount * sizeof(float));
+                return true;
+            }
+        }
+
+        if (IsIntVectorUniform(uniformDesc.type) && IsIntVectorUniform(uniform.type)) {
+            const uint32_t sourceComponentCount = GetUniformComponentCount(uniform.type);
+            const uint32_t destinationComponentCount = GetUniformComponentCount(uniformDesc.type);
+            if (sourceComponentCount >= destinationComponentCount &&
+                uniform.data.size() >= static_cast<std::size_t>(sourceComponentCount * sizeof(int))) {
+                std::memcpy(destination, uniform.data.data(), destinationComponentCount * sizeof(int));
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     void WriteUniformData(const sg_glsl_shader_uniform& uniformDesc,
+                          const sg_uniform_layout layout,
                           const LittleCore::RenderableUniforms* uniforms,
                           const glm::mat4x4& viewProjection,
                           uint8_t* destination) {
@@ -171,12 +301,8 @@ namespace {
             return;
         }
 
-        if (uniformDesc.array_count > 1) {
-            return;
-        }
-
         const std::string_view uniformName = uniformDesc.glsl_name;
-        if (uniformName == "u_modelViewProj" && uniformDesc.type == SG_UNIFORMTYPE_MAT4) {
+        if (uniformName == "u_modelViewProj" && uniformDesc.type == SG_UNIFORMTYPE_MAT4 && uniformDesc.array_count == 1) {
             std::memcpy(destination, &viewProjection, sizeof(viewProjection));
             return;
         }
@@ -186,38 +312,7 @@ namespace {
             return;
         }
 
-        switch (uniformDesc.type) {
-            case SG_UNIFORMTYPE_FLOAT:
-                if (uniform->kind == LittleCore::RenderableUniforms::UniformEntry::Kind::Vec4) {
-                    const float value = uniform->value.v4.x;
-                    std::memcpy(destination, &value, sizeof(value));
-                }
-                break;
-            case SG_UNIFORMTYPE_FLOAT2:
-                if (uniform->kind == LittleCore::RenderableUniforms::UniformEntry::Kind::Vec4) {
-                    const float values[2] = {uniform->value.v4.x, uniform->value.v4.y};
-                    std::memcpy(destination, values, sizeof(values));
-                }
-                break;
-            case SG_UNIFORMTYPE_FLOAT3:
-                if (uniform->kind == LittleCore::RenderableUniforms::UniformEntry::Kind::Vec4) {
-                    const float values[3] = {uniform->value.v4.x, uniform->value.v4.y, uniform->value.v4.z};
-                    std::memcpy(destination, values, sizeof(values));
-                }
-                break;
-            case SG_UNIFORMTYPE_FLOAT4:
-                if (uniform->kind == LittleCore::RenderableUniforms::UniformEntry::Kind::Vec4) {
-                    std::memcpy(destination, &uniform->value.v4, sizeof(uniform->value.v4));
-                }
-                break;
-            case SG_UNIFORMTYPE_MAT4:
-                if (uniform->kind == LittleCore::RenderableUniforms::UniformEntry::Kind::Mat4x4) {
-                    std::memcpy(destination, &uniform->value.m4, sizeof(uniform->value.m4));
-                }
-                break;
-            default:
-                break;
-        }
+        CopyUniformValue(*uniform, uniformDesc, layout, destination);
     }
 
     std::vector<uint8_t> BuildUniformBlockData(const LittleCore::ShaderUniformBlockInfo& uniformBlock,
@@ -238,7 +333,7 @@ namespace {
                 break;
             }
 
-            WriteUniformData(uniformDesc, uniforms, viewProjection, data.data() + offset);
+            WriteUniformData(uniformDesc, uniformBlock.layout, uniforms, viewProjection, data.data() + offset);
             offset += uniformSize;
         }
         return data;
@@ -494,12 +589,12 @@ void SokolRenderer::SetUniforms(const RenderableUniforms& uniforms) {
         }
 
         if (uniform.id == "colorTexture") {
-            currentTexture = uniform.value.tex;
+            currentTexture = uniform.texture;
             continue;
         }
 
         if (fallbackTexture.id == SG_INVALID_ID) {
-            fallbackTexture = uniform.value.tex;
+            fallbackTexture = uniform.texture;
         }
     }
 

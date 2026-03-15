@@ -6,10 +6,37 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <cstring>   // std::memcmp (not needed here) / std::memcpy
+#include <cstring>
 #include <string>
 
 using namespace LittleCore;
+
+namespace {
+    std::size_t GetPackedUniformElementSize(const sg_uniform_type type) noexcept {
+        switch (type) {
+            case SG_UNIFORMTYPE_FLOAT:
+                return sizeof(float);
+            case SG_UNIFORMTYPE_FLOAT2:
+                return sizeof(float) * 2;
+            case SG_UNIFORMTYPE_FLOAT3:
+                return sizeof(float) * 3;
+            case SG_UNIFORMTYPE_FLOAT4:
+                return sizeof(float) * 4;
+            case SG_UNIFORMTYPE_INT:
+                return sizeof(int);
+            case SG_UNIFORMTYPE_INT2:
+                return sizeof(int) * 2;
+            case SG_UNIFORMTYPE_INT3:
+                return sizeof(int) * 3;
+            case SG_UNIFORMTYPE_INT4:
+                return sizeof(int) * 4;
+            case SG_UNIFORMTYPE_MAT4:
+                return sizeof(mat4x4);
+            default:
+                return 0;
+        }
+    }
+}
 
 static inline uint64_t rotl64(uint64_t x, int r) noexcept {
     return (x << r) | (x >> (64 - r));
@@ -48,17 +75,15 @@ static inline uint64_t hashEntry(const RenderableUniforms::UniformEntry& e) noex
 
     switch (e.kind) {
         case K::Texture: {
-            h ^= rotl64(mix64(static_cast<uint64_t>(e.value.tex.id)), 17);
+            h ^= rotl64(mix64(static_cast<uint64_t>(e.texture.id)), 17);
             break;
         }
-        case K::Vec4:
-            h ^= rotl64(hashBytes(&e.value.v4, sizeof(e.value.v4)), 21);
-            break;
-        case K::Mat3x3:
-            h ^= rotl64(hashBytes(&e.value.m3, sizeof(e.value.m3)), 25);
-            break;
-        case K::Mat4x4:
-            h ^= rotl64(hashBytes(&e.value.m4, sizeof(e.value.m4)), 29);
+        case K::Value:
+            h ^= rotl64(mix64(static_cast<uint64_t>(static_cast<int>(e.type))), 21);
+            h ^= rotl64(mix64(static_cast<uint64_t>(e.arrayCount)), 25);
+            if (!e.data.empty()) {
+                h ^= rotl64(hashBytes(e.data.data(), e.data.size()), 29);
+            }
             break;
     }
 
@@ -80,64 +105,94 @@ const RenderableUniforms::UniformList& RenderableUniforms::GetUniforms() const {
     return uniforms;
 }
 
-void RenderableUniforms::Set(const std::string& id, sg_image texture) {
-    for (auto& e : uniforms) {
-        if (e.kind == UniformEntry::Kind::Texture && e.id == id) {
-            e.value.tex = texture;
-            return;
-        }
+RenderableUniforms::UniformEntry* RenderableUniforms::FindEntry(const std::string& id) {
+    const auto it = std::find_if(uniforms.begin(), uniforms.end(), [&id](const auto& entry) {
+        return entry.id == id;
+    });
+    return it != uniforms.end() ? &(*it) : nullptr;
+}
+
+const RenderableUniforms::UniformEntry* RenderableUniforms::FindEntry(const std::string& id) const {
+    const auto it = std::find_if(uniforms.begin(), uniforms.end(), [&id](const auto& entry) {
+        return entry.id == id;
+    });
+    return it != uniforms.end() ? &(*it) : nullptr;
+}
+
+void RenderableUniforms::SetRaw(const std::string& id, const sg_uniform_type type, const void* data, const uint16_t arrayCount) {
+    if (type == SG_UNIFORMTYPE_INVALID || data == nullptr || arrayCount == 0) {
+        return;
     }
 
-    UniformEntry entry;
-    entry.id = id;
-    entry.kind = UniformEntry::Kind::Texture;
-    entry.value.tex = texture;
-    uniforms.emplace_back(entry);
+    const std::size_t elementSize = GetPackedUniformElementSize(type);
+    if (elementSize == 0) {
+        return;
+    }
+
+    UniformEntry* entry = FindEntry(id);
+    if (entry == nullptr) {
+        uniforms.emplace_back();
+        entry = &uniforms.back();
+        entry->id = id;
+    }
+
+    entry->kind = UniformEntry::Kind::Value;
+    entry->type = type;
+    entry->arrayCount = arrayCount;
+    entry->texture = {SG_INVALID_ID};
+    entry->data.resize(elementSize * arrayCount);
+    std::memcpy(entry->data.data(), data, entry->data.size());
+}
+
+void RenderableUniforms::Set(const std::string& id, sg_image texture) {
+    UniformEntry* entry = FindEntry(id);
+    if (entry == nullptr) {
+        uniforms.emplace_back();
+        entry = &uniforms.back();
+        entry->id = id;
+    }
+
+    entry->kind = UniformEntry::Kind::Texture;
+    entry->type = SG_UNIFORMTYPE_INVALID;
+    entry->arrayCount = 1;
+    entry->texture = texture;
+    entry->data.clear();
+}
+
+void RenderableUniforms::Set(const std::string& id, float value) {
+    SetRaw(id, SG_UNIFORMTYPE_FLOAT, &value);
+}
+
+void RenderableUniforms::Set(const std::string& id, vec2 vector) {
+    SetRaw(id, SG_UNIFORMTYPE_FLOAT2, &vector);
+}
+
+void RenderableUniforms::Set(const std::string& id, vec3 vector) {
+    SetRaw(id, SG_UNIFORMTYPE_FLOAT3, &vector);
 }
 
 void RenderableUniforms::Set(const std::string& id, vec4 vector) {
-    for (auto& e : uniforms) {
-        if (e.kind == UniformEntry::Kind::Vec4 && e.id == id) {
-            e.value.v4 = vector;
-            return;
-        }
-    }
-
-    UniformEntry entry;
-    entry.id = id;
-    entry.kind = UniformEntry::Kind::Vec4;
-    entry.value.v4 = vector;
-    uniforms.emplace_back(entry);
+    SetRaw(id, SG_UNIFORMTYPE_FLOAT4, &vector);
 }
 
-void RenderableUniforms::Set(const std::string& id, mat3x3 matrix) {
-    for (auto& e : uniforms) {
-        if (e.kind == UniformEntry::Kind::Mat3x3 && e.id == id) {
-            e.value.m3 = matrix;
-            return;
-        }
-    }
+void RenderableUniforms::Set(const std::string& id, int value) {
+    SetRaw(id, SG_UNIFORMTYPE_INT, &value);
+}
 
-    UniformEntry entry;
-    entry.id = id;
-    entry.kind = UniformEntry::Kind::Mat3x3;
-    entry.value.m3 = matrix;
-    uniforms.emplace_back(entry);
+void RenderableUniforms::Set(const std::string& id, ivec2 vector) {
+    SetRaw(id, SG_UNIFORMTYPE_INT2, &vector);
+}
+
+void RenderableUniforms::Set(const std::string& id, ivec3 vector) {
+    SetRaw(id, SG_UNIFORMTYPE_INT3, &vector);
+}
+
+void RenderableUniforms::Set(const std::string& id, ivec4 vector) {
+    SetRaw(id, SG_UNIFORMTYPE_INT4, &vector);
 }
 
 void RenderableUniforms::Set(const std::string& id, mat4x4 matrix) {
-    for (auto& e : uniforms) {
-        if (e.kind == UniformEntry::Kind::Mat4x4 && e.id == id) {
-            e.value.m4 = matrix;
-            return;
-        }
-    }
-
-    UniformEntry entry;
-    entry.id = id;
-    entry.kind = UniformEntry::Kind::Mat4x4;
-    entry.value.m4 = matrix;
-    uniforms.emplace_back(entry);
+    SetRaw(id, SG_UNIFORMTYPE_MAT4, &matrix);
 }
 
 void RenderableUniforms::Remove(const std::string& id) {
@@ -147,4 +202,3 @@ void RenderableUniforms::Remove(const std::string& id) {
         uniforms.erase(it);
     }
 }
-

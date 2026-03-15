@@ -4,12 +4,12 @@
 
 
 #pragma once
+#include <cstddef>
+#include <cstdint>
 #include <string>
-#include <unordered_map>
-#include <tuple>
+#include <vector>
 #include "SokolDirect.hpp"
 #include "Math.hpp"
-#include <vector>
 #include "Color.hpp"
 
 namespace LittleCore {
@@ -18,32 +18,38 @@ namespace LittleCore {
     public:
 
         struct UniformEntry {
+            enum class Kind { Texture, Value };
+
             std::string id;
-            enum class Kind { Texture, Vec4, Mat3x3, Mat4x4 } kind;
-
-            union Value {
-                sg_image tex;
-                vec4 v4;
-                mat3x3 m3;
-                mat4x4 m4;
-
-                Value() {}
-            } value;
+            Kind kind = Kind::Value;
+            sg_uniform_type type = SG_UNIFORMTYPE_INVALID;
+            uint16_t arrayCount = 1;
+            sg_image texture = {SG_INVALID_ID};
+            std::vector<uint8_t> data;
         };
 
         using UniformList = std::vector<UniformEntry>;
 
         const UniformList& GetUniforms() const;
 
+        void SetRaw(const std::string& id, sg_uniform_type type, const void* data, uint16_t arrayCount = 1);
         void Set(const std::string& id, sg_image texture);
+        void Set(const std::string& id, float value);
+        void Set(const std::string& id, vec2 vector);
+        void Set(const std::string& id, vec3 vector);
         void Set(const std::string& id, vec4 vector);
-        void Set(const std::string& id, mat3x3 matrix);
+        void Set(const std::string& id, int value);
+        void Set(const std::string& id, ivec2 vector);
+        void Set(const std::string& id, ivec3 vector);
+        void Set(const std::string& id, ivec4 vector);
         void Set(const std::string& id, mat4x4 matrix);
         void Remove(const std::string& id);
 
         uint64_t CalculateHash() const;
 
     private:
+        UniformEntry* FindEntry(const std::string& id);
+        const UniformEntry* FindEntry(const std::string& id) const;
 
         UniformList uniforms;
     };
