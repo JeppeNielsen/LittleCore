@@ -4,23 +4,23 @@
          "type": "LittleCore::LocalTransform",
          "components": [
             [
-               2097153,
+               3145729,
                {
                   "position": {
-                     "x": -10,
-                     "y": 0,
-                     "z": 0
+                     "x": -5.2336216,
+                     "y": 0.46105278,
+                     "z": 0.0008393717
                   },
                   "rotation": {
-                     "x": 0,
-                     "y": 0,
-                     "z": 0,
-                     "w": 1
+                     "x": -0.004599381,
+                     "y": 0.0004901533,
+                     "z": 0.0000022544054,
+                     "w": 0.99998933
                   },
                   "scale": {
-                     "x": 0.2,
-                     "y": 0.2,
-                     "z": 0.2
+                     "x": 0.1,
+                     "y": 0.1,
+                     "z": 0.2000003
                   }
                }
             ]
@@ -30,7 +30,7 @@
          "type": "LittleCore::Hierarchy",
          "components": [
             [
-               2097153,
+               3145729,
                {
                   "parent": 4294967295
                }
@@ -49,7 +49,7 @@
          "type": "LittleCore::Renderable",
          "components": [
             [
-               2097153,
+               3145729,
                {
                   "shader": {
                      "id": "4D05F14B66BA4478AABC7D427B824123"
@@ -63,7 +63,7 @@
          "type": "LittleCore::Mesh",
          "components": [
             [
-               2097153,
+               3145729,
                {
                   "id": ""
                }
@@ -78,7 +78,7 @@
          "type": "LittleCore::PrefabExposedComponents",
          "components": [
             [
-               2097153,
+               3145729,
                {
                   "exposedComponents": [
                      "LittleCore::Label",
@@ -92,17 +92,17 @@
          "type": "LittleCore::Label",
          "components": [
             [
-               2097153,
+               3145729,
                {
                   "font": {
                      "id": "DCE240C80F794FFCBB6628CB719B30C6"
                   },
-                  "text": "Hat",
-                  "outlineSize": 0.1,
+                  "text": "Tron the Legacy",
+                  "outlineSize": 0.2,
                   "outlineColor": {
-                     "x": 0.035087585,
-                     "y": 0,
-                     "z": 1,
+                     "x": 0.3093922,
+                     "y": 1,
+                     "z": 0,
                      "w": 1
                   }
                }
@@ -113,12 +113,12 @@
          "type": "LittleCore::Colorable",
          "components": [
             [
-               2097153,
+               3145729,
                {
                   "color": {
-                     "x": 1,
-                     "y": 1,
-                     "z": 1,
+                     "x": 0.052501507,
+                     "y": 0.47513813,
+                     "z": 0,
                      "w": 1
                   }
                }
@@ -129,7 +129,7 @@
          "type": "LittleCore::WorldTransform",
          "components": [
             [
-               2097153,
+               3145729,
                {
                   "world": {
                      
@@ -145,17 +145,17 @@
          "type": "LittleCore::LocalBoundingBox",
          "components": [
             [
-               2097153,
+               3145729,
                {
                   "bounds": {
                      "center": {
-                        "x": 33.561348,
-                        "y": 19.5,
+                        "x": 185.26466,
+                        "y": 14.5,
                         "z": 0
                      },
                      "extends": {
-                        "x": 39.561348,
-                        "y": 28.5,
+                        "x": 193.26466,
+                        "y": 33.5,
                         "z": 0
                      }
                   }
@@ -167,18 +167,18 @@
          "type": "LittleCore::WorldBoundingBox",
          "components": [
             [
-               2097153,
+               3145729,
                {
                   "bounds": {
                      "center": {
-                        "x": -3.2877302,
-                        "y": 3.9,
-                        "z": 0
+                        "x": 13.292824,
+                        "y": 1.9109914,
+                        "z": -0.030660499
                      },
                      "extends": {
-                        "x": 7.9122696,
-                        "y": 5.7000003,
-                        "z": 0
+                        "x": 19.326488,
+                        "y": 3.3498583,
+                        "z": 0.04976158
                      }
                   }
                }
