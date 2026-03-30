@@ -231,6 +231,16 @@ namespace LittleCore {
 
         Coordinates GetCursorPosition() const { return GetActualCursorCoordinates(); }
 
+        bool IsFocused() const { return mIsFocused; }
+
+        ImVec2 GetCursorScreenPosition() const { return mCursorScreenPosition; }
+
+        ImVec2 GetContentScreenMin() const { return mContentScreenMin; }
+
+        ImVec2 GetContentScreenMax() const { return mContentScreenMax; }
+
+        float GetLineHeight() const { return mCharAdvance.y; }
+
         void SetCursorPosition(const Coordinates &aPosition);
 
         inline void SetHandleMouseInputs(bool aValue) { mHandleMouseInputs = aValue; }
@@ -456,10 +466,14 @@ namespace LittleCore {
         Breakpoints mBreakpoints;
         ErrorMarkers mErrorMarkers;
         ImVec2 mCharAdvance;
+        ImVec2 mCursorScreenPosition = ImVec2(0.0f, 0.0f);
+        ImVec2 mContentScreenMin = ImVec2(0.0f, 0.0f);
+        ImVec2 mContentScreenMax = ImVec2(0.0f, 0.0f);
         Coordinates mInteractiveStart, mInteractiveEnd;
         std::string mLineBuffer;
         uint64_t mStartTime;
 
         float mLastClick;
+        bool mIsFocused;
     };
 }

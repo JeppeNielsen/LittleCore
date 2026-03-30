@@ -49,6 +49,7 @@ TextEditor::TextEditor()
 	, mHandleMouseInputs(true)
 	, mIgnoreImGuiChild(false)
 	, mShowWhitespaces(false)
+	, mIsFocused(false)
 	, mStartTime(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count())
 {
 	SetPalette(GetDarkPalette());
@@ -1146,8 +1147,22 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 	ColorizeInternal();
 	Render();
 
+	const ImVec2 windowPos = ImGui::GetWindowPos();
+	const ImVec2 contentRegionMin = ImGui::GetWindowContentRegionMin();
+	const ImVec2 contentRegionMax = ImGui::GetWindowContentRegionMax();
+	mContentScreenMin = ImVec2(windowPos.x + contentRegionMin.x, windowPos.y + contentRegionMin.y);
+	mContentScreenMax = ImVec2(windowPos.x + contentRegionMax.x, windowPos.y + contentRegionMax.y);
+
+	const auto cursor = GetActualCursorCoordinates();
+	mCursorScreenPosition = ImVec2(
+		mContentScreenMin.x - ImGui::GetScrollX() + mTextStart + TextDistanceToLineStart(cursor),
+		mContentScreenMin.y - ImGui::GetScrollY() + cursor.mLine * mCharAdvance.y
+	);
+
 	if (mHandleKeyboardInputs)
 		ImGui::PopAllowKeyboardFocus();
+
+	mIsFocused = ImGui::IsWindowFocused();
 
 	if (!mIgnoreImGuiChild)
 		ImGui::EndChild();

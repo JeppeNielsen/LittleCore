@@ -17,6 +17,27 @@ namespace {
     void AddUnique(std::set<std::string>& values, const std::filesystem::path& path) {
         values.insert(NormalizeDirectory(path));
     }
+
+    bool ShouldSkipEntry(const std::filesystem::path& projectRoot, const std::filesystem::path& path) {
+        std::error_code errorCode;
+        const auto relativePath = std::filesystem::relative(path, projectRoot, errorCode);
+        if (errorCode) {
+            return false;
+        }
+
+        for (const auto& part : relativePath) {
+            const auto name = part.string();
+            if (name == "Build" || name == "Cache" || name == ".git" || name == ".idea") {
+                return true;
+            }
+
+            if (!name.empty() && name[0] == '.') {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 bool TargetProjectSettings::TryParseStateTypeName(const std::string& source, std::string& stateTypeName) {
@@ -41,6 +62,7 @@ void TargetProjectSettings::Populate(ProgramCompilerContext& sharedContext, std:
     const std::filesystem::path projectRoot(rootPath);
 
     std::set<std::string> includePaths;
+    std::set<std::string> discoveredProgramIds;
 
     AddUnique(includePaths, projectRoot);
     AddUnique(includePaths, workspace / "External/imgui");
@@ -51,6 +73,7 @@ void TargetProjectSettings::Populate(ProgramCompilerContext& sharedContext, std:
     AddUnique(includePaths, workspace / "External/glaze/include");
     AddUnique(includePaths, workspace / "External/stb");
     AddUnique(includePaths, workspace / "External/ImGuizmo");
+    AddUnique(includePaths, "/Users/jeppe/Jeppes/Scripting/clang18/include");
     AddUnique(includePaths, workspace / "Engine/Application/EditorSimulations");
     AddUnique(includePaths, workspace / "Engine/Application/Gui");
     AddUnique(includePaths, workspace / "Engine/Application/Project");
@@ -88,7 +111,21 @@ void TargetProjectSettings::Populate(ProgramCompilerContext& sharedContext, std:
     AddUnique(includePaths, workspace / "Engine/Sokol");
 
     if (std::filesystem::exists(projectRoot)) {
-        for (const auto& entry : std::filesystem::recursive_directory_iterator(projectRoot)) {
+        std::error_code errorCode;
+        for (std::filesystem::recursive_directory_iterator iterator(projectRoot, errorCode), end; iterator != end; iterator.increment(errorCode)) {
+            if (errorCode) {
+                errorCode.clear();
+                continue;
+            }
+
+            const auto& entry = *iterator;
+            if (ShouldSkipEntry(projectRoot, entry.path())) {
+                if (entry.is_directory()) {
+                    iterator.disable_recursion_pending();
+                }
+                continue;
+            }
+
             if (!entry.is_regular_file()) {
                 continue;
             }
@@ -101,20 +138,19 @@ void TargetProjectSettings::Populate(ProgramCompilerContext& sharedContext, std:
 
             AddUnique(includePaths, filePath.parent_path());
             const auto normalizedPath = NormalizeDirectory(filePath);
-
-            if (extension == ".hpp") {
-                continue;
-            }
+            const auto source = LittleCore::FileHelper::ReadAllText(normalizedPath);
+            const bool isMainSource = filePath.filename() == "main.cpp";
 
             std::string stateTypeName;
-            const auto source = LittleCore::FileHelper::ReadAllText(normalizedPath);
             if (TryParseStateTypeName(source, stateTypeName)) {
-                programs.push_back({
-                        filePath.stem().string(),
-                        stateTypeName,
-                        normalizedPath
-                });
-            } else {
+                if (discoveredProgramIds.insert(filePath.stem().string()).second) {
+                    programs.push_back({
+                            filePath.stem().string(),
+                            stateTypeName,
+                            normalizedPath
+                    });
+                }
+            } else if (extension == ".cpp" && !isMainSource) {
                 sharedContext.sourceFiles.push_back(normalizedPath);
             }
         }
@@ -122,7 +158,9 @@ void TargetProjectSettings::Populate(ProgramCompilerContext& sharedContext, std:
 
     sharedContext.includePaths.assign(includePaths.begin(), includePaths.end());
     sharedContext.libraryPaths.push_back((workspace / "bin/Debug").generic_string());
+    sharedContext.libraryPaths.push_back("/Users/jeppe/Jeppes/Scripting/clang18/lib");
     sharedContext.libraries = {
+            "clang",
             "sokol",
             "LittleCore",
             "ImGui",
