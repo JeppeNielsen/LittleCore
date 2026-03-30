@@ -12,6 +12,7 @@
 #include "DefaultRegistrySerializer.hpp"
 #include "MainStateContext.hpp"
 #include "Project.hpp"
+#include "MetaHelper.hpp"
 
 namespace LittleCore {
     class MainState : public IState {
@@ -38,11 +39,15 @@ namespace LittleCore {
         std::string Save(const entt::registry& registry) const;
         std::string Load(entt::registry& registry, const std::string& data) const;
 
-        template<typename ...T>
+        template<typename TypeList>
         void SerializedTypes() {
-            DefaultEntityGuiDrawer<T...>* entityGuiDrawer = new DefaultEntityGuiDrawer<T...>();
+            using GuiDrawer = Meta::Rebind<DefaultEntityGuiDrawer, TypeList>;
+            using RegistrySerializer = Meta::Rebind<DefaultRegistrySerializer, TypeList>;
+
+            GuiDrawer* entityGuiDrawer = new GuiDrawer();
             AddEntityGuiDrawer(entityGuiDrawer);
-            DefaultRegistrySerializer<T...>* registrySerializer = new DefaultRegistrySerializer<T...>();
+
+            RegistrySerializer* registrySerializer = new RegistrySerializer();
             AddRegistrySerializer(registrySerializer);
         }
 

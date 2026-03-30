@@ -8,8 +8,7 @@
 #include "FileHelper.hpp"
 #include "PrefabWindow.hpp"
 #include "PrefabContext.hpp"
-
-using namespace LittleCore;
+#include "Systems.hpp"
 
 struct PrefabEditor : public MainState {
     PrefabContext prefabContext;
@@ -23,7 +22,7 @@ struct PrefabEditor : public MainState {
     }
 
     void OnInitialize() override {
-        SerializedTypes<>();
+        SerializedTypes<Types>();
         AddSimulation(simulation);
     }
 
