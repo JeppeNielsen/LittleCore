@@ -17,6 +17,9 @@ namespace {
     constexpr float CompletionPopupWidth = 420.0f;
     constexpr float CompletionPopupMaxHeight = 220.0f;
     constexpr float CompletionPopupMinHeight = 72.0f;
+    constexpr float SignaturePopupWidth = 360.0f;
+    constexpr float SignaturePopupMinHeight = 52.0f;
+    constexpr float SignaturePopupMaxHeight = 220.0f;
     constexpr float CompletionPopupVerticalOffset = 4.0f;
 
     struct CompletionRequest {
@@ -96,6 +99,233 @@ namespace {
         });
     }
 
+    bool ContainsCharacter(const std::string& text, char value) {
+        return text.find(value) != std::string::npos;
+    }
+
+    bool IsEscapedCharacter(const std::string& text, std::size_t index) {
+        if (index == 0 || index > text.size()) {
+            return false;
+        }
+
+        std::size_t backslashCount = 0;
+        std::size_t currentIndex = index;
+        while (currentIndex > 0 && text[currentIndex - 1] == '\\') {
+            --currentIndex;
+            ++backslashCount;
+        }
+
+        return (backslashCount % 2) != 0;
+    }
+
+    struct CallableNameRange {
+        std::size_t start = 0;
+        std::size_t end = 0;
+        std::string name;
+    };
+
+    std::optional<CallableNameRange> FindCallableNameRange(const std::string& text, std::size_t openParenthesisOffset) {
+        if (openParenthesisOffset >= text.size() || text[openParenthesisOffset] != '(') {
+            return std::nullopt;
+        }
+
+        std::size_t position = openParenthesisOffset;
+        while (position > 0 && std::isspace(static_cast<unsigned char>(text[position - 1])) != 0) {
+            --position;
+        }
+
+        if (position == 0) {
+            return std::nullopt;
+        }
+
+        if (text[position - 1] == '>') {
+            int depth = 0;
+            bool foundOpeningAngle = false;
+
+            while (position > 0) {
+                const char value = text[position - 1];
+                --position;
+
+                if (value == '>') {
+                    ++depth;
+                } else if (value == '<') {
+                    --depth;
+                    if (depth == 0) {
+                        foundOpeningAngle = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!foundOpeningAngle) {
+                return std::nullopt;
+            }
+
+            while (position > 0 && std::isspace(static_cast<unsigned char>(text[position - 1])) != 0) {
+                --position;
+            }
+        }
+
+        const std::size_t end = position;
+        while (position > 0 && IsIdentifierCharacter(text[position - 1])) {
+            --position;
+        }
+
+        if (position > 0 && position < end && text[position - 1] == '~') {
+            --position;
+        }
+
+        if (position == end) {
+            return std::nullopt;
+        }
+
+        return CallableNameRange{
+                .start = position,
+                .end = end,
+                .name = text.substr(position, end - position)
+        };
+    }
+
+    std::optional<std::size_t> FindActiveCallableOpenParenthesisOffset(const std::string& text, std::size_t cursorOffset) {
+        cursorOffset = std::min(cursorOffset, text.size());
+
+        std::vector<std::size_t> openParentheses;
+        bool inString = false;
+        char stringDelimiter = '\0';
+        bool inLineComment = false;
+        bool inBlockComment = false;
+
+        for (std::size_t i = 0; i < cursorOffset; ++i) {
+            const char value = text[i];
+            const char nextValue = i + 1 < cursorOffset ? text[i + 1] : '\0';
+
+            if (inLineComment) {
+                if (value == '\n') {
+                    inLineComment = false;
+                }
+                continue;
+            }
+
+            if (inBlockComment) {
+                if (value == '*' && nextValue == '/') {
+                    inBlockComment = false;
+                    ++i;
+                }
+                continue;
+            }
+
+            if (inString) {
+                if (value == stringDelimiter && !IsEscapedCharacter(text, i)) {
+                    inString = false;
+                }
+                continue;
+            }
+
+            if (value == '/' && nextValue == '/') {
+                inLineComment = true;
+                ++i;
+                continue;
+            }
+
+            if (value == '/' && nextValue == '*') {
+                inBlockComment = true;
+                ++i;
+                continue;
+            }
+
+            if (value == '"' || value == '\'') {
+                inString = true;
+                stringDelimiter = value;
+                continue;
+            }
+
+            if (value == '(') {
+                openParentheses.push_back(i);
+                continue;
+            }
+
+            if (value == ')' && !openParentheses.empty()) {
+                openParentheses.pop_back();
+            }
+        }
+
+        for (auto it = openParentheses.rbegin(); it != openParentheses.rend(); ++it) {
+            if (FindCallableNameRange(text, *it).has_value()) {
+                return *it;
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    std::optional<int> ComputeActiveParameterIndex(const std::string& text,
+                                                   std::size_t openParenthesisOffset,
+                                                   std::size_t cursorOffset) {
+        if (openParenthesisOffset >= text.size() ||
+            text[openParenthesisOffset] != '(' ||
+            cursorOffset < openParenthesisOffset + 1 ||
+            cursorOffset > text.size()) {
+            return std::nullopt;
+        }
+
+        int activeParameterIndex = 0;
+        int nestedParentheses = 0;
+        int nestedBrackets = 0;
+        int nestedBraces = 0;
+        bool inString = false;
+        char stringDelimiter = '\0';
+
+        for (std::size_t i = openParenthesisOffset + 1; i < cursorOffset; ++i) {
+            const char value = text[i];
+
+            if (inString) {
+                if (value == stringDelimiter && (i == 0 || text[i - 1] != '\\')) {
+                    inString = false;
+                }
+                continue;
+            }
+
+            if (value == '"' || value == '\'') {
+                inString = true;
+                stringDelimiter = value;
+                continue;
+            }
+
+            switch (value) {
+                case '(':
+                    ++nestedParentheses;
+                    break;
+                case ')':
+                    if (nestedParentheses == 0) {
+                        return std::nullopt;
+                    }
+                    --nestedParentheses;
+                    break;
+                case '[':
+                    ++nestedBrackets;
+                    break;
+                case ']':
+                    nestedBrackets = std::max(0, nestedBrackets - 1);
+                    break;
+                case '{':
+                    ++nestedBraces;
+                    break;
+                case '}':
+                    nestedBraces = std::max(0, nestedBraces - 1);
+                    break;
+                case ',':
+                    if (nestedParentheses == 0 && nestedBrackets == 0 && nestedBraces == 0) {
+                        ++activeParameterIndex;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return activeParameterIndex;
+    }
+
     bool IsPrimaryShortcutPressed(ImGuiKey key) {
         auto& io = ImGui::GetIO();
         const bool primaryModifier = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
@@ -132,17 +362,51 @@ namespace {
     ImVec2 CalculateCompletionPopupPosition(const TextEditor& editor, const ImVec2& popupSize) {
         const ImVec2 editorMin = editor.GetContentScreenMin();
         const ImVec2 editorMax = editor.GetContentScreenMax();
-        const ImVec2 cursor = editor.GetCursorScreenPosition();
+        const ImVec2 cursorTop = editor.GetCursorScreenPosition();
+        const ImVec2 cursorBottom = editor.GetCursorScreenBottom();
 
         const float maxX = std::max(editorMin.x, editorMax.x - popupSize.x);
         const float maxY = std::max(editorMin.y, editorMax.y - popupSize.y);
 
-        float x = std::clamp(cursor.x, editorMin.x, maxX);
-        float y = cursor.y + std::max(editor.GetLineHeight(), ImGui::GetTextLineHeight()) + CompletionPopupVerticalOffset;
+        float x = std::clamp(cursorTop.x, editorMin.x, maxX);
+        float y = cursorBottom.y + CompletionPopupVerticalOffset;
 
-        const float aboveY = cursor.y - popupSize.y - CompletionPopupVerticalOffset;
+        const float aboveY = cursorTop.y - popupSize.y - CompletionPopupVerticalOffset;
         if (y + popupSize.y > editorMax.y && aboveY >= editorMin.y) {
             y = aboveY;
+        }
+
+        y = std::clamp(y, editorMin.y, maxY);
+        return ImVec2(x, y);
+    }
+
+    ImVec2 CalculateSignaturePopupSize(std::size_t parameterCount) {
+        const auto& style = ImGui::GetStyle();
+        const float rowHeight = ImGui::GetTextLineHeightWithSpacing();
+        const float lineCount = 1.0f + static_cast<float>(std::max<std::size_t>(1, parameterCount));
+        const float height = std::clamp(
+            style.WindowPadding.y * 2.0f + lineCount * rowHeight,
+            SignaturePopupMinHeight,
+            SignaturePopupMaxHeight
+        );
+
+        return ImVec2(SignaturePopupWidth, height);
+    }
+
+    ImVec2 CalculateSignaturePopupPosition(const TextEditor& editor, const ImVec2& popupSize) {
+        const ImVec2 editorMin = editor.GetContentScreenMin();
+        const ImVec2 editorMax = editor.GetContentScreenMax();
+        const ImVec2 cursorTop = editor.GetCursorScreenPosition();
+        const ImVec2 cursorBottom = editor.GetCursorScreenBottom();
+
+        const float maxX = std::max(editorMin.x, editorMax.x - popupSize.x);
+        const float maxY = std::max(editorMin.y, editorMax.y - popupSize.y);
+
+        float x = std::clamp(cursorTop.x, editorMin.x, maxX);
+        float y = cursorTop.y - popupSize.y - CompletionPopupVerticalOffset;
+
+        if (y < editorMin.y) {
+            y = std::min(cursorBottom.y + CompletionPopupVerticalOffset, maxY);
         }
 
         y = std::clamp(y, editorMin.y, maxY);
@@ -206,6 +470,79 @@ void CodeEditorWorkspace::CloseCompletion(Document& document) {
     document.completion = {};
 }
 
+void CodeEditorWorkspace::CloseSignatureHelp(Document& document) {
+    document.signatureHelp = {};
+}
+
+void CodeEditorWorkspace::OpenSignatureHelp(Document& document,
+                                            const CodeEditorCompletionCandidate& candidate,
+                                            std::size_t openParenthesisOffset) {
+    if (candidate.parameters.empty()) {
+        CloseSignatureHelp(document);
+        return;
+    }
+
+    document.signatureHelp.isOpen = true;
+    document.signatureHelp.functionName = candidate.insertText;
+    document.signatureHelp.parameters = candidate.parameters;
+    document.signatureHelp.openParenthesisOffset = openParenthesisOffset;
+    document.signatureHelp.activeParameterIndex = 0;
+    document.signatureHelp.lookupFailed = false;
+}
+
+void CodeEditorWorkspace::RequestSignatureHelp(Document& document,
+                                               CodeEditorAutocomplete& autocomplete,
+                                               std::size_t openParenthesisOffset) {
+    const auto requestId = autocomplete.QueueSignatureHelp(document.path, document.editor, openParenthesisOffset);
+    if (requestId == 0) {
+        CloseSignatureHelp(document);
+        return;
+    }
+
+    document.signatureHelp = {};
+    document.signatureHelp.requestId = requestId;
+    document.signatureHelp.openParenthesisOffset = openParenthesisOffset;
+    document.signatureHelp.lookupFailed = false;
+}
+
+void CodeEditorWorkspace::SyncSignatureHelp(Document& document,
+                                            CodeEditorAutocomplete& autocomplete,
+                                            bool allowOpen) {
+    const auto text = document.editor.GetText();
+    const auto cursor = document.editor.GetCursorPosition();
+    const auto cursorOffset = CursorOffsetFromCoordinates(text, cursor);
+    const auto openParenthesisOffset = FindActiveCallableOpenParenthesisOffset(text, cursorOffset);
+
+    if (!openParenthesisOffset.has_value()) {
+        CloseSignatureHelp(document);
+        return;
+    }
+
+    if (document.signatureHelp.openParenthesisOffset != *openParenthesisOffset) {
+        if (allowOpen || document.signatureHelp.isOpen || document.signatureHelp.requestId != 0) {
+            RequestSignatureHelp(document, autocomplete, *openParenthesisOffset);
+        }
+        return;
+    }
+
+    if (document.signatureHelp.isOpen) {
+        UpdateSignatureHelp(document);
+        return;
+    }
+
+    if (document.signatureHelp.requestId != 0) {
+        return;
+    }
+
+    if (document.signatureHelp.lookupFailed && !allowOpen) {
+        return;
+    }
+
+    if (allowOpen) {
+        RequestSignatureHelp(document, autocomplete, *openParenthesisOffset);
+    }
+}
+
 void CodeEditorWorkspace::RequestCompletion(Document& document, CodeEditorAutocomplete& autocomplete) {
     const auto request = BuildCompletionRequest(document.editor);
     const auto requestId = autocomplete.QueueCompletion(document.path, document.editor);
@@ -216,10 +553,9 @@ void CodeEditorWorkspace::RequestCompletion(Document& document, CodeEditorAutoco
 
     const bool canKeepVisibleCandidates = document.completion.isOpen &&
                                           !document.completion.candidates.empty() &&
-                                          request.cursorPosition.mLine == document.completion.cursorPosition.mLine &&
-                                          request.prefix.starts_with(document.completion.prefix);
+                                          request.cursorPosition.mLine == document.completion.cursorPosition.mLine;
 
-    document.completion.isOpen = true;
+    document.completion.isOpen = canKeepVisibleCandidates;
     document.completion.isLoading = true;
     document.completion.selectedIndex = 0;
     document.completion.requestId = requestId;
@@ -248,8 +584,39 @@ void CodeEditorWorkspace::ApplyCompletionResult(const CodeEditorAutocompleteResu
 
         if (document.completion.candidates.empty()) {
             CloseCompletion(document);
+        } else {
+            document.completion.isOpen = true;
         }
 
+        return;
+    }
+}
+
+void CodeEditorWorkspace::ApplySignatureHelpResult(const CodeEditorSignatureHelpResult& result) {
+    for (auto& document : documents) {
+        if (document.path != result.filePath) {
+            continue;
+        }
+
+        if (document.signatureHelp.requestId != result.requestId) {
+            return;
+        }
+
+        if (result.parameters.empty()) {
+            document.signatureHelp = {};
+            document.signatureHelp.openParenthesisOffset = result.openParenthesisOffset;
+            document.signatureHelp.lookupFailed = true;
+            return;
+        }
+
+        document.signatureHelp.isOpen = true;
+        document.signatureHelp.requestId = result.requestId;
+        document.signatureHelp.functionName = result.functionName;
+        document.signatureHelp.parameters = result.parameters;
+        document.signatureHelp.openParenthesisOffset = result.openParenthesisOffset;
+        document.signatureHelp.activeParameterIndex = 0;
+        document.signatureHelp.lookupFailed = false;
+        UpdateSignatureHelp(document);
         return;
     }
 }
@@ -265,6 +632,17 @@ void CodeEditorWorkspace::PumpCompletionResults(CodeEditorAutocomplete& autocomp
     }
 }
 
+void CodeEditorWorkspace::PumpSignatureHelpResults(CodeEditorAutocomplete& autocomplete) {
+    while (true) {
+        auto result = autocomplete.TakeCompletedSignatureHelpResult();
+        if (!result.has_value()) {
+            return;
+        }
+
+        ApplySignatureHelpResult(*result);
+    }
+}
+
 void CodeEditorWorkspace::ApplySelectedCompletion(Document& document) {
     if (!document.completion.isOpen || document.completion.candidates.empty()) {
         CloseCompletion(document);
@@ -277,6 +655,8 @@ void CodeEditorWorkspace::ApplySelectedCompletion(Document& document) {
     const auto cursorOffset = CursorOffsetFromCoordinates(originalText, request.cursorPosition);
     const bool shouldInsertOpeningParenthesis = candidate.appendOpeningParenthesis &&
                                                 (cursorOffset >= originalText.size() || originalText[cursorOffset] != '(');
+    const bool shouldInsertEmptyCall = shouldInsertOpeningParenthesis && candidate.parameters.empty();
+    std::optional<std::size_t> signatureOpenParenthesisOffset;
 
     if (!request.prefix.empty()) {
         document.editor.MoveLeft(static_cast<int>(request.prefix.size()), true, false);
@@ -284,12 +664,54 @@ void CodeEditorWorkspace::ApplySelectedCompletion(Document& document) {
     }
 
     document.editor.InsertText(candidate.insertText.c_str());
-    if (shouldInsertOpeningParenthesis) {
+    if (shouldInsertEmptyCall) {
+        document.editor.InsertText("()");
+    } else if (shouldInsertOpeningParenthesis) {
         document.editor.InsertText("(");
+        const auto updatedText = document.editor.GetText();
+        const auto updatedCursor = document.editor.GetCursorPosition();
+        const auto updatedCursorOffset = CursorOffsetFromCoordinates(updatedText, updatedCursor);
+        if (updatedCursorOffset > 0) {
+            signatureOpenParenthesisOffset = updatedCursorOffset - 1;
+        }
     }
     document.isDirty = document.editor.GetText() != document.savedText;
-    statusText = "Inserted completion: " + candidate.insertText + (shouldInsertOpeningParenthesis ? "(" : "");
+    statusText = "Inserted completion: " + candidate.insertText + (shouldInsertEmptyCall ? "()" : (shouldInsertOpeningParenthesis ? "(" : ""));
+    if (signatureOpenParenthesisOffset.has_value()) {
+        OpenSignatureHelp(document, candidate, *signatureOpenParenthesisOffset);
+    } else {
+        CloseSignatureHelp(document);
+    }
     CloseCompletion(document);
+}
+
+void CodeEditorWorkspace::UpdateSignatureHelp(Document& document) {
+    if (!document.signatureHelp.isOpen) {
+        return;
+    }
+
+    const auto text = document.editor.GetText();
+    const auto cursor = document.editor.GetCursorPosition();
+    const auto cursorOffset = CursorOffsetFromCoordinates(text, cursor);
+    const auto activeParameterIndex = ComputeActiveParameterIndex(
+            text,
+            document.signatureHelp.openParenthesisOffset,
+            cursorOffset);
+
+    if (!activeParameterIndex.has_value()) {
+        CloseSignatureHelp(document);
+        return;
+    }
+
+    if (document.signatureHelp.parameters.empty()) {
+        CloseSignatureHelp(document);
+        return;
+    }
+
+    document.signatureHelp.activeParameterIndex = std::clamp(
+            *activeParameterIndex,
+            0,
+            static_cast<int>(document.signatureHelp.parameters.size()) - 1);
 }
 
 void CodeEditorWorkspace::DrawCompletionPopup(Document& document, const std::string& popupId) {
@@ -309,25 +731,21 @@ void CodeEditorWorkspace::DrawCompletionPopup(Document& document, const std::str
 
     ImGui::Begin(popupId.c_str(), nullptr, flags);
 
-    if (document.completion.isLoading && document.completion.candidates.empty()) {
-        ImGui::TextUnformatted("Loading completions...");
-    } else {
-        for (int i = 0; i < static_cast<int>(document.completion.candidates.size()); ++i) {
-            const auto& candidate = document.completion.candidates[i];
-            std::string label = candidate.displayText;
-            if (!candidate.returnType.empty()) {
-                label += "    " + candidate.returnType;
-            }
+    for (int i = 0; i < static_cast<int>(document.completion.candidates.size()); ++i) {
+        const auto& candidate = document.completion.candidates[i];
+        std::string label = candidate.displayText;
+        if (!candidate.returnType.empty()) {
+            label += "    " + candidate.returnType;
+        }
 
-            if (i == document.completion.selectedIndex) {
-                ImGui::SetScrollHereY();
-            }
+        if (i == document.completion.selectedIndex) {
+            ImGui::SetScrollHereY();
+        }
 
-            if (ImGui::Selectable(label.c_str(), i == document.completion.selectedIndex)) {
-                document.completion.selectedIndex = i;
-                ApplySelectedCompletion(document);
-                break;
-            }
+        if (ImGui::Selectable(label.c_str(), i == document.completion.selectedIndex)) {
+            document.completion.selectedIndex = i;
+            ApplySelectedCompletion(document);
+            break;
         }
     }
 
@@ -342,6 +760,46 @@ void CodeEditorWorkspace::DrawCompletionPopup(Document& document, const std::str
             CloseCompletion(document);
         }
     }
+}
+
+void CodeEditorWorkspace::DrawSignatureHelpPopup(const Document& document, const std::string& popupId) const {
+    if (!document.signatureHelp.isOpen) {
+        return;
+    }
+
+    const ImVec2 popupSize = CalculateSignaturePopupSize(document.signatureHelp.parameters.size());
+    const ImVec2 popupPosition = CalculateSignaturePopupPosition(document.editor, popupSize);
+
+    ImGui::SetNextWindowPos(popupPosition, ImGuiCond_Always);
+    ImGui::SetNextWindowSize(popupSize, ImGuiCond_Always);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 6.0f));
+
+    const ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration |
+                                   ImGuiWindowFlags_NoDocking |
+                                   ImGuiWindowFlags_NoMove |
+                                   ImGuiWindowFlags_NoSavedSettings |
+                                   ImGuiWindowFlags_NoFocusOnAppearing |
+                                   ImGuiWindowFlags_NoNavFocus |
+                                   ImGuiWindowFlags_NoInputs;
+
+    ImGui::Begin(popupId.c_str(), nullptr, flags);
+    ImGui::Text("%s(", document.signatureHelp.functionName.c_str());
+    ImGui::Separator();
+
+    for (int i = 0; i < static_cast<int>(document.signatureHelp.parameters.size()); ++i) {
+        const bool isActive = i == document.signatureHelp.activeParameterIndex;
+        if (isActive) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram));
+        } else {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+        }
+
+        ImGui::Text("%s%s", isActive ? "> " : "  ", document.signatureHelp.parameters[i].c_str());
+        ImGui::PopStyleColor();
+    }
+
+    ImGui::End();
+    ImGui::PopStyleVar();
 }
 
 void CodeEditorWorkspace::DrawStatusBar(const Document& document) const {
@@ -404,8 +862,14 @@ void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditor
 
     if (editorFocused && textChanged) {
         const auto insertedText = GetInsertedText(textBeforeEdit, textAfterEdit);
-        if (insertedText.has_value() && !insertedText->empty() && !ShouldSuppressAutocompleteForInsertedText(*insertedText)) {
-            RequestCompletion(document, autocomplete);
+        if (insertedText.has_value() && !insertedText->empty()) {
+            if (ContainsCharacter(*insertedText, '(')) {
+                CloseCompletion(document);
+            } else if (!ShouldSuppressAutocompleteForInsertedText(*insertedText)) {
+                RequestCompletion(document, autocomplete);
+            } else {
+                CloseCompletion(document);
+            }
         } else {
             CloseCompletion(document);
         }
@@ -415,6 +879,11 @@ void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditor
 
     if (document.completion.isOpen && cursorChanged && !textChanged && !completionConsumesKeyboard) {
         CloseCompletion(document);
+    }
+
+    const bool shouldAllowOpeningSignatureHelp = editorFocused && textChanged;
+    if (editorFocused || document.signatureHelp.isOpen || document.signatureHelp.requestId != 0) {
+        SyncSignatureHelp(document, autocomplete, shouldAllowOpeningSignatureHelp);
     }
 
     if (document.completion.isOpen) {
@@ -434,6 +903,10 @@ void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditor
         DrawCompletionPopup(document, "##CompletionPopup" + std::to_string(index));
     }
 
+    if (document.signatureHelp.isOpen) {
+        DrawSignatureHelpPopup(document, "##SignatureHelpPopup" + std::to_string(index));
+    }
+
     DrawStatusBar(document);
 
     if (codeFont != nullptr) {
@@ -443,6 +916,7 @@ void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditor
 
 void CodeEditorWorkspace::Draw(CodeEditorAutocomplete& autocomplete, ImFont* codeFont) {
     PumpCompletionResults(autocomplete);
+    PumpSignatureHelpResults(autocomplete);
     ImGui::Begin("Code Editor");
 
     if (documents.empty()) {

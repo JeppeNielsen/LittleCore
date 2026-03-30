@@ -7,6 +7,7 @@
 #include "TextEditor.hpp"
 #include "imgui.h"
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,16 @@ private:
         std::vector<CodeEditorCompletionCandidate> candidates;
     };
 
+    struct SignatureHelpState {
+        bool isOpen = false;
+        std::uint64_t requestId = 0;
+        std::string functionName;
+        std::vector<std::string> parameters;
+        std::size_t openParenthesisOffset = std::numeric_limits<std::size_t>::max();
+        int activeParameterIndex = 0;
+        bool lookupFailed = false;
+    };
+
     struct Document {
         std::string path;
         std::string title;
@@ -38,6 +49,7 @@ private:
         bool isDirty = false;
         bool requestSelection = false;
         CompletionPopupState completion;
+        SignatureHelpState signatureHelp;
     };
 
     std::vector<Document> documents;
@@ -46,11 +58,19 @@ private:
 
     bool SaveDocument(Document& document);
     void CloseCompletion(Document& document);
+    void CloseSignatureHelp(Document& document);
+    void OpenSignatureHelp(Document& document, const CodeEditorCompletionCandidate& candidate, std::size_t openParenthesisOffset);
+    void RequestSignatureHelp(Document& document, CodeEditorAutocomplete& autocomplete, std::size_t openParenthesisOffset);
+    void SyncSignatureHelp(Document& document, CodeEditorAutocomplete& autocomplete, bool allowOpen);
     void RequestCompletion(Document& document, CodeEditorAutocomplete& autocomplete);
     void ApplyCompletionResult(const CodeEditorAutocompleteResult& result);
+    void ApplySignatureHelpResult(const CodeEditorSignatureHelpResult& result);
     void PumpCompletionResults(CodeEditorAutocomplete& autocomplete);
+    void PumpSignatureHelpResults(CodeEditorAutocomplete& autocomplete);
     void ApplySelectedCompletion(Document& document);
     void DrawDocument(Document& document, int index, CodeEditorAutocomplete& autocomplete, ImFont* codeFont);
     void DrawCompletionPopup(Document& document, const std::string& popupId);
+    void UpdateSignatureHelp(Document& document);
+    void DrawSignatureHelpPopup(const Document& document, const std::string& popupId) const;
     void DrawStatusBar(const Document& document) const;
 };

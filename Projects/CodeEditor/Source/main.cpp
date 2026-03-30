@@ -25,7 +25,10 @@ struct Vector2 {
     float GetNumber(int one, int two) {
         return one + two;
     }
-
+    
+    float Get(u_int32_t type)  {
+           return 321;
+    }
 };
 
 int main() {
@@ -43,6 +46,26 @@ int main() {
         state.context.engineRoot = workspaceRoot + "/Projects/TestNetimgui/Assets/";
     });
     
+    int mynumber = 2;
+    
+    
+    
+    Vector2 bla;
+    
+    
+    bla.Get(32);
+    bla.Length();
+    
+    
+    
+    
+    
+    
+   
     return 0;
 }
+
+
+
+
 

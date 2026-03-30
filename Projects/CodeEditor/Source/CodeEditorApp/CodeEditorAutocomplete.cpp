@@ -35,6 +35,8 @@ namespace {
 
     struct CurrentFileSymbolInfo {
         bool isCurrentFileSymbol = false;
+        bool isTemplateParameter = false;
+        bool isFunctionParameter = false;
         bool isLocalVariable = false;
         bool isField = false;
     };
@@ -131,6 +133,90 @@ namespace {
         return std::min(offset + static_cast<std::size_t>(coordinates.mColumn), clampedLineEnd);
     }
 
+    LittleCore::TextEditor::Coordinates CoordinatesFromOffset(const std::string& text, std::size_t offset) {
+        LittleCore::TextEditor::Coordinates coordinates;
+        offset = std::min(offset, text.size());
+
+        for (std::size_t i = 0; i < offset; ++i) {
+            if (text[i] == '\n') {
+                ++coordinates.mLine;
+                coordinates.mColumn = 0;
+            } else {
+                ++coordinates.mColumn;
+            }
+        }
+
+        return coordinates;
+    }
+
+    struct CallableNameRange {
+        std::size_t start = 0;
+        std::size_t end = 0;
+        std::string name;
+    };
+
+    std::optional<CallableNameRange> FindCallableNameRange(const std::string& text, std::size_t openParenthesisOffset) {
+        if (openParenthesisOffset >= text.size() || text[openParenthesisOffset] != '(') {
+            return std::nullopt;
+        }
+
+        std::size_t position = openParenthesisOffset;
+        while (position > 0 && std::isspace(static_cast<unsigned char>(text[position - 1])) != 0) {
+            --position;
+        }
+
+        if (position == 0) {
+            return std::nullopt;
+        }
+
+        if (text[position - 1] == '>') {
+            int depth = 0;
+            bool foundOpeningAngle = false;
+
+            while (position > 0) {
+                const char value = text[position - 1];
+                --position;
+
+                if (value == '>') {
+                    ++depth;
+                } else if (value == '<') {
+                    --depth;
+                    if (depth == 0) {
+                        foundOpeningAngle = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!foundOpeningAngle) {
+                return std::nullopt;
+            }
+
+            while (position > 0 && std::isspace(static_cast<unsigned char>(text[position - 1])) != 0) {
+                --position;
+            }
+        }
+
+        const std::size_t end = position;
+        while (position > 0 && IsIdentifierCharacter(text[position - 1])) {
+            --position;
+        }
+
+        if (position > 0 && position < end && text[position - 1] == '~') {
+            --position;
+        }
+
+        if (position == end) {
+            return std::nullopt;
+        }
+
+        return CallableNameRange{
+                .start = position,
+                .end = end,
+                .name = text.substr(position, end - position)
+        };
+    }
+
     CompletionContext BuildCompletionContext(const std::string& text,
                                              const LittleCore::TextEditor::Coordinates& cursorPosition) {
         CompletionContext context;
@@ -161,6 +247,14 @@ namespace {
             const bool rightExact = !prefix.empty() && right.insertText == prefix;
             if (leftExact != rightExact) {
                 return leftExact;
+            }
+
+            if (left.isTemplateParameter != right.isTemplateParameter) {
+                return left.isTemplateParameter;
+            }
+
+            if (left.isFunctionParameter != right.isFunctionParameter) {
+                return left.isFunctionParameter;
             }
 
             if (left.isLocalVariable != right.isLocalVariable) {
@@ -219,6 +313,17 @@ namespace {
         return chunkKind == CXCompletionChunk_LeftParen;
     }
 
+    bool IsTemplateParameterCursorKind(CXCursorKind kind) {
+        switch (kind) {
+            case CXCursor_TemplateTypeParameter:
+            case CXCursor_NonTypeTemplateParameter:
+            case CXCursor_TemplateTemplateParameter:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     bool IsFunctionLikeCursorKind(CXCursorKind kind) {
         switch (kind) {
             case CXCursor_FunctionDecl:
@@ -238,6 +343,9 @@ namespace {
             case CXCursor_FieldDecl:
             case CXCursor_VarDecl:
             case CXCursor_ParmDecl:
+            case CXCursor_TemplateTypeParameter:
+            case CXCursor_NonTypeTemplateParameter:
+            case CXCursor_TemplateTemplateParameter:
             case CXCursor_FunctionDecl:
             case CXCursor_CXXMethod:
             case CXCursor_Constructor:
@@ -278,11 +386,12 @@ namespace {
             if (!spelling.empty()) {
                 auto& info = collector.symbols[spelling];
                 info.isCurrentFileSymbol = true;
+                info.isTemplateParameter = info.isTemplateParameter || IsTemplateParameterCursorKind(kind);
+                info.isFunctionParameter = info.isFunctionParameter || kind == CXCursor_ParmDecl;
                 info.isField = info.isField || kind == CXCursor_FieldDecl;
 
                 const auto parentKind = clang_getCursorKind(clang_getCursorSemanticParent(cursor));
                 info.isLocalVariable = info.isLocalVariable ||
-                                       kind == CXCursor_ParmDecl ||
                                        (kind == CXCursor_VarDecl && IsFunctionLikeCursorKind(parentKind));
             }
         }
@@ -528,6 +637,10 @@ namespace {
                         candidate.insertText = text;
                     }
 
+                    if (kind == CXCompletionChunk_Placeholder && !text.empty()) {
+                        candidate.parameters.push_back(text);
+                    }
+
                     if (ShouldAppendOpeningParenthesis(kind)) {
                         candidate.appendOpeningParenthesis = true;
                     }
@@ -549,11 +662,14 @@ namespace {
 
                 if (const auto symbolIt = currentFileSymbols.find(candidate.insertText); symbolIt != currentFileSymbols.end()) {
                     candidate.isCurrentFileSymbol = symbolIt->second.isCurrentFileSymbol;
+                    candidate.isTemplateParameter = symbolIt->second.isTemplateParameter;
+                    candidate.isFunctionParameter = symbolIt->second.isFunctionParameter;
                     candidate.isLocalVariable = symbolIt->second.isLocalVariable;
                     candidate.isField = symbolIt->second.isField;
                 } else {
+                    candidate.isTemplateParameter = IsTemplateParameterCursorKind(cursorKind);
+                    candidate.isFunctionParameter = cursorKind == CXCursor_ParmDecl;
                     candidate.isField = cursorKind == CXCursor_FieldDecl;
-                    candidate.isLocalVariable = cursorKind == CXCursor_ParmDecl;
                 }
 
                 const auto seenIt = seenIndices.find(candidate.insertText);
@@ -561,9 +677,14 @@ namespace {
                     auto& existing = candidates[seenIt->second];
                     existing.clangPriority = std::min(existing.clangPriority, candidate.clangPriority);
                     existing.isCurrentFileSymbol = existing.isCurrentFileSymbol || candidate.isCurrentFileSymbol;
+                    existing.isTemplateParameter = existing.isTemplateParameter || candidate.isTemplateParameter;
+                    existing.isFunctionParameter = existing.isFunctionParameter || candidate.isFunctionParameter;
                     existing.isLocalVariable = existing.isLocalVariable || candidate.isLocalVariable;
                     existing.isField = existing.isField || candidate.isField;
                     existing.appendOpeningParenthesis = existing.appendOpeningParenthesis || candidate.appendOpeningParenthesis;
+                    if (existing.parameters.empty() && !candidate.parameters.empty()) {
+                        existing.parameters = candidate.parameters;
+                    }
                     continue;
                 }
 
@@ -575,6 +696,45 @@ namespace {
         }
 
         return FilterAndSortCandidates(std::move(candidates), prefix);
+    }
+
+    CodeEditorSignatureHelpResult ResolveSignatureHelp(CXIndex index,
+                                                       CachedTranslationUnit& cache,
+                                                       const std::string& workspaceRoot,
+                                                       const std::string& projectRoot,
+                                                       const std::vector<std::string>& codeIncludeDirectories,
+                                                       std::uint64_t requestId,
+                                                       const std::string& filePath,
+                                                       const std::string& sourceText,
+                                                       const LittleCore::TextEditor::Coordinates& lookupCursorPosition,
+                                                       std::size_t openParenthesisOffset,
+                                                       const std::string& callableName) {
+        CodeEditorSignatureHelpResult result;
+        result.requestId = requestId;
+        result.filePath = filePath;
+        result.openParenthesisOffset = openParenthesisOffset;
+
+        const auto candidates = Complete(
+                index,
+                cache,
+                workspaceRoot,
+                projectRoot,
+                codeIncludeDirectories,
+                filePath,
+                sourceText,
+                lookupCursorPosition,
+                callableName);
+
+        const auto candidateIt = std::find_if(candidates.begin(), candidates.end(), [&callableName](const CodeEditorCompletionCandidate& candidate) {
+            return candidate.insertText == callableName && !candidate.parameters.empty();
+        });
+        if (candidateIt == candidates.end()) {
+            return result;
+        }
+
+        result.functionName = candidateIt->insertText;
+        result.parameters = candidateIt->parameters;
+        return result;
     }
 }
 
@@ -629,7 +789,39 @@ std::uint64_t CodeEditorAutocomplete::QueueCompletion(const std::string& filePat
 
     request.requestId = nextRequestId++;
     const auto requestId = request.requestId;
-    pendingRequest = std::move(request);
+    pendingCompletionRequest = std::move(request);
+    condition.notify_one();
+    return requestId;
+}
+
+std::uint64_t CodeEditorAutocomplete::QueueSignatureHelp(const std::string& filePath,
+                                                         const LittleCore::TextEditor& editor,
+                                                         std::size_t openParenthesisOffset) {
+    if (filePath.empty()) {
+        return 0;
+    }
+
+    SignatureHelpRequest request;
+    request.filePath = filePath;
+    request.sourceText = editor.GetText();
+    request.openParenthesisOffset = openParenthesisOffset;
+
+    const auto callableRange = FindCallableNameRange(request.sourceText, request.openParenthesisOffset);
+    if (!callableRange.has_value()) {
+        return 0;
+    }
+
+    request.callableName = callableRange->name;
+    request.lookupCursorPosition = CoordinatesFromOffset(request.sourceText, callableRange->end);
+
+    std::lock_guard lock(mutex);
+    if (workspaceRoot.empty()) {
+        return 0;
+    }
+
+    request.requestId = nextRequestId++;
+    const auto requestId = request.requestId;
+    pendingSignatureHelpRequest = std::move(request);
     condition.notify_one();
     return requestId;
 }
@@ -642,6 +834,17 @@ std::optional<CodeEditorAutocompleteResult> CodeEditorAutocomplete::TakeComplete
 
     auto result = std::move(completedResult);
     completedResult.reset();
+    return result;
+}
+
+std::optional<CodeEditorSignatureHelpResult> CodeEditorAutocomplete::TakeCompletedSignatureHelpResult() {
+    std::lock_guard lock(mutex);
+    if (!completedSignatureHelpResult.has_value()) {
+        return std::nullopt;
+    }
+
+    auto result = std::move(completedSignatureHelpResult);
+    completedSignatureHelpResult.reset();
     return result;
 }
 
@@ -659,21 +862,54 @@ void CodeEditorAutocomplete::WorkerMain() {
 
     while (true) {
         CompletionRequest request;
+        SignatureHelpRequest signatureHelpRequest;
         ContextSnapshot snapshot;
+        bool processSignatureHelp = false;
 
         {
             std::unique_lock lock(mutex);
             condition.wait(lock, [this] {
-                return stopRequested || pendingRequest.has_value();
+                return stopRequested || pendingCompletionRequest.has_value() || pendingSignatureHelpRequest.has_value();
             });
 
             if (stopRequested) {
                 break;
             }
 
-            request = std::move(*pendingRequest);
-            pendingRequest.reset();
+            if (pendingSignatureHelpRequest.has_value()) {
+                signatureHelpRequest = std::move(*pendingSignatureHelpRequest);
+                pendingSignatureHelpRequest.reset();
+                processSignatureHelp = true;
+            } else {
+                request = std::move(*pendingCompletionRequest);
+                pendingCompletionRequest.reset();
+            }
             snapshot = CreateContextSnapshotLocked();
+        }
+
+        if (processSignatureHelp) {
+            auto result = ResolveSignatureHelp(
+                    index,
+                    cache,
+                    snapshot.workspaceRoot,
+                    snapshot.projectRoot,
+                    snapshot.codeIncludeDirectories,
+                    signatureHelpRequest.requestId,
+                    signatureHelpRequest.filePath,
+                    signatureHelpRequest.sourceText,
+                    signatureHelpRequest.lookupCursorPosition,
+                    signatureHelpRequest.openParenthesisOffset,
+                    signatureHelpRequest.callableName);
+
+            {
+                std::lock_guard lock(mutex);
+                if (stopRequested) {
+                    break;
+                }
+
+                completedSignatureHelpResult = std::move(result);
+            }
+            continue;
         }
 
         auto result = CodeEditorAutocompleteResult{
