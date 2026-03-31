@@ -5,7 +5,15 @@
 #include "MainState.hpp"
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
+#include <cerrno>
+#include <cstring>
 #include <filesystem>
+#include <mach-o/dyld.h>
+#include <spawn.h>
+#include <unistd.h>
+#include <vector>
+
+extern char** environ;
 
 namespace {
     const char* BuildStateText(const Program& program) {
@@ -18,6 +26,109 @@ namespace {
         }
 
         return program.LastBuildResult().succeeded ? "Built" : "Build failed";
+    }
+
+    bool IsExecutableFile(const std::filesystem::path& path) {
+        return std::filesystem::exists(path) &&
+               std::filesystem::is_regular_file(path) &&
+               access(path.c_str(), X_OK) == 0;
+    }
+
+    void AddCandidate(std::vector<std::filesystem::path>& candidates, const std::filesystem::path& path) {
+        if (!path.empty()) {
+            candidates.push_back(path.lexically_normal());
+        }
+    }
+
+    std::string CurrentExecutablePath() {
+        std::vector<char> buffer(1024);
+        uint32_t size = static_cast<uint32_t>(buffer.size());
+        if (_NSGetExecutablePath(buffer.data(), &size) != 0) {
+            buffer.resize(size);
+            if (_NSGetExecutablePath(buffer.data(), &size) != 0) {
+                return {};
+            }
+        }
+
+        return std::filesystem::path(buffer.data()).lexically_normal().generic_string();
+    }
+
+    bool ShouldSkipSearchPath(const std::filesystem::path& rootPath, const std::filesystem::path& path) {
+        std::error_code errorCode;
+        const auto relativePath = std::filesystem::relative(path, rootPath, errorCode);
+        if (errorCode) {
+            return false;
+        }
+
+        for (const auto& part : relativePath) {
+            const auto name = part.string();
+            if (name == ".git" || name == "External" || name == "Cache") {
+                return true;
+            }
+
+            if (!name.empty() && name[0] == '.') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    std::string FindCodeEditorExecutable(const TargetProjectSettings& settings) {
+        std::vector<std::filesystem::path> candidates;
+        const auto currentExecutable = CurrentExecutablePath();
+        if (!currentExecutable.empty()) {
+            const auto currentPath = std::filesystem::path(currentExecutable);
+            AddCandidate(candidates, currentPath.parent_path() / "CodeEditor");
+            AddCandidate(candidates, currentPath.parent_path().parent_path().parent_path().parent_path() / "CodeEditor.app/Contents/MacOS/CodeEditor");
+        }
+
+        const auto workspaceRoot = std::filesystem::path(settings.workspaceRoot);
+        AddCandidate(candidates, workspaceRoot / "bin/Debug/CodeEditor");
+        AddCandidate(candidates, workspaceRoot / "bin/Release/CodeEditor");
+        AddCandidate(candidates, workspaceRoot / "Projects/CodeEditor/Build/bin/Debug/CodeEditor");
+        AddCandidate(candidates, workspaceRoot / "Projects/CodeEditor/Build/bin/Release/CodeEditor");
+        AddCandidate(candidates, workspaceRoot / "Projects/CodeEditor/Build/bin/ARM64/Debug/CodeEditor");
+        AddCandidate(candidates, workspaceRoot / "Projects/CodeEditor/Build/bin/ARM64/Release/CodeEditor");
+        AddCandidate(candidates, workspaceRoot / "Projects/CodeEditor/Build/bin/Debug/CodeEditor.app/Contents/MacOS/CodeEditor");
+        AddCandidate(candidates, workspaceRoot / "Projects/CodeEditor/Build/bin/Release/CodeEditor.app/Contents/MacOS/CodeEditor");
+        AddCandidate(candidates, workspaceRoot / "Projects/CodeEditor/Build/bin/ARM64/Debug/CodeEditor.app/Contents/MacOS/CodeEditor");
+        AddCandidate(candidates, workspaceRoot / "Projects/CodeEditor/Build/bin/ARM64/Release/CodeEditor.app/Contents/MacOS/CodeEditor");
+
+        for (const auto& candidate : candidates) {
+            if (IsExecutableFile(candidate)) {
+                return candidate.generic_string();
+            }
+        }
+
+        std::error_code errorCode;
+        for (std::filesystem::recursive_directory_iterator iterator(workspaceRoot, errorCode), end; iterator != end; iterator.increment(errorCode)) {
+            if (errorCode) {
+                errorCode.clear();
+                continue;
+            }
+
+            const auto& entry = *iterator;
+            if (ShouldSkipSearchPath(workspaceRoot, entry.path())) {
+                if (entry.is_directory()) {
+                    iterator.disable_recursion_pending();
+                }
+                continue;
+            }
+
+            if (entry.is_regular_file() && entry.path().filename() == "CodeEditor" && IsExecutableFile(entry.path())) {
+                return entry.path().lexically_normal().generic_string();
+            }
+
+            if (entry.is_directory() && entry.path().filename() == "CodeEditor.app") {
+                const auto bundledExecutable = entry.path() / "Contents/MacOS/CodeEditor";
+                if (IsExecutableFile(bundledExecutable)) {
+                    return bundledExecutable.lexically_normal().generic_string();
+                }
+            }
+        }
+
+        return {};
     }
 }
 
@@ -67,6 +178,11 @@ void MainState::DrawProjectWindow() {
     }
 
     ImGui::SameLine();
+    if (ImGui::Button("Open CodeEditor")) {
+        LaunchCodeEditor();
+    }
+
+    ImGui::SameLine();
     if (ImGui::Button("Compile All")) {
         for (auto& program : targetProject.GetPrograms()) {
             program.second->StartBuild(false);
@@ -90,6 +206,9 @@ void MainState::DrawProjectWindow() {
     ImGui::Separator();
     ImGui::Text("Discovered Programs: %zu", targetProject.GetPrograms().size());
     ImGui::TextWrapped("%s", targetProject.StatusText().c_str());
+    if (!codeEditorStatusText.empty()) {
+        ImGui::TextWrapped("%s", codeEditorStatusText.c_str());
+    }
 
     if (!settings.HasValidRoot()) {
         ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.2f, 1.0f), "The target project directory does not exist.");
@@ -100,6 +219,43 @@ void MainState::DrawProjectWindow() {
     }
 
     ImGui::End();
+}
+
+void MainState::LaunchCodeEditor() {
+    auto& settings = targetProject.Settings();
+    if (settings.rootPath.empty()) {
+        codeEditorStatusText = "Set a target project directory before opening CodeEditor.";
+        return;
+    }
+
+    const auto executablePath = FindCodeEditorExecutable(settings);
+    if (executablePath.empty()) {
+        codeEditorStatusText = "Could not find a built CodeEditor executable in the workspace.";
+        return;
+    }
+
+    std::vector<std::string> arguments = {
+            executablePath,
+            "--project-root",
+            settings.rootPath,
+            "--engine-root",
+            settings.engineAssetsPath
+    };
+    std::vector<char*> argv;
+    argv.reserve(arguments.size() + 1);
+    for (auto& argument : arguments) {
+        argv.push_back(const_cast<char*>(argument.c_str()));
+    }
+    argv.push_back(nullptr);
+
+    pid_t pid = 0;
+    const int result = posix_spawn(&pid, executablePath.c_str(), nullptr, nullptr, argv.data(), environ);
+    if (result != 0) {
+        codeEditorStatusText = "Failed to launch CodeEditor: " + std::string(std::strerror(result));
+        return;
+    }
+
+    codeEditorStatusText = "Opened CodeEditor for " + settings.rootPath;
 }
 
 void MainState::DrawProgramsWindow() {

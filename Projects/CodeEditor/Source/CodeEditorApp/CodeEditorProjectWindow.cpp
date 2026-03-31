@@ -104,7 +104,7 @@ void CodeEditorProjectWindow::RebuildTree() {
 CodeEditorProjectWindow::DrawResult CodeEditorProjectWindow::Draw(const std::string& activePath) {
     DrawResult result;
 
-    ImGui::Begin("Project");
+    ImGui::Begin("Files");
 
     if (ImGui::Button("Refresh")) {
         Refresh();

@@ -235,6 +235,8 @@ namespace LittleCore {
 
         ImVec2 GetCursorScreenPosition() const { return mCursorScreenPosition; }
 
+        ImVec2 GetCursorScreenBottom() const { return mCursorScreenBottom; }
+
         ImVec2 GetContentScreenMin() const { return mContentScreenMin; }
 
         ImVec2 GetContentScreenMax() const { return mContentScreenMax; }
@@ -467,6 +469,7 @@ namespace LittleCore {
         ErrorMarkers mErrorMarkers;
         ImVec2 mCharAdvance;
         ImVec2 mCursorScreenPosition = ImVec2(0.0f, 0.0f);
+        ImVec2 mCursorScreenBottom = ImVec2(0.0f, 0.0f);
         ImVec2 mContentScreenMin = ImVec2(0.0f, 0.0f);
         ImVec2 mContentScreenMax = ImVec2(0.0f, 0.0f);
         Coordinates mInteractiveStart, mInteractiveEnd;

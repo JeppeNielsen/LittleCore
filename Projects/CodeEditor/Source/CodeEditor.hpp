@@ -9,6 +9,7 @@
 #include "CodeEditorApp/CodeEditorProjectWindow.hpp"
 #include "CodeEditorApp/CodeEditorAutocomplete.hpp"
 #include "CodeEditorApp/CodeEditorWorkspace.hpp"
+#include "../../EditorHub/Source/Project/TargetProject.hpp"
 #include <string>
 
 struct CodeEditor : public LittleCore::IState {
@@ -24,10 +25,14 @@ private:
     CodeEditorProjectWindow projectWindow;
     CodeEditorAutocomplete autocomplete;
     CodeEditorWorkspace workspace;
+    TargetProject targetProject;
     ImFont* codeFont = nullptr;
     std::string workspaceRoot;
 
     void DrawGui();
+    void DrawTargetProjectWindow();
+    void DrawProgramsWindow();
     void LoadFonts();
+    void ReloadTargetProject();
     void SyncProjectFiles();
 };

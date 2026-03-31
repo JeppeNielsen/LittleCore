@@ -896,6 +896,16 @@ void TextEditor::Render()
 	snprintf(buf, 16, " %d ", globalLineMax);
 	mTextStart = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, buf, nullptr, nullptr).x + mLeftMargin;
 
+	const auto cursor = GetActualCursorCoordinates();
+	mCursorScreenPosition = ImVec2(
+		cursorScreenPos.x + mTextStart + TextDistanceToLineStart(cursor),
+		cursorScreenPos.y + cursor.mLine * mCharAdvance.y
+	);
+	mCursorScreenBottom = ImVec2(
+		mCursorScreenPosition.x,
+		mCursorScreenPosition.y + mCharAdvance.y
+	);
+
 	if (!mLines.empty())
 	{
 		float spaceSize = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, " ", nullptr, nullptr).x;
@@ -1008,6 +1018,8 @@ void TextEditor::Render()
 						}
 						ImVec2 cstart(textScreenPos.x + cx, lineStartScreenPos.y);
 						ImVec2 cend(textScreenPos.x + cx + width, lineStartScreenPos.y + mCharAdvance.y);
+						mCursorScreenPosition = cstart;
+						mCursorScreenBottom = cend;
 						drawList->AddRectFilled(cstart, cend, mPalette[(int)PaletteIndex::Cursor]);
 						if (elapsed > 800)
 							mStartTime = timeEnd;
@@ -1152,12 +1164,6 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 	const ImVec2 contentRegionMax = ImGui::GetWindowContentRegionMax();
 	mContentScreenMin = ImVec2(windowPos.x + contentRegionMin.x, windowPos.y + contentRegionMin.y);
 	mContentScreenMax = ImVec2(windowPos.x + contentRegionMax.x, windowPos.y + contentRegionMax.y);
-
-	const auto cursor = GetActualCursorCoordinates();
-	mCursorScreenPosition = ImVec2(
-		mContentScreenMin.x - ImGui::GetScrollX() + mTextStart + TextDistanceToLineStart(cursor),
-		mContentScreenMin.y - ImGui::GetScrollY() + cursor.mLine * mCharAdvance.y
-	);
 
 	if (mHandleKeyboardInputs)
 		ImGui::PopAllowKeyboardFocus();

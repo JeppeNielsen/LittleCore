@@ -6,6 +6,7 @@
 #include "IState.hpp"
 #include "ImGuiController.hpp"
 #include "../Project/TargetProject.hpp"
+#include <string>
 
 struct MainState : LittleCore::IState {
     void Initialize() override;
@@ -16,8 +17,10 @@ struct MainState : LittleCore::IState {
 private:
     LittleCore::ImGuiController gui;
     TargetProject targetProject;
+    std::string codeEditorStatusText;
 
     void DrawGui();
     void DrawProjectWindow();
     void DrawProgramsWindow();
+    void LaunchCodeEditor();
 };

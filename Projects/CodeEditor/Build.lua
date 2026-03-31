@@ -52,6 +52,14 @@ project "CodeEditor"
    files {
       "Source/**.cpp",
       "Source/**.hpp",
+      "../EditorHub/Source/CommandRunner/**.cpp",
+      "../EditorHub/Source/CommandRunner/**.hpp",
+      "../EditorHub/Source/Programs/**.cpp",
+      "../EditorHub/Source/Programs/**.hpp",
+      "../EditorHub/Source/Project/TargetProject.cpp",
+      "../EditorHub/Source/Project/TargetProject.hpp",
+      "../EditorHub/Source/Project/TargetProjectSettings.cpp",
+      "../EditorHub/Source/Project/TargetProjectSettings.hpp",
    }
 
    includedirs {
