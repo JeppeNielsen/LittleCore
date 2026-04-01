@@ -3,6 +3,7 @@
 //
 
 #include "LldbSession.hpp"
+#include "FileHelper.hpp"
 #include <algorithm>
 #include <cerrno>
 #include <csignal>
@@ -11,6 +12,7 @@
 #include <fcntl.h>
 #include <filesystem>
 #include <optional>
+#include <sstream>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -474,6 +476,264 @@ namespace {
 
         return variables;
     }
+
+    DebuggerScope* FindScopeByName(std::vector<DebuggerScope>& scopes, const std::string& name) {
+        auto scopeIt = std::find_if(scopes.begin(), scopes.end(), [&name](const DebuggerScope& scope) {
+            return scope.name == name;
+        });
+        return scopeIt != scopes.end() ? &(*scopeIt) : nullptr;
+    }
+
+    DebuggerVariable* FindVariableByName(std::vector<DebuggerVariable>& variables, const std::string& name) {
+        for (auto& variable : variables) {
+            if (variable.name == name) {
+                return &variable;
+            }
+
+            if (auto* child = FindVariableByName(variable.variables, name)) {
+                return child;
+            }
+        }
+
+        return nullptr;
+    }
+
+    bool HasVisibleVariableNamed(const std::vector<DebuggerVariable>& variables, const std::string& name) {
+        for (const auto& variable : variables) {
+            if (variable.name == name || HasVisibleVariableNamed(variable.variables, name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool HasVisibleVariableNamed(const std::vector<DebuggerScope>& scopes, const std::string& name) {
+        for (const auto& scope : scopes) {
+            if (HasVisibleVariableNamed(scope.variables, name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    std::string TrimAscii(const std::string& value) {
+        std::size_t start = 0;
+        while (start < value.size() && std::isspace(static_cast<unsigned char>(value[start])) != 0) {
+            ++start;
+        }
+
+        std::size_t end = value.size();
+        while (end > start && std::isspace(static_cast<unsigned char>(value[end - 1])) != 0) {
+            --end;
+        }
+
+        return value.substr(start, end - start);
+    }
+
+    bool IsIdentifier(const std::string& value) {
+        if (value.empty() || (std::isalpha(static_cast<unsigned char>(value.front())) == 0 && value.front() != '_')) {
+            return false;
+        }
+
+        for (const char c : value) {
+            if (std::isalnum(static_cast<unsigned char>(c)) == 0 && c != '_') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    std::vector<std::string> SplitStructuredBindingNames(const std::string& value) {
+        std::vector<std::string> names;
+        std::size_t start = 0;
+        while (start < value.size()) {
+            const auto comma = value.find(',', start);
+            const auto token = TrimAscii(value.substr(start, comma == std::string::npos ? std::string::npos : comma - start));
+            if (IsIdentifier(token)) {
+                names.push_back(token);
+            }
+
+            if (comma == std::string::npos) {
+                break;
+            }
+            start = comma + 1;
+        }
+
+        return names;
+    }
+
+    std::string SanitizeCodeLine(const std::string& line, bool& inBlockComment) {
+        std::string sanitized;
+        sanitized.reserve(line.size());
+
+        bool inString = false;
+        bool escaped = false;
+        char stringDelimiter = '\0';
+
+        for (std::size_t i = 0; i < line.size(); ++i) {
+            const char c = line[i];
+            const char next = i + 1 < line.size() ? line[i + 1] : '\0';
+
+            if (inBlockComment) {
+                sanitized += ' ';
+                if (c == '*' && next == '/') {
+                    sanitized += ' ';
+                    inBlockComment = false;
+                    ++i;
+                }
+                continue;
+            }
+
+            if (inString) {
+                sanitized += ' ';
+                if (escaped) {
+                    escaped = false;
+                } else if (c == '\\') {
+                    escaped = true;
+                } else if (c == stringDelimiter) {
+                    inString = false;
+                }
+                continue;
+            }
+
+            if (c == '/' && next == '/') {
+                break;
+            }
+
+            if (c == '/' && next == '*') {
+                sanitized += ' ';
+                sanitized += ' ';
+                inBlockComment = true;
+                ++i;
+                continue;
+            }
+
+            if (c == '"' || c == '\'') {
+                sanitized += ' ';
+                inString = true;
+                stringDelimiter = c;
+                escaped = false;
+                continue;
+            }
+
+            sanitized += c;
+        }
+
+        return sanitized;
+    }
+
+    struct StructuredBindingMatch {
+        std::vector<std::string> names;
+        bool isControlStatement = false;
+        bool opensScope = false;
+    };
+
+    std::optional<StructuredBindingMatch> ExtractStructuredBindingMatch(const std::string& line) {
+        const auto openBracket = line.find('[');
+        const auto closeBracket = openBracket == std::string::npos ? std::string::npos : line.find(']', openBracket + 1);
+        if (openBracket == std::string::npos || closeBracket == std::string::npos) {
+            return std::nullopt;
+        }
+
+        const auto autoPos = line.rfind("auto", openBracket);
+        if (autoPos == std::string::npos) {
+            return std::nullopt;
+        }
+
+        const bool validBoundaryBefore = autoPos == 0 ||
+                                         (std::isalnum(static_cast<unsigned char>(line[autoPos - 1])) == 0 && line[autoPos - 1] != '_');
+        const bool validBoundaryAfter = autoPos + 4 >= line.size() ||
+                                        (std::isalnum(static_cast<unsigned char>(line[autoPos + 4])) == 0 && line[autoPos + 4] != '_');
+        if (!validBoundaryBefore || !validBoundaryAfter) {
+            return std::nullopt;
+        }
+
+        auto names = SplitStructuredBindingNames(line.substr(openBracket + 1, closeBracket - openBracket - 1));
+        if (names.empty()) {
+            return std::nullopt;
+        }
+
+        const auto prefix = line.substr(0, autoPos);
+        const bool isControlStatement = prefix.find("for") != std::string::npos ||
+                                        prefix.find("if") != std::string::npos ||
+                                        prefix.find("while") != std::string::npos ||
+                                        prefix.find("switch") != std::string::npos;
+        const bool opensScope = line.find('{', closeBracket + 1) != std::string::npos;
+        return StructuredBindingMatch{std::move(names), isControlStatement, opensScope};
+    }
+
+    std::vector<std::string> FindActiveStructuredBindingNames(const std::string& filePath, int currentLine) {
+        if (filePath.empty() || currentLine <= 0 || !LittleCore::FileHelper::FileExists(filePath)) {
+            return {};
+        }
+
+        struct ActiveBinding {
+            int scopeDepth = 0;
+            std::vector<std::string> names;
+        };
+
+        std::istringstream input(LittleCore::FileHelper::ReadAllText(filePath));
+        std::string rawLine;
+        std::vector<ActiveBinding> activeBindings;
+        bool inBlockComment = false;
+        int braceDepth = 0;
+        int lineNumber = 0;
+
+        while (std::getline(input, rawLine)) {
+            ++lineNumber;
+            const auto line = SanitizeCodeLine(rawLine, inBlockComment);
+
+            if (const auto match = ExtractStructuredBindingMatch(line); match.has_value()) {
+                activeBindings.push_back({
+                        match->isControlStatement && match->opensScope ? braceDepth + 1 : braceDepth,
+                        match->names
+                });
+            }
+
+            braceDepth += static_cast<int>(std::count(line.begin(), line.end(), '{'));
+            braceDepth -= static_cast<int>(std::count(line.begin(), line.end(), '}'));
+            activeBindings.erase(std::remove_if(activeBindings.begin(),
+                                                activeBindings.end(),
+                                                [braceDepth](const ActiveBinding& binding) {
+                                                    return binding.scopeDepth > braceDepth;
+                                                }),
+                                 activeBindings.end());
+
+            if (lineNumber >= currentLine) {
+                break;
+            }
+        }
+
+        std::vector<std::string> names;
+        for (const auto& binding : activeBindings) {
+            for (const auto& name : binding.names) {
+                if (std::find(names.begin(), names.end(), name) == names.end()) {
+                    names.push_back(name);
+                }
+            }
+        }
+
+        return names;
+    }
+
+    DebuggerScope* EnsureScope(std::vector<DebuggerScope>& scopes, const std::string& name) {
+        if (auto* scope = FindScopeByName(scopes, name)) {
+            return scope;
+        }
+
+        scopes.push_back({
+                name,
+                false,
+                0,
+                false,
+                true,
+                {}
+        });
+        return &scopes.back();
+    }
 }
 
 LldbSession::LldbSession(std::string executablePath, std::string workingDirectory) :
@@ -923,6 +1183,7 @@ void LldbSession::BeginRequestedSession() {
         if (!workingDirectory.empty()) {
             arguments += ",\"cwd\":\"" + EscapeJsonString(workingDirectory) + "\"";
         }
+        arguments += ",\"initCommands\":[\"settings set target.experimental.inject-local-vars true\"]";
         arguments += ",\"stopOnEntry\":false}";
 
         SendRequest("launch", arguments, CommandKind::Launch, "Launching under LLDB");
@@ -931,6 +1192,7 @@ void LldbSession::BeginRequestedSession() {
         arguments += ",\"type\":\"lldb\",\"request\":\"attach\"";
         arguments += ",\"program\":\"" + EscapeJsonString(executablePath) + "\"";
         arguments += ",\"pid\":" + std::to_string(requestedAttachPid);
+        arguments += ",\"initCommands\":[\"settings set target.experimental.inject-local-vars true\"]";
         arguments += ",\"waitFor\":false}";
 
         SendRequest("attach", arguments, CommandKind::Attach, "Attaching LLDB");
@@ -1049,6 +1311,57 @@ void LldbSession::EnsureVariablesLoaded(int variablesReference, bool namedOnly) 
     RequestVariables(variablesReference, namedOnly);
 }
 
+void LldbSession::RequestEvaluate(const std::string& expression) {
+    if (!IsActive() || !inferiorStopped || currentFrameId == 0 || expression.empty()) {
+        return;
+    }
+
+    AppendConsoleOutput("[lldb-dap] evaluate " + expression + "\n");
+    SendRequest("evaluate",
+                "{\"expression\":\"" + EscapeJsonString(expression) +
+                "\",\"frameId\":" + std::to_string(currentFrameId) +
+                ",\"context\":\"watch\"}",
+                CommandKind::Evaluate,
+                "Evaluating debugger expression",
+                0,
+                currentStopGeneration,
+                expression);
+}
+
+void LldbSession::QueueStructuredBindingEvaluations() {
+    if (!inferiorStopped || currentFrameId == 0 || !hasCurrentLocation) {
+        return;
+    }
+
+    auto names = FindActiveStructuredBindingNames(currentLocationFile, currentLocationLine);
+    names.erase(std::remove_if(names.begin(), names.end(), [this](const std::string& name) {
+                    return HasVisibleVariableNamed(currentScopes, name);
+                }),
+                names.end());
+
+    if (names.empty()) {
+        return;
+    }
+
+    auto* scope = EnsureScope(currentScopes, "Structured Bindings");
+    for (const auto& name : names) {
+        if (FindVariableByName(scope->variables, name) != nullptr) {
+            continue;
+        }
+
+        scope->variables.push_back({
+                name,
+                "",
+                "",
+                0,
+                true,
+                false,
+                {}
+        });
+        RequestEvaluate(name);
+    }
+}
+
 void LldbSession::QueueDisconnect(bool terminateDebuggee, const std::string& description) {
     if (!IsActive() || disconnectRequested) {
         return;
@@ -1066,7 +1379,8 @@ void LldbSession::SendRequest(const std::string& command,
                               CommandKind kind,
                               std::string description,
                               int referenceId,
-                              int stopGeneration) {
+                              int stopGeneration,
+                              std::string expression) {
     if (dapInputFd < 0) {
         return;
     }
@@ -1075,6 +1389,7 @@ void LldbSession::SendRequest(const std::string& command,
     pendingCommands.push_back({requestSeq, PendingCommand{
             kind,
             std::move(description),
+            std::move(expression),
             referenceId,
             stopGeneration < 0 ? currentStopGeneration : stopGeneration
     }});
@@ -1219,7 +1534,8 @@ void LldbSession::HandleResponse(const std::string& message) {
 
     const bool isFrameDataCommand = pendingCommand.kind == CommandKind::StackTrace ||
                                     pendingCommand.kind == CommandKind::Scopes ||
-                                    pendingCommand.kind == CommandKind::Variables;
+                                    pendingCommand.kind == CommandKind::Variables ||
+                                    pendingCommand.kind == CommandKind::Evaluate;
     if (isFrameDataCommand && pendingCommand.stopGeneration != currentStopGeneration) {
         AppendConsoleOutput("[lldb-dap] dropped stale frame data response for " + pendingCommand.description + "\n");
         return;
@@ -1228,6 +1544,20 @@ void LldbSession::HandleResponse(const std::string& message) {
     if (!success) {
         if (pendingCommand.kind == CommandKind::Variables) {
             FinishVariablesLoad(currentScopes, pendingCommand.referenceId, {});
+        } else if (pendingCommand.kind == CommandKind::Evaluate) {
+            if (auto* scope = FindScopeByName(currentScopes, "Structured Bindings")) {
+                if (auto* variable = FindVariableByName(scope->variables, pendingCommand.expression)) {
+                    variable->value = "<unavailable>";
+                    variable->type.clear();
+                    variable->variablesReference = 0;
+                    variable->variablesLoading = false;
+                    variable->variablesLoaded = true;
+                }
+            }
+
+            AppendConsoleOutput("[lldb-dap] " + pendingCommand.description + " failed for \"" +
+                                pendingCommand.expression + "\": " + errorMessage + "\n");
+            return;
         }
 
         statusText = pendingCommand.description.empty()
@@ -1331,6 +1661,7 @@ void LldbSession::HandleResponse(const std::string& message) {
                 }
             }
             AppendConsoleOutput("[lldb-dap] scopes loaded=" + std::to_string(currentScopes.size()) + "\n");
+            QueueStructuredBindingEvaluations();
             break;
         }
         case CommandKind::Variables: {
@@ -1343,6 +1674,37 @@ void LldbSession::HandleResponse(const std::string& message) {
 
             AppendConsoleOutput("[lldb-dap] variables loaded ref=" + std::to_string(pendingCommand.referenceId) +
                                 " count=" + std::to_string(variableCount) + "\n");
+            break;
+        }
+        case CommandKind::Evaluate: {
+            auto* scope = EnsureScope(currentScopes, "Structured Bindings");
+            auto* variable = FindVariableByName(scope->variables, pendingCommand.expression);
+            if (variable == nullptr) {
+                scope->variables.push_back({
+                        pendingCommand.expression,
+                        "",
+                        "",
+                        0,
+                        true,
+                        false,
+                        {}
+                });
+                variable = &scope->variables.back();
+            }
+
+            const auto bodyPos = message.find("\"body\"");
+            const auto result = ExtractJsonString(message, "result", bodyPos).value_or("");
+            const auto type = ExtractJsonString(message, "type", bodyPos).value_or("");
+            const auto variablesReference = ExtractJsonInt(message, "variablesReference", bodyPos).value_or(0);
+
+            variable->value = result;
+            variable->type = type;
+            variable->variablesReference = variablesReference;
+            variable->variablesLoading = false;
+            variable->variablesLoaded = variablesReference == 0;
+            variable->variables.clear();
+
+            AppendConsoleOutput("[lldb-dap] evaluate loaded \"" + pendingCommand.expression + "\"\n");
             break;
         }
         case CommandKind::Disconnect:

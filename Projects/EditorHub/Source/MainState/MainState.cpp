@@ -63,7 +63,11 @@ namespace {
             ImGui::PushID(index);
             ImGui::Bullet();
             ImGui::SameLine();
-            ImGui::TextWrapped("%s", label.c_str());
+            if (variable.variablesLoading && !variable.variablesLoaded) {
+                ImGui::TextDisabled("%s (Loading...)", variable.name.c_str());
+            } else {
+                ImGui::TextWrapped("%s", label.c_str());
+            }
             ImGui::PopID();
             return;
         }

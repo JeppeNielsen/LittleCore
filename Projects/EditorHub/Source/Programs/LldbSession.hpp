@@ -67,6 +67,7 @@ private:
         StackTrace,
         Scopes,
         Variables,
+        Evaluate,
         SetBreakpoints,
         ConfigurationDone,
         Disconnect,
@@ -75,6 +76,7 @@ private:
     struct PendingCommand {
         CommandKind kind = CommandKind::Generic;
         std::string description;
+        std::string expression;
         int referenceId = 0;
         int stopGeneration = 0;
     };
@@ -123,14 +125,17 @@ private:
     void RequestStackTrace(int threadId);
     void RequestScopes(int frameId);
     void RequestVariables(int variablesReference, bool namedOnly);
+    void RequestEvaluate(const std::string& expression);
     void EnsureVariablesLoaded(int variablesReference, bool namedOnly);
+    void QueueStructuredBindingEvaluations();
     void QueueDisconnect(bool terminateDebuggee, const std::string& description);
     void SendRequest(const std::string& command,
                      const std::string& argumentsJson,
                      CommandKind kind,
                      std::string description,
                      int referenceId = 0,
-                     int stopGeneration = -1);
+                     int stopGeneration = -1,
+                     std::string expression = {});
     void HandleMessage(const std::string& message);
     void HandleEvent(const std::string& message);
     void HandleResponse(const std::string& message);
