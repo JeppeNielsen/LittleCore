@@ -12,5 +12,22 @@
     #endif
 #endif
 
+#if IMGUI_VERSION_NUM < 19100
+// sokol_imgui expects newer clipboard hooks on ImGuiPlatformIO.
+#define ImGuiContext void
+#define ImGuiPlatformIO ImGuiIO
+#define GetPlatformIO GetIO
+#define Platform_SetClipboardTextFn SetClipboardTextFn
+#define Platform_GetClipboardTextFn GetClipboardTextFn
+#endif
+
 #define SOKOL_IMGUI_IMPL
 #include <util/sokol_imgui.h>
+
+#if IMGUI_VERSION_NUM < 19100
+#undef Platform_GetClipboardTextFn
+#undef Platform_SetClipboardTextFn
+#undef GetPlatformIO
+#undef ImGuiPlatformIO
+#undef ImGuiContext
+#endif

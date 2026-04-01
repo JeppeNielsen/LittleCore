@@ -10,6 +10,22 @@
 
 using namespace LittleCore;
 
+namespace {
+    bool ShouldForwardAltModifiedCharacter(const sapp_event& event) {
+        if (event.type != SAPP_EVENTTYPE_CHAR) {
+            return false;
+        }
+
+        if (event.char_code < 32 || event.char_code == 127) {
+            return false;
+        }
+
+        const bool hasAlt = (event.modifiers & SAPP_MODIFIER_ALT) != 0;
+        const bool hasSuper = (event.modifiers & SAPP_MODIFIER_SUPER) != 0;
+        return hasAlt && !hasSuper;
+    }
+}
+
 ImGuiController::~ImGuiController() {
     Destroy();
 }
@@ -43,6 +59,14 @@ void ImGuiController::HandleEvent(void *event) {
     if (sappEvent == nullptr || !isInitialized) {
         return;
     }
+
+    // sokol_imgui drops CHAR events with Alt pressed, but Nordic layouts use
+    // Alt/AltGr to produce printable characters such as '{' and '}'.
+    if (ShouldForwardAltModifiedCharacter(*sappEvent)) {
+        ImGui::GetIO().AddInputCharacter(static_cast<unsigned int>(sappEvent->char_code));
+        return;
+    }
+
     simgui_handle_event(sappEvent);
 }
 
