@@ -750,6 +750,18 @@ bool LldbSession::Start() {
         return true;
     }
 
+    const auto debugserverPath = ResolveDebugserverPath();
+    if (debugserverPath.empty()) {
+        statusText = "Missing bundled debugserver in /Users/jeppe/Jeppes/Scripting/clang18/bin";
+        return false;
+    }
+
+    const auto lldbDapPath = ResolveLldbDapPath();
+    if (lldbDapPath.empty()) {
+        statusText = "Missing bundled lldb-dap in /Users/jeppe/Jeppes/Scripting/clang18/bin";
+        return false;
+    }
+
     int inputPipe[2] = {-1, -1};
     int outputPipe[2] = {-1, -1};
     int errorPipe[2] = {-1, -1};
@@ -792,17 +804,8 @@ bool LldbSession::Start() {
             chdir(workingDirectory.c_str());
         }
 
-        const auto debugserverPath = ResolveDebugserverPath();
-        if (!debugserverPath.empty() && debugserverPath[0] == '/') {
-            setenv("LLDB_DEBUGSERVER_PATH", debugserverPath.c_str(), 1);
-        }
-
-        const auto lldbDapPath = ResolveLldbDapPath();
-        if (!lldbDapPath.empty() && lldbDapPath[0] == '/') {
-            execl(lldbDapPath.c_str(), lldbDapPath.c_str(), static_cast<char*>(nullptr));
-        } else {
-            execlp(lldbDapPath.c_str(), lldbDapPath.c_str(), static_cast<char*>(nullptr));
-        }
+        setenv("LLDB_DEBUGSERVER_PATH", debugserverPath.c_str(), 1);
+        execl(lldbDapPath.c_str(), lldbDapPath.c_str(), static_cast<char*>(nullptr));
         _exit(127);
     }
 
@@ -1807,34 +1810,11 @@ std::string LldbSession::EscapeJsonString(const std::string& value) {
 }
 
 std::string LldbSession::ResolveLldbDapPath() {
-    constexpr const char* candidates[] = {
-            "/Applications/Xcode.app/Contents/Developer/usr/bin/lldb-dap",
-            "/Users/jeppe/Jeppes/Scripting/clang18/bin/lldb-dap",
-            "lldb-dap"
-    };
-
-    for (const auto* candidate : candidates) {
-        if (candidate[0] != '/' || std::filesystem::exists(candidate)) {
-            return candidate;
-        }
-    }
-
-    return "lldb-dap";
+    constexpr const char* bundledPath = "/Users/jeppe/Jeppes/Scripting/clang18/bin/lldb-dap";
+    return std::filesystem::exists(bundledPath) ? bundledPath : std::string{};
 }
 
 std::string LldbSession::ResolveDebugserverPath() {
-    constexpr const char* candidates[] = {
-            "/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/Resources/debugserver",
-            "/Applications/Xcode.app/Contents/Developer/usr/bin/debugserver",
-            "/Users/jeppe/Jeppes/Scripting/clang18/bin/debugserver",
-            "debugserver"
-    };
-
-    for (const auto* candidate : candidates) {
-        if (candidate[0] != '/' || std::filesystem::exists(candidate)) {
-            return candidate;
-        }
-    }
-
-    return "debugserver";
+    constexpr const char* bundledPath = "/Users/jeppe/Jeppes/Scripting/clang18/bin/debugserver";
+    return std::filesystem::exists(bundledPath) ? bundledPath : std::string{};
 }
