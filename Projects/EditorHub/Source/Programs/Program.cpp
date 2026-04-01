@@ -287,6 +287,12 @@ const std::vector<DebuggerScope>& Program::DebuggerScopes() const {
     return debugger ? debugger->CurrentScopes() : empty;
 }
 
+void Program::EnsureDebuggerVariableChildrenLoaded(int variablesReference) {
+    if (debugger) {
+        debugger->EnsureVariableChildrenLoaded(variablesReference);
+    }
+}
+
 bool Program::HasExitCode() const {
     return hasExitCode;
 }

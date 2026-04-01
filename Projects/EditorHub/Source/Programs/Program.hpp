@@ -56,6 +56,7 @@ public:
     const std::string& DebuggerStatusText() const;
     const std::string& DebuggerConsoleOutput() const;
     const std::vector<DebuggerScope>& DebuggerScopes() const;
+    void EnsureDebuggerVariableChildrenLoaded(int variablesReference);
 
     bool HasExitCode() const;
     int LastExitCode() const;

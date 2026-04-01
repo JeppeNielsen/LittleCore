@@ -81,7 +81,55 @@ namespace {
         return "Attached";
     }
 
-    void DrawDebuggerScopes(const Program& program) {
+    std::string BuildVariableLabel(const DebuggerVariable& variable) {
+        std::string label = variable.name;
+        if (!variable.type.empty()) {
+            label += " : " + variable.type;
+        }
+
+        if (!variable.value.empty()) {
+            label += " = " + variable.value;
+        }
+
+        return label;
+    }
+
+    void DrawDebuggerVariable(Program& program, const DebuggerVariable& variable, int index) {
+        const auto label = BuildVariableLabel(variable);
+        if (variable.variablesReference == 0) {
+            ImGui::PushID(index);
+            ImGui::Bullet();
+            ImGui::SameLine();
+            ImGui::TextWrapped("%s", label.c_str());
+            ImGui::PopID();
+            return;
+        }
+
+        ImGui::PushID(index);
+        const bool showAsLeaf = variable.variablesLoaded && variable.variables.empty();
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth;
+        if (showAsLeaf) {
+            flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        }
+
+        const bool isOpen = ImGui::TreeNodeEx("variable", flags, "%s", label.c_str());
+        if (isOpen && !showAsLeaf) {
+            program.EnsureDebuggerVariableChildrenLoaded(variable.variablesReference);
+            if (variable.variablesLoading || !variable.variablesLoaded) {
+                ImGui::TextDisabled("Loading...");
+            } else if (variable.variables.empty()) {
+                ImGui::TextDisabled("No child variables.");
+            } else {
+                for (std::size_t childIndex = 0; childIndex < variable.variables.size(); ++childIndex) {
+                    DrawDebuggerVariable(program, variable.variables[childIndex], static_cast<int>(childIndex));
+                }
+            }
+            ImGui::TreePop();
+        }
+        ImGui::PopID();
+    }
+
+    void DrawDebuggerScopes(Program& program) {
         if (!program.IsDebuggerStopped()) {
             return;
         }
@@ -101,24 +149,13 @@ namespace {
         for (const auto& scope : scopes) {
             drewScope = true;
             if (ImGui::TreeNode(scope.name.c_str())) {
-                if (!scope.variablesLoaded) {
+                if (scope.variablesLoading || !scope.variablesLoaded) {
                     ImGui::TextDisabled("Loading...");
                 } else if (scope.variables.empty()) {
                     ImGui::TextDisabled("No variables.");
                 } else {
-                    for (const auto& variable : scope.variables) {
-                        std::string label = variable.name;
-                        if (!variable.type.empty()) {
-                            label += " : " + variable.type;
-                        }
-
-                        ImGui::Bullet();
-                        ImGui::SameLine();
-                        if (!variable.value.empty()) {
-                            ImGui::TextWrapped("%s = %s", label.c_str(), variable.value.c_str());
-                        } else {
-                            ImGui::TextUnformatted(label.c_str());
-                        }
+                    for (std::size_t variableIndex = 0; variableIndex < scope.variables.size(); ++variableIndex) {
+                        DrawDebuggerVariable(program, scope.variables[variableIndex], static_cast<int>(variableIndex));
                     }
                 }
                 ImGui::TreePop();

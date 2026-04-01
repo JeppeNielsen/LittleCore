@@ -44,6 +44,7 @@ public:
     const std::string& StatusText() const;
     const std::string& ConsoleOutput() const;
     const std::vector<DebuggerScope>& CurrentScopes() const;
+    void EnsureVariableChildrenLoaded(int variablesReference);
 
 private:
     enum class RequestedAction {
@@ -121,7 +122,8 @@ private:
     void RequestThreads();
     void RequestStackTrace(int threadId);
     void RequestScopes(int frameId);
-    void RequestVariables(int variablesReference);
+    void RequestVariables(int variablesReference, bool namedOnly);
+    void EnsureVariablesLoaded(int variablesReference, bool namedOnly);
     void QueueDisconnect(bool terminateDebuggee, const std::string& description);
     void SendRequest(const std::string& command,
                      const std::string& argumentsJson,

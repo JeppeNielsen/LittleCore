@@ -383,6 +383,97 @@ namespace {
 
         return objects;
     }
+
+    DebuggerVariable* FindVariableByReference(std::vector<DebuggerVariable>& variables, int variablesReference) {
+        for (auto& variable : variables) {
+            if (variable.variablesReference == variablesReference) {
+                return &variable;
+            }
+
+            if (auto* child = FindVariableByReference(variable.variables, variablesReference)) {
+                return child;
+            }
+        }
+
+        return nullptr;
+    }
+
+    DebuggerVariable* FindVariableByReference(std::vector<DebuggerScope>& scopes, int variablesReference) {
+        for (auto& scope : scopes) {
+            if (auto* variable = FindVariableByReference(scope.variables, variablesReference)) {
+                return variable;
+            }
+        }
+
+        return nullptr;
+    }
+
+    DebuggerScope* FindScopeByReference(std::vector<DebuggerScope>& scopes, int variablesReference) {
+        auto scopeIt = std::find_if(scopes.begin(), scopes.end(), [variablesReference](const DebuggerScope& scope) {
+            return scope.variablesReference == variablesReference;
+        });
+        return scopeIt != scopes.end() ? &(*scopeIt) : nullptr;
+    }
+
+    bool BeginVariablesLoad(std::vector<DebuggerScope>& scopes, int variablesReference) {
+        if (auto* scope = FindScopeByReference(scopes, variablesReference)) {
+            if (scope->variablesLoaded || scope->variablesLoading) {
+                return false;
+            }
+
+            scope->variablesLoading = true;
+            return true;
+        }
+
+        if (auto* variable = FindVariableByReference(scopes, variablesReference)) {
+            if (variable->variablesLoaded || variable->variablesLoading) {
+                return false;
+            }
+
+            variable->variablesLoading = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool FinishVariablesLoad(std::vector<DebuggerScope>& scopes,
+                             int variablesReference,
+                             std::vector<DebuggerVariable> variables) {
+        if (auto* scope = FindScopeByReference(scopes, variablesReference)) {
+            scope->variables = std::move(variables);
+            scope->variablesLoading = false;
+            scope->variablesLoaded = true;
+            return true;
+        }
+
+        if (auto* variable = FindVariableByReference(scopes, variablesReference)) {
+            variable->variables = std::move(variables);
+            variable->variablesLoading = false;
+            variable->variablesLoaded = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    std::vector<DebuggerVariable> ParseDebuggerVariables(const std::string& message) {
+        std::vector<DebuggerVariable> variables;
+        for (const auto& variableObject : ExtractTopLevelObjectArray(message, "variables")) {
+            const auto variablesReference = ExtractJsonInt(variableObject, "variablesReference").value_or(0);
+            variables.push_back({
+                    ExtractJsonString(variableObject, "name").value_or("value"),
+                    ExtractJsonString(variableObject, "value").value_or(""),
+                    ExtractJsonString(variableObject, "type").value_or(""),
+                    variablesReference,
+                    false,
+                    variablesReference == 0,
+                    {}
+            });
+        }
+
+        return variables;
+    }
 }
 
 LldbSession::LldbSession(std::string executablePath, std::string workingDirectory) :
@@ -753,6 +844,10 @@ const std::vector<DebuggerScope>& LldbSession::CurrentScopes() const {
     return currentScopes;
 }
 
+void LldbSession::EnsureVariableChildrenLoaded(int variablesReference) {
+    EnsureVariablesLoaded(variablesReference, false);
+}
+
 void LldbSession::CloseSession(bool terminateProcess) {
     if (dapInputFd >= 0) {
         close(dapInputFd);
@@ -923,18 +1018,35 @@ void LldbSession::RequestScopes(int frameId) {
                 currentStopGeneration);
 }
 
-void LldbSession::RequestVariables(int variablesReference) {
+void LldbSession::RequestVariables(int variablesReference, bool namedOnly) {
     if (!IsActive() || variablesReference == 0) {
         return;
     }
 
     AppendConsoleOutput("[lldb-dap] variables ref=" + std::to_string(variablesReference) + "\n");
+    std::string arguments = "{\"variablesReference\":" + std::to_string(variablesReference);
+    if (namedOnly) {
+        arguments += ",\"filter\":\"named\"";
+    }
+    arguments += ",\"start\":0,\"count\":512}";
     SendRequest("variables",
-                "{\"variablesReference\":" + std::to_string(variablesReference) + ",\"filter\":\"named\",\"start\":0,\"count\":512}",
+                arguments,
                 CommandKind::Variables,
                 "Fetching debugger variables",
                 variablesReference,
                 currentStopGeneration);
+}
+
+void LldbSession::EnsureVariablesLoaded(int variablesReference, bool namedOnly) {
+    if (!IsActive() || !inferiorStopped || variablesReference == 0) {
+        return;
+    }
+
+    if (!BeginVariablesLoad(currentScopes, variablesReference)) {
+        return;
+    }
+
+    RequestVariables(variablesReference, namedOnly);
 }
 
 void LldbSession::QueueDisconnect(bool terminateDebuggee, const std::string& description) {
@@ -1115,12 +1227,7 @@ void LldbSession::HandleResponse(const std::string& message) {
 
     if (!success) {
         if (pendingCommand.kind == CommandKind::Variables) {
-            auto scopeIt = std::find_if(currentScopes.begin(), currentScopes.end(), [&pendingCommand](const DebuggerScope& scope) {
-                return scope.variablesReference == pendingCommand.referenceId;
-            });
-            if (scopeIt != currentScopes.end()) {
-                scopeIt->variablesLoaded = true;
-            }
+            FinishVariablesLoad(currentScopes, pendingCommand.referenceId, {});
         }
 
         statusText = pendingCommand.description.empty()
@@ -1214,37 +1321,28 @@ void LldbSession::HandleResponse(const std::string& message) {
                         name,
                         expensive,
                         variablesReference,
+                        false,
                         variablesReference == 0,
                         {}
                 });
 
                 if (variablesReference != 0) {
-                    RequestVariables(variablesReference);
+                    EnsureVariablesLoaded(variablesReference, true);
                 }
             }
             AppendConsoleOutput("[lldb-dap] scopes loaded=" + std::to_string(currentScopes.size()) + "\n");
             break;
         }
         case CommandKind::Variables: {
-            auto scopeIt = std::find_if(currentScopes.begin(), currentScopes.end(), [&pendingCommand](const DebuggerScope& scope) {
-                return scope.variablesReference == pendingCommand.referenceId;
-            });
-            if (scopeIt == currentScopes.end()) {
+            auto variables = ParseDebuggerVariables(message);
+            const auto variableCount = variables.size();
+            if (!FinishVariablesLoad(currentScopes, pendingCommand.referenceId, std::move(variables))) {
                 AppendConsoleOutput("[lldb-dap] variables response with unknown ref=" + std::to_string(pendingCommand.referenceId) + "\n");
                 break;
             }
 
-            scopeIt->variables.clear();
-            for (const auto& variableObject : ExtractTopLevelObjectArray(message, "variables")) {
-                scopeIt->variables.push_back({
-                        ExtractJsonString(variableObject, "name").value_or("value"),
-                        ExtractJsonString(variableObject, "value").value_or(""),
-                        ExtractJsonString(variableObject, "type").value_or(""),
-                        ExtractJsonInt(variableObject, "variablesReference").value_or(0)
-                });
-            }
-            scopeIt->variablesLoaded = true;
-            AppendConsoleOutput("[lldb-dap] variables loaded scope=\"" + scopeIt->name + "\" count=" + std::to_string(scopeIt->variables.size()) + "\n");
+            AppendConsoleOutput("[lldb-dap] variables loaded ref=" + std::to_string(pendingCommand.referenceId) +
+                                " count=" + std::to_string(variableCount) + "\n");
             break;
         }
         case CommandKind::Disconnect:
