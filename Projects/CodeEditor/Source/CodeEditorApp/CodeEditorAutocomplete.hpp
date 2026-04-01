@@ -18,6 +18,7 @@ struct CodeEditorCompletionCandidate {
     std::string returnType;
     std::vector<std::string> parameters;
     unsigned clangPriority = 0;
+    bool isType = false;
     bool isCurrentFileSymbol = false;
     bool isTemplateParameter = false;
     bool isFunctionParameter = false;

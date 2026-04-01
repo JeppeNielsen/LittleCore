@@ -51,6 +51,22 @@ namespace {
         return std::min(offset + static_cast<std::size_t>(coordinates.mColumn), clampedLineEnd);
     }
 
+    TextEditor::Coordinates CoordinatesFromOffset(const std::string& text, std::size_t offset) {
+        TextEditor::Coordinates coordinates;
+        offset = std::min(offset, text.size());
+
+        for (std::size_t i = 0; i < offset; ++i) {
+            if (text[i] == '\n') {
+                ++coordinates.mLine;
+                coordinates.mColumn = 0;
+            } else {
+                ++coordinates.mColumn;
+            }
+        }
+
+        return coordinates;
+    }
+
     CompletionRequest BuildCompletionRequest(const TextEditor& editor) {
         CompletionRequest request;
         request.cursorPosition = editor.GetCursorPosition();
@@ -95,7 +111,7 @@ namespace {
 
     bool ShouldSuppressAutocompleteForInsertedText(const std::string& insertedText) {
         return std::any_of(insertedText.begin(), insertedText.end(), [](unsigned char value) {
-            return std::isspace(value) != 0 || value == ';' || value == '{' || value == '}';
+            return std::isspace(value) != 0 || value == ';' || value == '{' || value == '}' || value == ')';
         });
     }
 
@@ -725,34 +741,52 @@ void CodeEditorWorkspace::ApplySelectedCompletion(Document& document) {
         return;
     }
 
-    const auto request = BuildCompletionRequest(document.editor);
+    const auto completionCursorPosition = document.completion.cursorPosition;
+    const auto completionPrefix = document.completion.prefix;
     const auto& candidate = document.completion.candidates[document.completion.selectedIndex];
     const auto originalText = document.editor.GetText();
-    const auto cursorOffset = CursorOffsetFromCoordinates(originalText, request.cursorPosition);
+    const auto liveCursorOffset = CursorOffsetFromCoordinates(originalText, document.editor.GetCursorPosition());
+    const auto completionCursorOffset = CursorOffsetFromCoordinates(originalText, completionCursorPosition);
+    const auto cursorOffset = std::max(liveCursorOffset, completionCursorOffset);
     const bool shouldInsertOpeningParenthesis = candidate.appendOpeningParenthesis &&
                                                 (cursorOffset >= originalText.size() || originalText[cursorOffset] != '(');
     const bool shouldInsertEmptyCall = shouldInsertOpeningParenthesis && candidate.parameters.empty();
     std::optional<std::size_t> signatureOpenParenthesisOffset;
+    std::string insertedSuffix;
 
-    if (!request.prefix.empty()) {
-        document.editor.MoveLeft(static_cast<int>(request.prefix.size()), true, false);
+    if (!completionPrefix.empty()) {
+        std::size_t replacementStartOffset = cursorOffset;
+        while (replacementStartOffset > 0 && IsIdentifierCharacter(originalText[replacementStartOffset - 1])) {
+            --replacementStartOffset;
+        }
+
+        document.editor.SetSelection(
+                CoordinatesFromOffset(originalText, replacementStartOffset),
+                CoordinatesFromOffset(originalText, cursorOffset));
         document.editor.Delete();
+    } else {
+        document.editor.SetCursorPosition(CoordinatesFromOffset(originalText, cursorOffset));
     }
 
     document.editor.InsertText(candidate.insertText.c_str());
     if (shouldInsertEmptyCall) {
         document.editor.InsertText("()");
+        insertedSuffix = "()";
     } else if (shouldInsertOpeningParenthesis) {
         document.editor.InsertText("(");
+        insertedSuffix = "(";
         const auto updatedText = document.editor.GetText();
         const auto updatedCursor = document.editor.GetCursorPosition();
         const auto updatedCursorOffset = CursorOffsetFromCoordinates(updatedText, updatedCursor);
         if (updatedCursorOffset > 0) {
             signatureOpenParenthesisOffset = updatedCursorOffset - 1;
         }
+    } else if (candidate.isType) {
+        document.editor.InsertText(" ");
+        insertedSuffix = " ";
     }
     document.isDirty = document.editor.GetText() != document.savedText;
-    statusText = "Inserted completion: " + candidate.insertText + (shouldInsertEmptyCall ? "()" : (shouldInsertOpeningParenthesis ? "(" : ""));
+    statusText = "Inserted completion: " + candidate.insertText + insertedSuffix;
     if (signatureOpenParenthesisOffset.has_value()) {
         OpenSignatureHelp(document, candidate, *signatureOpenParenthesisOffset);
     } else {

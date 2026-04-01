@@ -35,6 +35,7 @@ namespace {
 
     struct CurrentFileSymbolInfo {
         bool isCurrentFileSymbol = false;
+        bool isType = false;
         bool isTemplateParameter = false;
         bool isFunctionParameter = false;
         bool isLocalVariable = false;
@@ -338,6 +339,45 @@ namespace {
         }
     }
 
+    bool IsTypeCursorKind(CXCursorKind kind) {
+        switch (kind) {
+            case CXCursor_TypeRef:
+            case CXCursor_TemplateRef:
+            case CXCursor_TemplateTypeParameter:
+            case CXCursor_TypedefDecl:
+            case CXCursor_TypeAliasDecl:
+            case CXCursor_StructDecl:
+            case CXCursor_ClassDecl:
+            case CXCursor_EnumDecl:
+            case CXCursor_UnionDecl:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    bool IsBuiltinTypeKeyword(const std::string& value) {
+        static const std::unordered_set<std::string> builtinTypeKeywords = {
+                "auto",
+                "bool",
+                "char",
+                "char8_t",
+                "char16_t",
+                "char32_t",
+                "double",
+                "float",
+                "int",
+                "long",
+                "short",
+                "signed",
+                "unsigned",
+                "void",
+                "wchar_t"
+        };
+
+        return builtinTypeKeywords.contains(value);
+    }
+
     bool IsRelevantCurrentFileSymbolKind(CXCursorKind kind) {
         switch (kind) {
             case CXCursor_FieldDecl:
@@ -386,6 +426,7 @@ namespace {
             if (!spelling.empty()) {
                 auto& info = collector.symbols[spelling];
                 info.isCurrentFileSymbol = true;
+                info.isType = info.isType || IsTypeCursorKind(kind);
                 info.isTemplateParameter = info.isTemplateParameter || IsTemplateParameterCursorKind(kind);
                 info.isFunctionParameter = info.isFunctionParameter || kind == CXCursor_ParmDecl;
                 info.isField = info.isField || kind == CXCursor_FieldDecl;
@@ -652,6 +693,8 @@ namespace {
                     continue;
                 }
 
+                candidate.isType = candidate.isType || IsBuiltinTypeKeyword(candidate.insertText);
+
                 if (candidate.displayText.empty()) {
                     candidate.displayText = candidate.insertText;
                 }
@@ -662,11 +705,13 @@ namespace {
 
                 if (const auto symbolIt = currentFileSymbols.find(candidate.insertText); symbolIt != currentFileSymbols.end()) {
                     candidate.isCurrentFileSymbol = symbolIt->second.isCurrentFileSymbol;
+                    candidate.isType = candidate.isType || symbolIt->second.isType;
                     candidate.isTemplateParameter = symbolIt->second.isTemplateParameter;
                     candidate.isFunctionParameter = symbolIt->second.isFunctionParameter;
                     candidate.isLocalVariable = symbolIt->second.isLocalVariable;
                     candidate.isField = symbolIt->second.isField;
                 } else {
+                    candidate.isType = candidate.isType || IsTypeCursorKind(cursorKind);
                     candidate.isTemplateParameter = IsTemplateParameterCursorKind(cursorKind);
                     candidate.isFunctionParameter = cursorKind == CXCursor_ParmDecl;
                     candidate.isField = cursorKind == CXCursor_FieldDecl;
@@ -677,6 +722,7 @@ namespace {
                     auto& existing = candidates[seenIt->second];
                     existing.clangPriority = std::min(existing.clangPriority, candidate.clangPriority);
                     existing.isCurrentFileSymbol = existing.isCurrentFileSymbol || candidate.isCurrentFileSymbol;
+                    existing.isType = existing.isType || candidate.isType;
                     existing.isTemplateParameter = existing.isTemplateParameter || candidate.isTemplateParameter;
                     existing.isFunctionParameter = existing.isFunctionParameter || candidate.isFunctionParameter;
                     existing.isLocalVariable = existing.isLocalVariable || candidate.isLocalVariable;
