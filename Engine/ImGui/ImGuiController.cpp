@@ -60,6 +60,13 @@ void ImGuiController::HandleEvent(void *event) {
         return;
     }
 
+    if (sappEvent->type == SAPP_EVENTTYPE_UNFOCUSED) {
+        // If the OS swallows key-up events during a focus change, clear the
+        // current ImGui input state immediately so held keys can't latch and
+        // start repeating when the app regains focus.
+        ImGui::GetIO().ClearInputKeys();
+    }
+
     // sokol_imgui drops CHAR events with Alt pressed, but Nordic layouts use
     // Alt/AltGr to produce printable characters such as '{' and '}'.
     if (ShouldForwardAltModifiedCharacter(*sappEvent)) {
