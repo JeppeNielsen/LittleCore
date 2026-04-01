@@ -121,12 +121,23 @@ struct CollisionSystem : LittleCore::SystemBase {
                 auto result = circleVsRect(ballTransform.position, ball.radius, localRect);
 
                 if (result.hit) {
-                    velocity.speed = {
+                
+                    glm::vec2 newSpeed = glm::normalize(glm::vec2(
                         result.response.x,
-                        result.response.y,
+                        result.response.y));
+                        
+                    newSpeed *= glm::length(velocity.speed);
+                        
+                
+                    velocity.speed = {
+                        newSpeed.x,
+                        newSpeed.y,
                     0};
-                    batTransform.position += glm::vec3 (result.response.x, result.response.y, 0);
+                    
+                    ballTransform.position += glm::vec3 (result.response.x, result.response.y, 0);
+                    registry.patch<LocalTransform>(ballEntity);
                     registry.patch<Velocity>(ballEntity);
+                    
                 }
 
 
