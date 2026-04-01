@@ -58,6 +58,7 @@ void TargetProject::Reload() {
                 discoveredProgram.id,
                 std::make_unique<Program>(std::move(definition), settings.rootPath)
         });
+        programs.at(discoveredProgram.id)->SetSourceBreakpoints(sourceBreakpoints);
     }
 
     if (discoveredPrograms.empty()) {
@@ -72,6 +73,18 @@ void TargetProject::Update() {
     for (auto& program : programs) {
         program.second->Update();
     }
+}
+
+void TargetProject::SetSourceBreakpoints(const std::vector<SourceBreakpoint>& breakpoints) {
+    sourceBreakpoints = breakpoints;
+    for (auto& [id, program] : programs) {
+        (void)id;
+        program->SetSourceBreakpoints(sourceBreakpoints);
+    }
+}
+
+const std::vector<SourceBreakpoint>& TargetProject::SourceBreakpoints() const {
+    return sourceBreakpoints;
 }
 
 TargetProject::Programs& TargetProject::GetPrograms() {

@@ -28,6 +28,73 @@ namespace {
         return program.LastBuildResult().succeeded ? "Built" : "Build failed";
     }
 
+    const char* DebuggerStateText(const Program& program) {
+        if (!program.IsDebuggerActive()) {
+            return "Inactive";
+        }
+
+        if (program.IsDebuggerRunning()) {
+            return "Running";
+        }
+
+        if (program.IsDebuggerStopped()) {
+            return "Paused";
+        }
+
+        return "Attached";
+    }
+
+    void DrawDebuggerScopes(const Program& program) {
+        if (!program.IsDebuggerStopped()) {
+            return;
+        }
+
+        if (!ImGui::TreeNode("Variables")) {
+            return;
+        }
+
+        const auto& scopes = program.DebuggerScopes();
+        if (scopes.empty()) {
+            ImGui::TextDisabled("Loading current frame variables...");
+            ImGui::TreePop();
+            return;
+        }
+
+        bool drewScope = false;
+        for (const auto& scope : scopes) {
+            drewScope = true;
+            if (ImGui::TreeNode(scope.name.c_str())) {
+                if (!scope.variablesLoaded) {
+                    ImGui::TextDisabled("Loading...");
+                } else if (scope.variables.empty()) {
+                    ImGui::TextDisabled("No variables.");
+                } else {
+                    for (const auto& variable : scope.variables) {
+                        std::string label = variable.name;
+                        if (!variable.type.empty()) {
+                            label += " : " + variable.type;
+                        }
+
+                        ImGui::Bullet();
+                        ImGui::SameLine();
+                        if (!variable.value.empty()) {
+                            ImGui::TextWrapped("%s = %s", label.c_str(), variable.value.c_str());
+                        } else {
+                            ImGui::TextUnformatted(label.c_str());
+                        }
+                    }
+                }
+                ImGui::TreePop();
+            }
+        }
+
+        if (!drewScope) {
+            ImGui::TextDisabled("No variables available for the current frame.");
+        }
+
+        ImGui::TreePop();
+    }
+
     bool IsExecutableFile(const std::filesystem::path& path) {
         return std::filesystem::exists(path) &&
                std::filesystem::is_regular_file(path) &&
@@ -274,6 +341,7 @@ void MainState::DrawProgramsWindow() {
             ImGui::Text("State Type: %s", program->Definition().StateTypeName().c_str());
             ImGui::Text("Build State: %s", BuildStateText(*program));
             ImGui::Text("Process State: %s", program->IsProcessRunning() ? "Running" : "Stopped");
+            ImGui::Text("Debugger State: %s", DebuggerStateText(*program));
 
             if (program->HasExitCode()) {
                 ImGui::Text("Last Exit Code: %d", program->LastExitCode());
@@ -281,6 +349,10 @@ void MainState::DrawProgramsWindow() {
 
             if (!program->RuntimeMessage().empty()) {
                 ImGui::TextWrapped("Runtime: %s", program->RuntimeMessage().c_str());
+            }
+
+            if (program->IsDebuggerActive() && !program->DebuggerStatusText().empty()) {
+                ImGui::TextWrapped("Debugger: %s", program->DebuggerStatusText().c_str());
             }
 
             ImGui::TextWrapped("Source: %s", program->Definition().SourcePath().c_str());
@@ -301,6 +373,16 @@ void MainState::DrawProgramsWindow() {
             }
 
             ImGui::SameLine();
+            if (ImGui::Button("Debug")) {
+                program->StartDebugging();
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Attach LLDB")) {
+                program->AttachDebugger();
+            }
+
+            ImGui::SameLine();
             if (ImGui::Button("Stop")) {
                 program->StopProcess();
             }
@@ -308,6 +390,54 @@ void MainState::DrawProgramsWindow() {
             ImGui::SameLine();
             if (ImGui::Button("Restart")) {
                 program->RestartProcess();
+            }
+
+            if (program->IsDebuggerActive()) {
+                if (ImGui::Button("Continue")) {
+                    program->ContinueDebugger();
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Pause")) {
+                    program->PauseDebugger();
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Step Into")) {
+                    program->StepIntoDebugger();
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Step Over")) {
+                    program->StepOverDebugger();
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Step Out")) {
+                    program->StepOutDebugger();
+                }
+
+                if (program->IsDebuggerAttachedToProcess()) {
+                    ImGui::SameLine();
+                    if (ImGui::Button("Detach")) {
+                        program->DetachDebugger();
+                    }
+                }
+
+                if (program->HasDebuggerLocation()) {
+                    ImGui::TextWrapped("Paused At: %s:%d",
+                                       program->DebuggerLocationFile().c_str(),
+                                       program->DebuggerLocationLine());
+                }
+
+                DrawDebuggerScopes(*program);
+
+                if (!program->DebuggerConsoleOutput().empty() && ImGui::TreeNode("Debugger Output")) {
+                    ImGui::BeginChild("debugger-output", ImVec2(0.0f, 180.0f), true);
+                    ImGui::TextUnformatted(program->DebuggerConsoleOutput().c_str());
+                    ImGui::EndChild();
+                    ImGui::TreePop();
+                }
             }
 
             if (program->HasBuildResult()) {

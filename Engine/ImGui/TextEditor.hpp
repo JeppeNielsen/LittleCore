@@ -198,6 +198,8 @@ namespace LittleCore {
         void SetErrorMarkers(const ErrorMarkers &aMarkers) { mErrorMarkers = aMarkers; }
 
         void SetBreakpoints(const Breakpoints &aMarkers) { mBreakpoints = aMarkers; }
+        const Breakpoints& GetBreakpoints() const { return mBreakpoints; }
+        int ConsumeBreakpointToggleLine();
 
         void Render(const char *aTitle, const ImVec2 &aSize = ImVec2(), bool aBorder = false);
 
@@ -466,6 +468,7 @@ namespace LittleCore {
 
         bool mCheckComments;
         Breakpoints mBreakpoints;
+        int mPendingBreakpointToggleLine;
         ErrorMarkers mErrorMarkers;
         ImVec2 mCharAdvance;
         ImVec2 mCursorScreenPosition = ImVec2(0.0f, 0.0f);

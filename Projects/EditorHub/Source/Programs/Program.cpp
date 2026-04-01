@@ -3,6 +3,7 @@
 //
 
 #include "Program.hpp"
+#include "LldbSession.hpp"
 #include <cerrno>
 #include <chrono>
 #include <csignal>
@@ -26,6 +27,15 @@ Program::~Program() {
 
 void Program::Update() {
     UpdateBuild();
+    if (debugger) {
+        debugger->Poll();
+        SyncDebuggerState();
+        if (!debugger->IsActive()) {
+            debugger.reset();
+        }
+        return;
+    }
+
     PollProcess();
 }
 
@@ -38,7 +48,7 @@ void Program::StartBuild(bool launchAfterSuccess) {
         return;
     }
 
-    if (isProcessRunning) {
+    if (isProcessRunning || debugger) {
         StopProcess();
     }
 
@@ -69,7 +79,7 @@ float Program::LastBuildDuration() const {
 }
 
 void Program::StartProcess() {
-    if (isBuilding || isProcessRunning) {
+    if (isBuilding || isProcessRunning || debugger) {
         return;
     }
 
@@ -104,6 +114,13 @@ void Program::StartProcess() {
 }
 
 void Program::StopProcess() {
+    if (debugger) {
+        debugger->KillInferiorAndQuit();
+        debugger->Poll();
+        SyncDebuggerState();
+        return;
+    }
+
     if (!isProcessRunning || processId == 0) {
         return;
     }
@@ -139,6 +156,135 @@ void Program::RestartProcess() {
 
 bool Program::IsProcessRunning() const {
     return isProcessRunning;
+}
+
+void Program::SetSourceBreakpoints(const std::vector<SourceBreakpoint>& breakpoints) {
+    sourceBreakpoints = breakpoints;
+    if (debugger) {
+        debugger->SetSourceBreakpoints(sourceBreakpoints);
+    }
+}
+
+const std::vector<SourceBreakpoint>& Program::SourceBreakpoints() const {
+    return sourceBreakpoints;
+}
+
+void Program::StartDebugging() {
+    if (isBuilding || debugger) {
+        return;
+    }
+
+    if (isProcessRunning) {
+        StopProcess();
+    }
+
+    if (!definition.ExecutableExists()) {
+        runtimeMessage = "Executable not found. Compile the program first.";
+        return;
+    }
+
+    debugger = std::make_unique<LldbSession>(definition.ExecutablePath(), workingDirectory);
+    debugger->SetSourceBreakpoints(sourceBreakpoints);
+    hasExitCode = false;
+    debugger->Launch();
+    SyncDebuggerState();
+}
+
+void Program::AttachDebugger() {
+    if (isBuilding || debugger) {
+        return;
+    }
+
+    if (!isProcessRunning || processId == 0) {
+        runtimeMessage = "Start the program before attaching LLDB.";
+        return;
+    }
+
+    debugger = std::make_unique<LldbSession>(definition.ExecutablePath(), workingDirectory);
+    debugger->SetSourceBreakpoints(sourceBreakpoints);
+    hasExitCode = false;
+    debugger->Attach(processId);
+    SyncDebuggerState();
+}
+
+void Program::ContinueDebugger() {
+    if (debugger) {
+        debugger->Continue();
+    }
+}
+
+void Program::PauseDebugger() {
+    if (debugger) {
+        debugger->Pause();
+    }
+}
+
+void Program::StepIntoDebugger() {
+    if (debugger) {
+        debugger->StepInto();
+    }
+}
+
+void Program::StepOverDebugger() {
+    if (debugger) {
+        debugger->StepOver();
+    }
+}
+
+void Program::StepOutDebugger() {
+    if (debugger) {
+        debugger->StepOut();
+    }
+}
+
+void Program::DetachDebugger() {
+    if (debugger && debugger->IsAttachedToExistingProcess()) {
+        debugger->DetachAndQuit();
+    }
+}
+
+bool Program::IsDebuggerActive() const {
+    return debugger != nullptr;
+}
+
+bool Program::IsDebuggerRunning() const {
+    return debugger && debugger->IsInferiorRunning();
+}
+
+bool Program::IsDebuggerStopped() const {
+    return debugger && debugger->IsInferiorStopped();
+}
+
+bool Program::IsDebuggerAttachedToProcess() const {
+    return debugger && debugger->IsAttachedToExistingProcess();
+}
+
+bool Program::HasDebuggerLocation() const {
+    return debugger && debugger->HasCurrentLocation();
+}
+
+const std::string& Program::DebuggerLocationFile() const {
+    static const std::string empty;
+    return debugger ? debugger->CurrentLocationFile() : empty;
+}
+
+int Program::DebuggerLocationLine() const {
+    return debugger ? debugger->CurrentLocationLine() : 0;
+}
+
+const std::string& Program::DebuggerStatusText() const {
+    static const std::string empty;
+    return debugger ? debugger->StatusText() : empty;
+}
+
+const std::string& Program::DebuggerConsoleOutput() const {
+    static const std::string empty;
+    return debugger ? debugger->ConsoleOutput() : empty;
+}
+
+const std::vector<DebuggerScope>& Program::DebuggerScopes() const {
+    static const std::vector<DebuggerScope> empty;
+    return debugger ? debugger->CurrentScopes() : empty;
 }
 
 bool Program::HasExitCode() const {
@@ -215,4 +361,24 @@ void Program::SetExitStatus(int status) {
 
     lastExitCode = status;
     runtimeMessage = "Process stopped";
+}
+
+void Program::SyncDebuggerState() {
+    if (!debugger) {
+        return;
+    }
+
+    if (debugger->HasInferiorProcess()) {
+        processId = debugger->InferiorPid();
+    } else if (!debugger->IsAttachedToExistingProcess()) {
+        processId = 0;
+    }
+
+    isProcessRunning = debugger->IsInferiorRunning();
+    runtimeMessage = debugger->StatusText();
+
+    if (debugger->HasExitCode()) {
+        hasExitCode = true;
+        lastExitCode = debugger->ExitCode();
+    }
 }

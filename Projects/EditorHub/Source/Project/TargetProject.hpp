@@ -6,7 +6,9 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 #include "../Programs/Program.hpp"
+#include "../Programs/SourceBreakpoint.hpp"
 #include "TargetProjectSettings.hpp"
 
 class TargetProject {
@@ -21,6 +23,8 @@ public:
 
     void Reload();
     void Update();
+    void SetSourceBreakpoints(const std::vector<SourceBreakpoint>& breakpoints);
+    const std::vector<SourceBreakpoint>& SourceBreakpoints() const;
 
     Programs& GetPrograms();
     const Programs& GetPrograms() const;
@@ -31,6 +35,7 @@ private:
     TargetProjectSettings settings;
     Programs programs;
     std::string statusText;
+    std::vector<SourceBreakpoint> sourceBreakpoints;
 
     static std::string ResolveWorkspaceRoot();
 };

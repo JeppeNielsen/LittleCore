@@ -4,10 +4,16 @@
 
 #pragma once
 #include <future>
+#include <memory>
 #include <string>
+#include <vector>
 #include "ProgramCompilerResult.hpp"
 #include "ProgramDefinition.hpp"
+#include "DebuggerVariables.hpp"
+#include "SourceBreakpoint.hpp"
 #include "Timer.hpp"
+
+class LldbSession;
 
 class Program {
 public:
@@ -28,6 +34,28 @@ public:
     void StopProcess();
     void RestartProcess();
     bool IsProcessRunning() const;
+
+    void SetSourceBreakpoints(const std::vector<SourceBreakpoint>& breakpoints);
+    const std::vector<SourceBreakpoint>& SourceBreakpoints() const;
+
+    void StartDebugging();
+    void AttachDebugger();
+    void ContinueDebugger();
+    void PauseDebugger();
+    void StepIntoDebugger();
+    void StepOverDebugger();
+    void StepOutDebugger();
+    void DetachDebugger();
+    bool IsDebuggerActive() const;
+    bool IsDebuggerRunning() const;
+    bool IsDebuggerStopped() const;
+    bool IsDebuggerAttachedToProcess() const;
+    bool HasDebuggerLocation() const;
+    const std::string& DebuggerLocationFile() const;
+    int DebuggerLocationLine() const;
+    const std::string& DebuggerStatusText() const;
+    const std::string& DebuggerConsoleOutput() const;
+    const std::vector<DebuggerScope>& DebuggerScopes() const;
 
     bool HasExitCode() const;
     int LastExitCode() const;
@@ -50,8 +78,11 @@ private:
     bool hasExitCode = false;
     int lastExitCode = 0;
     std::string runtimeMessage;
+    std::vector<SourceBreakpoint> sourceBreakpoints;
+    std::unique_ptr<LldbSession> debugger;
 
     void PollProcess();
     void UpdateBuild();
     void SetExitStatus(int status);
+    void SyncDebuggerState();
 };

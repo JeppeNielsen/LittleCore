@@ -419,11 +419,48 @@ namespace {
 }
 
 void CodeEditorWorkspace::OpenFile(const std::string& path) {
+    auto& document = OpenOrCreateDocument(path);
+    activePath = path;
+    document.requestSelection = true;
+}
+
+void CodeEditorWorkspace::OpenFileAtLine(const std::string& path, int line) {
+    auto& document = OpenOrCreateDocument(path);
+    document.pendingCursorPosition = TextEditor::Coordinates(std::max(0, line - 1), 0);
+    document.requestSelection = true;
+    activePath = path;
+    statusText = "Opened " + document.title + " at line " + std::to_string(std::max(1, line));
+}
+
+std::vector<SourceBreakpoint> CodeEditorWorkspace::SourceBreakpoints() const {
+    std::vector<SourceBreakpoint> breakpoints;
+    for (const auto& [path, lines] : fileBreakpoints) {
+        for (const int line : lines) {
+            if (line > 0) {
+                breakpoints.push_back({path, line});
+            }
+        }
+    }
+
+    std::sort(breakpoints.begin(), breakpoints.end(), [](const SourceBreakpoint& left, const SourceBreakpoint& right) {
+        if (left.filePath != right.filePath) {
+            return left.filePath < right.filePath;
+        }
+        return left.line < right.line;
+    });
+    return breakpoints;
+}
+
+bool CodeEditorWorkspace::ConsumeBreakpointsChanged() {
+    const bool changed = breakpointsChanged;
+    breakpointsChanged = false;
+    return changed;
+}
+
+CodeEditorWorkspace::Document& CodeEditorWorkspace::OpenOrCreateDocument(const std::string& path) {
     for (auto& document : documents) {
         if (document.path == path) {
-            activePath = path;
-            document.requestSelection = true;
-            return;
+            return document;
         }
     }
 
@@ -435,10 +472,49 @@ void CodeEditorWorkspace::OpenFile(const std::string& path) {
     document.editor.SetPalette(TextEditor::GetDarkPalette());
     document.editor.SetLanguageDefinition(TextEditor::LanguageDefinition::CPlusPlus());
     document.editor.SetText(document.savedText);
-    document.requestSelection = true;
+    auto breakpointsIt = fileBreakpoints.find(path);
+    if (breakpointsIt != fileBreakpoints.end()) {
+        document.editor.SetBreakpoints(breakpointsIt->second);
+    }
 
-    activePath = path;
     statusText = "Opened " + document.title;
+    return document;
+}
+
+void CodeEditorWorkspace::ToggleBreakpoint(Document& document, int line) {
+    if (line <= 0) {
+        return;
+    }
+
+    auto breakpoints = document.editor.GetBreakpoints();
+    const auto breakpointIt = breakpoints.find(line);
+    if (breakpointIt == breakpoints.end()) {
+        breakpoints.insert(line);
+        statusText = "Added breakpoint at " + document.title + ":" + std::to_string(line);
+    } else {
+        breakpoints.erase(breakpointIt);
+        statusText = "Removed breakpoint at " + document.title + ":" + std::to_string(line);
+    }
+
+    document.editor.SetBreakpoints(breakpoints);
+    SyncBreakpointsFromEditor(document);
+}
+
+void CodeEditorWorkspace::SyncBreakpointsFromEditor(const Document& document) {
+    const auto& editorBreakpoints = document.editor.GetBreakpoints();
+    auto breakpointsIt = fileBreakpoints.find(document.path);
+    if (editorBreakpoints.empty()) {
+        if (breakpointsIt != fileBreakpoints.end()) {
+            fileBreakpoints.erase(breakpointsIt);
+            breakpointsChanged = true;
+        }
+        return;
+    }
+
+    if (breakpointsIt == fileBreakpoints.end() || breakpointsIt->second != editorBreakpoints) {
+        fileBreakpoints[document.path] = editorBreakpoints;
+        breakpointsChanged = true;
+    }
 }
 
 void CodeEditorWorkspace::SetStatusText(std::string text) {
@@ -806,6 +882,7 @@ void CodeEditorWorkspace::DrawStatusBar(const Document& document) const {
     const auto cursor = document.editor.GetCursorPosition();
     const char* primaryModifier = ImGui::GetIO().ConfigMacOSXBehaviors ? "Cmd" : "Ctrl";
     const char* completionShortcut = ImGui::GetIO().ConfigMacOSXBehaviors ? "Cmd+J Complete" : "Ctrl+Space Complete";
+    const int breakpointCount = static_cast<int>(document.editor.GetBreakpoints().size());
 
     ImGui::Separator();
     ImGui::Text("Line %d, Column %d", cursor.mLine + 1, cursor.mColumn + 1);
@@ -815,6 +892,10 @@ void CodeEditorWorkspace::DrawStatusBar(const Document& document) const {
     ImGui::Text("%s+S Save", primaryModifier);
     ImGui::SameLine();
     ImGui::TextUnformatted(completionShortcut);
+    ImGui::SameLine();
+    ImGui::Text("F9 Breakpoint");
+    ImGui::SameLine();
+    ImGui::Text("Breakpoints %d", breakpointCount);
 }
 
 void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditorAutocomplete& autocomplete, ImFont* codeFont) {
@@ -825,6 +906,11 @@ void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditor
     ImGui::SameLine();
     if (ImGui::Button("Complete")) {
         RequestCompletion(document, autocomplete);
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Toggle Breakpoint")) {
+        ToggleBreakpoint(document, document.editor.GetCursorPosition().mLine + 1);
     }
 
     ImGui::SameLine();
@@ -840,6 +926,11 @@ void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditor
     const float statusHeight = ImGui::GetTextLineHeightWithSpacing() + ImGui::GetStyle().ItemSpacing.y * 2.0f;
     const float editorHeight = std::max(120.0f, ImGui::GetContentRegionAvail().y - statusHeight);
 
+    if (document.pendingCursorPosition.has_value()) {
+        document.editor.SetCursorPosition(*document.pendingCursorPosition);
+        document.pendingCursorPosition.reset();
+    }
+
     const bool completionConsumesKeyboard = document.completion.isOpen &&
                                             (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow)) ||
                                              ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)) ||
@@ -851,6 +942,11 @@ void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditor
     document.editor.Render(("##CodeEditor" + std::to_string(index)).c_str(), ImVec2(0.0f, editorHeight), true);
     const auto textAfterEdit = document.editor.GetText();
     document.isDirty = textAfterEdit != document.savedText;
+    const int toggledBreakpointLine = document.editor.ConsumeBreakpointToggleLine();
+    if (toggledBreakpointLine > 0) {
+        ToggleBreakpoint(document, toggledBreakpointLine);
+    }
+    SyncBreakpointsFromEditor(document);
 
     const bool editorFocused = document.editor.IsFocused();
     const bool textChanged = document.editor.IsTextChanged();
@@ -858,6 +954,10 @@ void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditor
 
     if (editorFocused && IsPrimaryShortcutPressed(ImGuiKey_S)) {
         SaveDocument(document);
+    }
+
+    if (editorFocused && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_F9))) {
+        ToggleBreakpoint(document, document.editor.GetCursorPosition().mLine + 1);
     }
 
     if (editorFocused && textChanged) {

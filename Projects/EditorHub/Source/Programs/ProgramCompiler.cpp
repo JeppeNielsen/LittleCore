@@ -58,7 +58,7 @@ ProgramCompilerResult ProgramCompiler::Compile(const ProgramCompilerContext& con
     const std::string clangRoot = "/Users/jeppe/Jeppes/Scripting/clang18";
 
     command << " -isysroot `xcrun -sdk macosx --show-sdk-path`";
-    command << " -std=c++23 -Wno-return-type-c-linkage -O0";
+    command << " -std=c++23 -Wno-return-type-c-linkage -O0 -g";
     command << " -arch arm64";
     command << " -mmacosx-version-min=13.0";
     command << " -nostdinc++ -isystem " << QuoteForShell(clangRoot + "/include/c++/v1");

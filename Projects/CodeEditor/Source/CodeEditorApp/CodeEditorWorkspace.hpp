@@ -5,20 +5,26 @@
 #pragma once
 #include "CodeEditorAutocomplete.hpp"
 #include "TextEditor.hpp"
+#include "../../../EditorHub/Source/Programs/SourceBreakpoint.hpp"
 #include "imgui.h"
 #include <cstdint>
 #include <limits>
+#include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class CodeEditorWorkspace {
 public:
     void OpenFile(const std::string& path);
+    void OpenFileAtLine(const std::string& path, int line);
     void Draw(CodeEditorAutocomplete& autocomplete, ImFont* codeFont);
 
     void SetStatusText(std::string text);
     const std::string& StatusText() const;
     const std::string& ActivePath() const;
+    std::vector<SourceBreakpoint> SourceBreakpoints() const;
+    bool ConsumeBreakpointsChanged();
 
 private:
     struct CompletionPopupState {
@@ -48,6 +54,7 @@ private:
         LittleCore::TextEditor editor;
         bool isDirty = false;
         bool requestSelection = false;
+        std::optional<LittleCore::TextEditor::Coordinates> pendingCursorPosition;
         CompletionPopupState completion;
         SignatureHelpState signatureHelp;
     };
@@ -55,8 +62,13 @@ private:
     std::vector<Document> documents;
     std::string activePath;
     std::string statusText;
+    std::unordered_map<std::string, LittleCore::TextEditor::Breakpoints> fileBreakpoints;
+    bool breakpointsChanged = false;
 
     bool SaveDocument(Document& document);
+    Document& OpenOrCreateDocument(const std::string& path);
+    void ToggleBreakpoint(Document& document, int line);
+    void SyncBreakpointsFromEditor(const Document& document);
     void CloseCompletion(Document& document);
     void CloseSignatureHelp(Document& document);
     void OpenSignatureHelp(Document& document, const CodeEditorCompletionCandidate& candidate, std::size_t openParenthesisOffset);

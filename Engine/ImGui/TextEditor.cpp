@@ -44,6 +44,7 @@ TextEditor::TextEditor()
 	, mColorRangeMax(0)
 	, mSelectionMode(SelectionMode::Normal)
 	, mCheckComments(true)
+	, mPendingBreakpointToggleLine(-1)
 	, mLastClick(-1.0f)
 	, mHandleKeyboardInputs(true)
 	, mHandleMouseInputs(true)
@@ -59,6 +60,13 @@ TextEditor::TextEditor()
 
 TextEditor::~TextEditor()
 {
+}
+
+int TextEditor::ConsumeBreakpointToggleLine()
+{
+	const int line = mPendingBreakpointToggleLine;
+	mPendingBreakpointToggleLine = -1;
+	return line;
 }
 
 void TextEditor::SetLanguageDefinition(const LanguageDefinition & aLanguageDef)
@@ -837,6 +845,18 @@ void TextEditor::HandleMouseInputs()
 			*/
 			else if (click)
 			{
+				const ImVec2 origin = ImGui::GetCursorScreenPos();
+				const float localX = ImGui::GetMousePos().x - origin.x;
+				if (!ctrl && localX >= 0.0f && localX < mTextStart)
+				{
+					const auto coordinates = ScreenPosToCoordinates(ImGui::GetMousePos());
+					mPendingBreakpointToggleLine = coordinates.mLine + 1;
+					mState.mCursorPosition = mInteractiveStart = mInteractiveEnd = coordinates;
+					SetSelection(mInteractiveStart, mInteractiveEnd, SelectionMode::Normal);
+					mLastClick = (float)ImGui::GetTime();
+					return;
+				}
+
 				mState.mCursorPosition = mInteractiveStart = mInteractiveEnd = ScreenPosToCoordinates(ImGui::GetMousePos());
 				if (ctrl)
 					mSelectionMode = SelectionMode::Word;
