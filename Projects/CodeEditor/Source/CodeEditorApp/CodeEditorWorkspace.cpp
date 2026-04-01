@@ -95,7 +95,7 @@ namespace {
 
     bool ShouldSuppressAutocompleteForInsertedText(const std::string& insertedText) {
         return std::any_of(insertedText.begin(), insertedText.end(), [](unsigned char value) {
-            return std::isspace(value) != 0 || value == ';';
+            return std::isspace(value) != 0 || value == ';' || value == '{' || value == '}';
         });
     }
 
