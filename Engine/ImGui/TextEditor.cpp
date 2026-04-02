@@ -961,14 +961,8 @@ void TextEditor::Render()
 				drawList->AddRectFilled(vstart, vend, mPalette[(int)PaletteIndex::Selection]);
 			}
 
-			// Draw breakpoints
+			const bool hasBreakpoint = mBreakpoints.count(lineNo + 1) != 0;
 			auto start = ImVec2(lineStartScreenPos.x + scrollX, lineStartScreenPos.y);
-
-			if (mBreakpoints.count(lineNo + 1) != 0)
-			{
-				auto end = ImVec2(lineStartScreenPos.x + contentSize.x + 2.0f * scrollX, lineStartScreenPos.y + mCharAdvance.y);
-				drawList->AddRectFilled(start, end, mPalette[(int)PaletteIndex::Breakpoint]);
-			}
 
 			// Draw error markers
 			auto errorIt = mErrorMarkers.find(lineNo + 1);
@@ -996,6 +990,18 @@ void TextEditor::Render()
 
 			auto lineNoWidth = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, buf, nullptr, nullptr).x;
 			drawList->AddText(ImVec2(lineStartScreenPos.x + mTextStart - lineNoWidth, lineStartScreenPos.y), mPalette[(int)PaletteIndex::LineNumber], buf);
+
+			if (hasBreakpoint)
+			{
+				const float gutterWidth = std::max(0.0f, mTextStart - lineNoWidth);
+				const float radius = std::max(4.0f, std::min(mCharAdvance.y * 0.36f, gutterWidth * 0.42f));
+				const ImVec2 center(
+					lineStartScreenPos.x + std::max(radius + 3.0f, gutterWidth * 0.5f),
+					lineStartScreenPos.y + mCharAdvance.y * 0.5f
+				);
+				drawList->AddCircleFilled(center, radius, mPalette[(int)PaletteIndex::Breakpoint], 16);
+				drawList->AddCircle(center, radius, IM_COL32(0, 0, 0, 180), 16, 1.0f);
+			}
 
 			if (mState.mCursorPosition.mLine == lineNo)
 			{
