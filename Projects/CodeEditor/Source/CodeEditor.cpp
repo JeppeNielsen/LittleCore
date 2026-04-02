@@ -453,15 +453,25 @@ void CodeEditor::DrawGui() {
     DrawTargetProjectWindow();
 
     const auto result = projectWindow.Draw(workspace.ActivePath());
+    for (const auto& removedPath : result.removedPaths) {
+        workspace.RemovePath(removedPath);
+    }
+
     if (result.refreshed) {
         SyncProjectFiles();
         targetProject.Reload();
         targetProject.SetSourceBreakpoints(workspace.SourceBreakpoints());
-        workspace.SetStatusText("Refreshed project code files.");
+        if (!result.statusText.empty()) {
+            workspace.SetStatusText(result.statusText);
+        } else {
+            workspace.SetStatusText("Refreshed project code files.");
+        }
     }
 
     if (!result.openedPath.empty()) {
         workspace.OpenFile(result.openedPath);
+    } else if (!result.statusText.empty()) {
+        workspace.SetStatusText(result.statusText);
     }
 
     DrawProgramsWindow();

@@ -438,6 +438,22 @@ namespace {
     bool IsPointInsideRect(const ImVec2& point, const ImVec2& min, const ImVec2& max) {
         return point.x >= min.x && point.x <= max.x && point.y >= min.y && point.y <= max.y;
     }
+
+    std::string NormalizePath(const std::string& path) {
+        return std::filesystem::path(path).lexically_normal().generic_string();
+    }
+
+    bool IsPathAtOrBelow(const std::string& candidatePath, const std::string& rootPath) {
+        if (candidatePath == rootPath) {
+            return true;
+        }
+
+        if (candidatePath.size() <= rootPath.size()) {
+            return false;
+        }
+
+        return candidatePath.starts_with(rootPath) && candidatePath[rootPath.size()] == '/';
+    }
 }
 
 void CodeEditorWorkspace::OpenFile(const std::string& path) {
@@ -452,6 +468,32 @@ void CodeEditorWorkspace::OpenFileAtLine(const std::string& path, int line) {
     document.requestSelection = true;
     activePath = path;
     statusText = "Opened " + document.title + " at line " + std::to_string(std::max(1, line));
+}
+
+void CodeEditorWorkspace::RemovePath(const std::string& path) {
+    const auto normalizedPath = NormalizePath(path);
+
+    documents.erase(std::remove_if(documents.begin(), documents.end(), [&normalizedPath](const Document& document) {
+        return IsPathAtOrBelow(NormalizePath(document.path), normalizedPath);
+    }), documents.end());
+
+    bool removedBreakpoints = false;
+    for (auto it = fileBreakpoints.begin(); it != fileBreakpoints.end();) {
+        if (IsPathAtOrBelow(NormalizePath(it->first), normalizedPath)) {
+            it = fileBreakpoints.erase(it);
+            removedBreakpoints = true;
+        } else {
+            ++it;
+        }
+    }
+
+    if (removedBreakpoints) {
+        breakpointsChanged = true;
+    }
+
+    if (IsPathAtOrBelow(NormalizePath(activePath), normalizedPath)) {
+        activePath = documents.empty() ? "" : documents.back().path;
+    }
 }
 
 std::vector<SourceBreakpoint> CodeEditorWorkspace::SourceBreakpoints() const {

@@ -18,6 +18,7 @@ class CodeEditorWorkspace {
 public:
     void OpenFile(const std::string& path);
     void OpenFileAtLine(const std::string& path, int line);
+    void RemovePath(const std::string& path);
     void Draw(CodeEditorAutocomplete& autocomplete, ImFont* codeFont);
 
     void SetStatusText(std::string text);
