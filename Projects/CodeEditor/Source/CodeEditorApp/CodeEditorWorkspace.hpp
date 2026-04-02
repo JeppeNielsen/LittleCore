@@ -19,6 +19,7 @@ public:
     void OpenFile(const std::string& path);
     void OpenFileAtLine(const std::string& path, int line);
     void RemovePath(const std::string& path);
+    void SetDisplayRootPath(std::string rootPath);
     void Draw(CodeEditorAutocomplete& autocomplete, ImFont* codeFont);
 
     void SetStatusText(std::string text);
@@ -61,6 +62,7 @@ private:
     };
 
     std::vector<Document> documents;
+    std::string displayRootPath;
     std::string activePath;
     std::string statusText;
     std::unordered_map<std::string, LittleCore::TextEditor::Breakpoints> fileBreakpoints;

@@ -3,6 +3,7 @@
 //
 
 #include "CodeEditor.hpp"
+#include "CodeEditorApp/CodeEditorPathUtils.hpp"
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include <filesystem>
@@ -51,6 +52,10 @@ namespace {
 
     std::string DefaultEngineAssetsPath(const std::string& workspaceRoot) {
         return workspaceRoot + "/Projects/TestNetimgui/Assets/";
+    }
+
+    std::string DisplayPathForProject(const std::string& path, const std::string& projectRoot) {
+        return CodeEditorPathUtils::MakeDisplayPath(path, projectRoot);
     }
 
     const char* BuildStateText(const Program& program) {
@@ -242,6 +247,8 @@ void CodeEditor::ReloadTargetProject() {
     settings.cachePath = std::filesystem::path(settings.cachePath).lexically_normal().generic_string();
 
     projectWindow.SetRootPath(settings.rootPath);
+    workspace.SetDisplayRootPath(settings.rootPath);
+    breakpointOverview.SetDisplayRootPath(settings.rootPath);
     projectWindow.Refresh();
     SyncProjectFiles();
     targetProject.Reload();
@@ -330,8 +337,10 @@ void CodeEditor::DrawProgramsWindow() {
                 ImGui::TextWrapped("Debugger: %s", program->DebuggerStatusText().c_str());
             }
 
-            ImGui::TextWrapped("Source: %s", program->Definition().SourcePath().c_str());
-            ImGui::TextWrapped("Executable: %s", program->Definition().ExecutablePath().c_str());
+            const auto displaySourcePath = DisplayPathForProject(program->Definition().SourcePath(), targetProject.Settings().rootPath);
+            const auto displayExecutablePath = DisplayPathForProject(program->Definition().ExecutablePath(), targetProject.Settings().rootPath);
+            ImGui::TextWrapped("Source: %s", displaySourcePath.c_str());
+            ImGui::TextWrapped("Executable: %s", displayExecutablePath.c_str());
 
             if (ImGui::Button("Open Source")) {
                 workspace.OpenFile(program->Definition().SourcePath());
@@ -405,8 +414,9 @@ void CodeEditor::DrawProgramsWindow() {
                 }
 
                 if (program->HasDebuggerLocation()) {
+                    const auto displayDebuggerPath = DisplayPathForProject(program->DebuggerLocationFile(), targetProject.Settings().rootPath);
                     ImGui::TextWrapped("Paused At: %s:%d",
-                                       program->DebuggerLocationFile().c_str(),
+                                       displayDebuggerPath.c_str(),
                                        program->DebuggerLocationLine());
                     if (ImGui::Button("Open Stop Location")) {
                         workspace.OpenFileAtLine(program->DebuggerLocationFile(), program->DebuggerLocationLine());

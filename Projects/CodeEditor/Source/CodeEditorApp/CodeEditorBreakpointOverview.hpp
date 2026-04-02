@@ -16,6 +16,7 @@ public:
         int openedLine = 0;
     };
 
+    void SetDisplayRootPath(std::string rootPath);
     DrawResult Draw(const std::vector<SourceBreakpoint>& breakpoints, const std::string& activePath) const;
 
 private:
@@ -28,5 +29,6 @@ private:
     const std::string& GetLinePreview(const std::string& filePath, int line) const;
     void RefreshCachedFile(const std::string& filePath) const;
 
+    std::string displayRootPath;
     mutable std::unordered_map<std::string, CachedFileLines> cachedFileLines;
 };

@@ -60,12 +60,15 @@ project "CodeEditor"
       "../EditorHub/Source/Project/TargetProject.hpp",
       "../EditorHub/Source/Project/TargetProjectSettings.cpp",
       "../EditorHub/Source/Project/TargetProjectSettings.hpp",
+      "../../Engine/Application/Utilities/PathHelper.cpp",
+      "../../Engine/Application/Utilities/PathHelper.hpp",
    }
 
    includedirs {
       "Source/**",
       "../../Engine/LittleCore/**",
       "../../Engine/Application/State",
+      "../../Engine/Application/Utilities",
       "../../Engine/ImGui",
       "../../External/sokol",
       "../../Engine/Sokol",

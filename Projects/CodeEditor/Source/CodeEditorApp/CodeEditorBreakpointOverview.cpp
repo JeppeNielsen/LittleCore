@@ -3,6 +3,7 @@
 //
 
 #include "CodeEditorBreakpointOverview.hpp"
+#include "CodeEditorPathUtils.hpp"
 #include "FileHelper.hpp"
 #include "imgui.h"
 #include <algorithm>
@@ -82,6 +83,10 @@ void CodeEditorBreakpointOverview::RefreshCachedFile(const std::string& filePath
     cache.hasTimestamp = !errorCode;
 }
 
+void CodeEditorBreakpointOverview::SetDisplayRootPath(std::string rootPath) {
+    displayRootPath = std::move(rootPath);
+}
+
 CodeEditorBreakpointOverview::DrawResult CodeEditorBreakpointOverview::Draw(const std::vector<SourceBreakpoint>& breakpoints,
                                                                             const std::string& activePath) const {
     DrawResult result;
@@ -109,10 +114,11 @@ CodeEditorBreakpointOverview::DrawResult CodeEditorBreakpointOverview::Draw(cons
         ImGui::BeginGroup();
         ImGui::TextColored(ImVec4(0.86f, 0.28f, 0.28f, 1.0f), "Line %d  %s", breakpoint.line, fileName.c_str());
         ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + std::max(80.0f, rowWidth - style.FramePadding.x * 2.0f));
+        const auto displayPath = CodeEditorPathUtils::MakeDisplayPath(breakpoint.filePath, displayRootPath);
         if (breakpoint.filePath == activePath) {
-            ImGui::TextColored(ImVec4(0.95f, 0.75f, 0.75f, 1.0f), "%s", breakpoint.filePath.c_str());
+            ImGui::TextColored(ImVec4(0.95f, 0.75f, 0.75f, 1.0f), "%s", displayPath.c_str());
         } else {
-            ImGui::TextDisabled("%s", breakpoint.filePath.c_str());
+            ImGui::TextDisabled("%s", displayPath.c_str());
         }
         ImGui::TextWrapped("%s", linePreview.c_str());
         ImGui::PopTextWrapPos();

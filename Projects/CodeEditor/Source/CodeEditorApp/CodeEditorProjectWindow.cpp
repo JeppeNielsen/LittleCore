@@ -3,7 +3,9 @@
 //
 
 #include "CodeEditorProjectWindow.hpp"
+#include "CodeEditorPathUtils.hpp"
 #include "FileHelper.hpp"
+#include "PathHelper.hpp"
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include <algorithm>
@@ -26,10 +28,6 @@ namespace {
     bool IsCodeFile(const std::filesystem::path& path) {
         const auto extension = path.extension().string();
         return extension == ".cpp" || extension == ".hpp";
-    }
-
-    std::string NormalizePath(const std::filesystem::path& path) {
-        return path.lexically_normal().generic_string();
     }
 
     bool IsSimplePathComponent(const std::string& value) {
@@ -84,6 +82,10 @@ const std::string& CodeEditorProjectWindow::RootPath() const {
 
 const std::vector<std::string>& CodeEditorProjectWindow::CodeFiles() const {
     return codeFiles;
+}
+
+std::string CodeEditorProjectWindow::MakeDisplayPath(const std::string& path) const {
+    return CodeEditorPathUtils::MakeDisplayPath(path, rootPath);
 }
 
 void CodeEditorProjectWindow::Refresh() {
@@ -175,8 +177,8 @@ FileTreeNode* CodeEditorProjectWindow::EnsureDirectoryNode(const std::filesystem
         currentPath /= part;
         auto& child = current->children[name];
         child.name = name;
-        child.path = NormalizePath(std::filesystem::relative(currentPath, rootPath));
-        child.fullPath = NormalizePath(currentPath);
+        child.path = CodeEditorPathUtils::NormalizePath(std::filesystem::relative(currentPath, rootPath).generic_string());
+        child.fullPath = CodeEditorPathUtils::NormalizePath(currentPath.generic_string());
         child.isFile = false;
         child.parent = current;
         current = &child;
@@ -206,8 +208,8 @@ void CodeEditorProjectWindow::AddFileNode(const std::string& fullPath) {
     const auto name = std::filesystem::path(fullPath).filename().string();
     auto& file = directory->children[name];
     file.name = name;
-    file.path = NormalizePath(relativePath);
-    file.fullPath = NormalizePath(fullPath);
+    file.path = CodeEditorPathUtils::NormalizePath(relativePath.generic_string());
+    file.fullPath = CodeEditorPathUtils::NormalizePath(fullPath);
     file.isFile = true;
     file.parent = directory;
 }
@@ -237,7 +239,7 @@ void CodeEditorProjectWindow::DrawCreatePopup(DrawResult& result) {
         if (ImGui::BeginPopupModal(popupId, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::TextWrapped("%s in:", pendingCreateRequest->kind == CreateKind::File ? "Create a new source file" : "Create a new folder");
             ImGui::Separator();
-            ImGui::TextWrapped("%s", pendingCreateRequest->parentPath.c_str());
+            ImGui::TextWrapped("%s", MakeDisplayPath(pendingCreateRequest->parentPath).c_str());
             ImGui::InputText("Name", &pendingCreateRequest->name);
 
             if (pendingCreateRequest->kind == CreateKind::File) {
@@ -273,26 +275,26 @@ void CodeEditorProjectWindow::DrawCreatePopup(DrawResult& result) {
                     if (statusText.empty()) {
                         std::error_code errorCode;
                         if (std::filesystem::exists(targetPath, errorCode)) {
-                            statusText = NormalizePath(targetPath) + " already exists.";
+                            statusText = MakeDisplayPath(targetPath.generic_string()) + " already exists.";
                         } else if (pendingCreateRequest->kind == CreateKind::Folder) {
                             if (std::filesystem::create_directory(targetPath, errorCode)) {
                                 Refresh();
                                 result.refreshed = true;
-                                statusText = "Created folder " + NormalizePath(targetPath);
+                                statusText = "Created folder " + MakeDisplayPath(targetPath.generic_string());
                                 closePopup = true;
                             } else {
-                                statusText = "Failed to create folder " + NormalizePath(targetPath);
+                                statusText = "Failed to create folder " + MakeDisplayPath(targetPath.generic_string());
                             }
                         } else {
                             auto fileText = BuildSourceFileTemplate(targetPath);
                             if (FileHelper::TryWriteAllText(targetPath.generic_string(), fileText)) {
                                 Refresh();
                                 result.refreshed = true;
-                                result.openedPath = NormalizePath(targetPath);
-                                statusText = "Created file " + NormalizePath(targetPath);
+                                result.openedPath = CodeEditorPathUtils::NormalizePath(targetPath.generic_string());
+                                statusText = "Created file " + MakeDisplayPath(targetPath.generic_string());
                                 closePopup = true;
                             } else {
-                                statusText = "Failed to create file " + NormalizePath(targetPath);
+                                statusText = "Failed to create file " + MakeDisplayPath(targetPath.generic_string());
                             }
                         }
                     }
@@ -329,7 +331,7 @@ void CodeEditorProjectWindow::DrawDeletePopup(DrawResult& result) {
             } else {
                 ImGui::TextWrapped("Warning: this will permanently delete this source file.");
             }
-            ImGui::TextWrapped("%s", pendingDeleteRequest->path.c_str());
+            ImGui::TextWrapped("%s", MakeDisplayPath(pendingDeleteRequest->path).c_str());
 
             bool closePopup = false;
             if (ImGui::Button("Delete")) {
@@ -345,10 +347,10 @@ void CodeEditorProjectWindow::DrawDeletePopup(DrawResult& result) {
                     Refresh();
                     result.refreshed = true;
                     result.removedPaths.push_back(pendingDeleteRequest->path);
-                    result.statusText = "Deleted " + pendingDeleteRequest->path;
+                    result.statusText = "Deleted " + MakeDisplayPath(pendingDeleteRequest->path);
                     closePopup = true;
                 } else {
-                    result.statusText = "Failed to delete " + pendingDeleteRequest->path;
+                    result.statusText = "Failed to delete " + MakeDisplayPath(pendingDeleteRequest->path);
                 }
             }
 
@@ -378,7 +380,7 @@ void CodeEditorProjectWindow::DrawContextMenuPopup(DrawResult& result) {
 
     const bool isRoot = pendingContextMenuTarget->path == rootPath;
     const std::string targetDirectory = pendingContextMenuTarget->isFile
-                                        ? NormalizePath(std::filesystem::path(pendingContextMenuTarget->path).parent_path())
+                                        ? CodeEditorPathUtils::NormalizePath(std::filesystem::path(pendingContextMenuTarget->path).parent_path().generic_string())
                                         : pendingContextMenuTarget->path;
     bool shouldCloseContextMenu = false;
 
@@ -397,6 +399,11 @@ void CodeEditorProjectWindow::DrawContextMenuPopup(DrawResult& result) {
             result.openedPath = pendingContextMenuTarget->path;
             shouldCloseContextMenu = true;
         }
+    }
+
+    if (ImGui::MenuItem("Reveal In File System")) {
+        PathHelper::RevealPath(pendingContextMenuTarget->path);
+        shouldCloseContextMenu = true;
     }
 
     if (!isRoot) {
@@ -435,7 +442,7 @@ CodeEditorProjectWindow::DrawResult CodeEditorProjectWindow::Draw(const std::str
     }
 
     ImGui::SameLine();
-    ImGui::TextWrapped("%s", rootPath.c_str());
+    ImGui::TextWrapped("%s", MakeDisplayPath(rootPath).c_str());
 
     if (shouldOpenContextMenu) {
         ImGui::OpenPopup("file-tree-context-menu");

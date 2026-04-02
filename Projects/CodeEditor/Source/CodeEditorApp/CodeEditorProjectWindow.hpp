@@ -23,6 +23,7 @@ public:
     void SetRootPath(std::string rootPath);
     const std::string& RootPath() const;
     const std::vector<std::string>& CodeFiles() const;
+    std::string MakeDisplayPath(const std::string& path) const;
 
     void Refresh();
     DrawResult Draw(const std::string& activePath);

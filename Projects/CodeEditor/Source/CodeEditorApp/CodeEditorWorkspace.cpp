@@ -3,6 +3,7 @@
 //
 
 #include "CodeEditorWorkspace.hpp"
+#include "CodeEditorPathUtils.hpp"
 #include "FileHelper.hpp"
 #include "imgui.h"
 #include <algorithm>
@@ -468,6 +469,10 @@ void CodeEditorWorkspace::OpenFileAtLine(const std::string& path, int line) {
     document.requestSelection = true;
     activePath = path;
     statusText = "Opened " + document.title + " at line " + std::to_string(std::max(1, line));
+}
+
+void CodeEditorWorkspace::SetDisplayRootPath(std::string rootPath) {
+    displayRootPath = std::move(rootPath);
 }
 
 void CodeEditorWorkspace::RemovePath(const std::string& path) {
@@ -996,7 +1001,7 @@ void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditor
     }
 
     ImGui::SameLine();
-    ImGui::TextWrapped("%s", document.path.c_str());
+    ImGui::TextWrapped("%s", CodeEditorPathUtils::MakeDisplayPath(document.path, displayRootPath).c_str());
 
     ImGui::Separator();
 
