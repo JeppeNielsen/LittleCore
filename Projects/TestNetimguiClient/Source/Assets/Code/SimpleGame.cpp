@@ -16,9 +16,18 @@ struct SimpleGame : public LittleCore::MainState {
 
     virtual ~SimpleGame() {}
 
+    void Reload() {
+        std::string path = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets/Pong/Assets/Bat/Stage.prefab";
+        auto data = FileHelper::ReadAllText(path);
+        simulation.registry.clear();
+        auto error = Load(simulation.registry, data);
+    }
+
     void OnInitialize() override {
         SerializedTypes<Types>();
         AddSimulation(simulation);
+        
+        Reload();
     }
 
     void OnUpdate(float dt) override {
@@ -30,20 +39,11 @@ struct SimpleGame : public LittleCore::MainState {
     }
 
     void OnGui() override {
+        
         ImGui::Begin("File");
 
-        std::string path = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets/Pong/Assets/Bat/Stage.prefab";
-
-        if (ImGui::Button("Save")) {
-            auto data = Save(simulation.registry);
-            FileHelper::TryWriteAllText("Scene.json", data);
-        }
-
         if (ImGui::Button("Load")) {
-            auto data = FileHelper::ReadAllText(path);
-            simulation.registry.clear();
-            auto error = Load(simulation.registry, data);
-
+            Reload();
         }
 
         ImGui::End();
@@ -51,3 +51,6 @@ struct SimpleGame : public LittleCore::MainState {
     }
 
 };
+
+
+
