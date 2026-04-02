@@ -27,6 +27,12 @@ namespace {
         std::string prefix;
     };
 
+    TextEditor::Palette CreateCodeEditorPalette() {
+        auto palette = TextEditor::GetDarkPalette();
+        palette[static_cast<std::size_t>(TextEditor::PaletteIndex::Breakpoint)] = IM_COL32(220, 60, 60, 255);
+        return palette;
+    }
+
     bool IsIdentifierCharacter(char value) {
         const auto c = static_cast<unsigned char>(value);
         return std::isalnum(c) != 0 || c == '_';
@@ -485,7 +491,7 @@ CodeEditorWorkspace::Document& CodeEditorWorkspace::OpenOrCreateDocument(const s
     document.path = path;
     document.title = std::filesystem::path(path).filename().string();
     document.savedText = FileHelper::ReadAllText(path);
-    document.editor.SetPalette(TextEditor::GetDarkPalette());
+    document.editor.SetPalette(CreateCodeEditorPalette());
     document.editor.SetLanguageDefinition(TextEditor::LanguageDefinition::CPlusPlus());
     document.editor.SetText(document.savedText);
     auto breakpointsIt = fileBreakpoints.find(path);
@@ -1073,8 +1079,8 @@ void CodeEditorWorkspace::Draw(CodeEditorAutocomplete& autocomplete, ImFont* cod
             if (document.isDirty) {
                 title += "*";
             }
+            title += "###" + document.path;
 
-            ImGui::PushID(document.path.c_str());
             const auto flags = document.requestSelection ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
             if (ImGui::BeginTabItem(title.c_str(), &isOpen, flags)) {
                 activePath = document.path;
@@ -1082,7 +1088,6 @@ void CodeEditorWorkspace::Draw(CodeEditorAutocomplete& autocomplete, ImFont* cod
                 DrawDocument(document, i, autocomplete, codeFont);
                 ImGui::EndTabItem();
             }
-            ImGui::PopID();
 
             if (!isOpen) {
                 closeDocumentIndex = i;

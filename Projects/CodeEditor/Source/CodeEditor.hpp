@@ -6,6 +6,7 @@
 #include "IState.hpp"
 #include "MainStateContext.hpp"
 #include "ImGuiController.hpp"
+#include "CodeEditorApp/CodeEditorBreakpointOverview.hpp"
 #include "CodeEditorApp/CodeEditorProjectWindow.hpp"
 #include "CodeEditorApp/CodeEditorAutocomplete.hpp"
 #include "CodeEditorApp/CodeEditorWorkspace.hpp"
@@ -22,6 +23,7 @@ struct CodeEditor : public LittleCore::IState {
 
 private:
     LittleCore::ImGuiController gui;
+    CodeEditorBreakpointOverview breakpointOverview;
     CodeEditorProjectWindow projectWindow;
     CodeEditorAutocomplete autocomplete;
     CodeEditorWorkspace workspace;

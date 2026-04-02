@@ -466,7 +466,13 @@ void CodeEditor::DrawGui() {
 
     DrawProgramsWindow();
     workspace.Draw(autocomplete, codeFont);
+    const auto sourceBreakpoints = workspace.SourceBreakpoints();
+    const auto breakpointResult = breakpointOverview.Draw(sourceBreakpoints, workspace.ActivePath());
+    if (!breakpointResult.openedPath.empty()) {
+        workspace.OpenFileAtLine(breakpointResult.openedPath, breakpointResult.openedLine);
+    }
+
     if (workspace.ConsumeBreakpointsChanged()) {
-        targetProject.SetSourceBreakpoints(workspace.SourceBreakpoints());
+        targetProject.SetSourceBreakpoints(sourceBreakpoints);
     }
 }
