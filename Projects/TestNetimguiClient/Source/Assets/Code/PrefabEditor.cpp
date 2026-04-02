@@ -8,7 +8,7 @@
 #include "FileHelper.hpp"
 #include "PrefabWindow.hpp"
 #include "PrefabContext.hpp"
-#include "Systems.hpp"
+#include "Types.hpp"
 
 struct PrefabEditor : public MainState {
     PrefabContext prefabContext;
