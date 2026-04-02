@@ -93,7 +93,13 @@ std::string ProgramDefinition::CreateGeneratedMainSource() const {
 void ProgramDefinition::EnsureGeneratedMainFile() const {
     std::filesystem::create_directories(std::filesystem::path(cachePath));
     auto contents = CreateGeneratedMainSource();
-    LittleCore::FileHelper::TryWriteAllText(GeneratedMainPath(), contents);
+    const auto generatedMainPath = GeneratedMainPath();
+    if (LittleCore::FileHelper::FileExists(generatedMainPath) &&
+        LittleCore::FileHelper::ReadAllText(generatedMainPath) == contents) {
+        return;
+    }
+
+    LittleCore::FileHelper::TryWriteAllText(generatedMainPath, contents);
 }
 
 ProgramCompilerResult ProgramDefinition::Build() const {

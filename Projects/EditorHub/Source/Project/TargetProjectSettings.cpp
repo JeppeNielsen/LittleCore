@@ -7,6 +7,7 @@
 #include "FileHelper.hpp"
 #include <filesystem>
 #include <regex>
+#include <algorithm>
 #include <set>
 
 namespace {
@@ -156,6 +157,7 @@ void TargetProjectSettings::Populate(ProgramCompilerContext& sharedContext, std:
         }
     }
 
+    std::sort(sharedContext.sourceFiles.begin(), sharedContext.sourceFiles.end());
     sharedContext.includePaths.assign(includePaths.begin(), includePaths.end());
     sharedContext.libraryPaths.push_back((workspace / "bin/Debug").generic_string());
     sharedContext.libraryPaths.push_back("/Users/jeppe/Jeppes/Scripting/clang18/lib");
