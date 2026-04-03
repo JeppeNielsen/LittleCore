@@ -58,6 +58,59 @@ namespace {
         paths.insert(path.lexically_normal().generic_string());
     }
 
+    bool IsCodeFileExtension(const std::filesystem::path& path) {
+        static const std::unordered_set<std::string> extensions = {
+                ".h",
+                ".hh",
+                ".hpp",
+                ".hxx",
+                ".inl",
+                ".ipp",
+                ".c",
+                ".cc",
+                ".cpp",
+                ".cxx"
+        };
+
+        return extensions.contains(path.extension().generic_string());
+    }
+
+    void AddCodeParentDirectories(std::set<std::string>& includePaths, const std::filesystem::path& root) {
+        if (root.empty() || !std::filesystem::exists(root)) {
+            return;
+        }
+
+        std::error_code errorCode;
+        std::filesystem::recursive_directory_iterator iterator(
+                root,
+                std::filesystem::directory_options::skip_permission_denied,
+                errorCode);
+
+        for (auto end = std::filesystem::recursive_directory_iterator(); iterator != end; iterator.increment(errorCode)) {
+            if (errorCode) {
+                errorCode.clear();
+                continue;
+            }
+
+            const auto& entry = *iterator;
+            const auto entryPath = entry.path();
+
+            if (entry.is_directory(errorCode)) {
+                const auto name = entryPath.filename().generic_string();
+                if (name == "Build" || name == "Cache" || name == "bin" || name == ".git") {
+                    iterator.disable_recursion_pending();
+                }
+                continue;
+            }
+
+            if (!entry.is_regular_file(errorCode) || !IsCodeFileExtension(entryPath)) {
+                continue;
+            }
+
+            AddPath(includePaths, entryPath.parent_path());
+        }
+    }
+
     std::string RunCommand(const char* command) {
         FILE* pipe = popen(command, "r");
         if (pipe == nullptr) {
@@ -450,11 +503,16 @@ namespace {
         return collector.symbols;
     }
 
-    std::vector<std::string> BuildCodeIncludeDirectories(const std::vector<std::string>& codeFiles) {
+    std::vector<std::string> BuildCodeIncludeDirectories(const std::string& workspaceRoot,
+                                                         const std::vector<std::string>& codeFiles) {
         std::set<std::string> includePaths;
 
         for (const auto& filePath : codeFiles) {
             AddPath(includePaths, std::filesystem::path(filePath).parent_path());
+        }
+
+        if (!workspaceRoot.empty()) {
+            AddCodeParentDirectories(includePaths, std::filesystem::path(workspaceRoot) / "Engine");
         }
 
         return {includePaths.begin(), includePaths.end()};
@@ -813,7 +871,7 @@ void CodeEditorAutocomplete::SetProjectRoot(std::string value) {
 
 void CodeEditorAutocomplete::SetCodeFiles(const std::vector<std::string>& files) {
     std::lock_guard lock(mutex);
-    codeIncludeDirectories = BuildCodeIncludeDirectories(files);
+    codeIncludeDirectories = BuildCodeIncludeDirectories(workspaceRoot, files);
 }
 
 std::uint64_t CodeEditorAutocomplete::QueueCompletion(const std::string& filePath,
