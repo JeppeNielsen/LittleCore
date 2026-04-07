@@ -986,20 +986,6 @@ void CodeEditorWorkspace::DrawStatusBar(const Document& document) const {
 }
 
 void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditorAutocomplete& autocomplete, ImFont* codeFont) {
-    if (ImGui::Button("Save")) {
-        SaveDocument(document);
-    }
-
-    ImGui::SameLine();
-    if (ImGui::Button("Complete")) {
-        RequestCompletion(document, autocomplete);
-    }
-
-    ImGui::SameLine();
-    if (ImGui::Button("Toggle Breakpoint")) {
-        ToggleBreakpoint(document, document.editor.GetCursorPosition().mLine + 1);
-    }
-
     ImGui::SameLine();
     ImGui::TextWrapped("%s", CodeEditorPathUtils::MakeDisplayPath(document.path, displayRootPath).c_str());
 
