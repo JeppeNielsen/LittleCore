@@ -1188,8 +1188,10 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 	const ImVec2 windowPos = ImGui::GetWindowPos();
 	const ImVec2 contentRegionMin = ImGui::GetWindowContentRegionMin();
 	const ImVec2 contentRegionMax = ImGui::GetWindowContentRegionMax();
-	mContentScreenMin = ImVec2(windowPos.x + contentRegionMin.x, windowPos.y + contentRegionMin.y);
-	mContentScreenMax = ImVec2(windowPos.x + contentRegionMax.x, windowPos.y + contentRegionMax.y);
+	const ImVec2 scroll = ImVec2(ImGui::GetScrollX(), ImGui::GetScrollY());
+	// GetWindowContentRegionMin/Max include scroll, but popup placement needs the visible child rect in screen space.
+	mContentScreenMin = ImVec2(windowPos.x + contentRegionMin.x + scroll.x, windowPos.y + contentRegionMin.y + scroll.y);
+	mContentScreenMax = ImVec2(windowPos.x + contentRegionMax.x + scroll.x, windowPos.y + contentRegionMax.y + scroll.y);
 
 	if (mHandleKeyboardInputs)
 		ImGui::PopAllowKeyboardFocus();
