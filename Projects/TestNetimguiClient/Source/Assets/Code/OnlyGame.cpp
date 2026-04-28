@@ -1,3 +1,4 @@
+
 //
 // Created by Jeppe Nielsen on 27/12/2025.
 //
@@ -7,14 +8,15 @@
 #include "DefaultSimulation.hpp"
 #include "FileHelper.hpp"
 #include "Systems.hpp"
+#include "Vector2.hpp"
 
 using namespace LittleCore;
 
-struct SimpleGame : public LittleCore::MainState {
+struct OnlyGame : public LittleCore::MainState {
 
     LittleCore::CustomSimulation<MoverSystem, BobberSystem, CollisionSystem, SizableSystem> simulation;
-
-    virtual ~SimpleGame() {}
+    
+    virtual ~OnlyGame() {}
 
     void Reload() {
         std::string path = "/Users/jeppe/Jeppes/LittleCore/Projects/TestNetimguiClient/Source/Assets/Pong/Assets/Bat/Stage.prefab";
@@ -26,7 +28,14 @@ struct SimpleGame : public LittleCore::MainState {
     void OnInitialize() override {
         SerializedTypes<Types>();
         AddSimulation(simulation);
+        AddSimulation(simulation);
         Reload();
+        
+        Vector2 myVector { 3,4};
+        
+        std::cout << "Vector length = " << myVector.Length() << std::endl;
+        
+        
     }
 
     void OnUpdate(float dt) override {
@@ -48,8 +57,10 @@ struct SimpleGame : public LittleCore::MainState {
         ImGui::End();
 
     }
-
 };
+
+
+
 
 
 

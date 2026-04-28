@@ -6,6 +6,7 @@
 #include "MetaHelper.hpp"
 #include "glm/glm.hpp"
 #include "Rect.hpp"
+#include "Sizable.hpp"
 
 struct Velocity {
     glm::vec3 speed;
@@ -29,4 +30,5 @@ struct Ball {
     float radius;
 };
 
-using Types = LittleCore::Meta::TypeList<Velocity, Rotater, Bobber, Bat, Ball>;
+using Types = LittleCore::Meta::TypeList<Velocity, Rotater, Bobber, Bat, Ball, Sizable>;
+

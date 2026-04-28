@@ -61,10 +61,7 @@ void PrefabWindow::DrawNode(const FileTreeNode& node) {
         }
         ImGui::TreePop();
     }
-
-
 }
-
 
 void PrefabWindow::DrawUI() {
     ImGui::Begin("Prefabs");
@@ -77,7 +74,8 @@ void PrefabWindow::DrawUI() {
         return FileHelper::HasExtension(path, "prefab");
     });
     DrawNode(root);
-
+    
+    
 /*
     static std::string selectedGuid;
 
@@ -103,4 +101,5 @@ void PrefabWindow::DrawUI() {
 
     ImGui::End();
 }
+
 

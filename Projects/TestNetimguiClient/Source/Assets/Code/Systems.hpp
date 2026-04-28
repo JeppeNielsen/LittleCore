@@ -6,6 +6,7 @@
 #include "LocalTransform.hpp"
 #include "SystemBase.hpp"
 #include "Types.hpp"
+#include "SizableSystem.hpp"
 
 using namespace LittleCore;
 
@@ -24,3 +25,4 @@ struct BobberSystem : LittleCore::SystemBase {
 struct CollisionSystem : LittleCore::SystemBase {
     void Update(float dt);
 };
+

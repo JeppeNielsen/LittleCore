@@ -47,7 +47,7 @@
             [
                5242882,
                {
-                  "id": "136C82A1940C4894B703D09F6363E81E"
+                  "id": "4BC3DABE71914C1782E4333052810803"
                }
             ]
          ]
@@ -83,7 +83,14 @@
       },
       {
          "type": "LittleCore::PrefabExposedComponents",
-         "components": []
+         "components": [
+            [
+               5242882,
+               {
+                  "exposedComponents": []
+               }
+            ]
+         ]
       },
       {
          "type": "LittleCore::Label",
@@ -96,9 +103,9 @@
                5242882,
                {
                   "color": {
-                     "x": 0,
-                     "y": 0.3157897,
-                     "z": 1,
+                     "x": 1,
+                     "y": 0.96132594,
+                     "z": 0,
                      "w": 1
                   }
                }
@@ -164,6 +171,30 @@
                }
             ]
          ]
+      },
+      {
+         "type": "Velocity",
+         "components": []
+      },
+      {
+         "type": "Rotater",
+         "components": []
+      },
+      {
+         "type": "Bobber",
+         "components": []
+      },
+      {
+         "type": "Bat",
+         "components": []
+      },
+      {
+         "type": "Ball",
+         "components": []
+      },
+      {
+         "type": "Sizable",
+         "components": []
       }
    ]
 }

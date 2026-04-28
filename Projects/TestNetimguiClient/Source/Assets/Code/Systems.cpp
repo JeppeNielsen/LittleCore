@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <cmath>
 #include <glm/vec2.hpp>
+#include <iostream>
 
-namespace {
     using vec2 = glm::vec2;
 
     struct CollisionResult {
@@ -29,7 +29,7 @@ namespace {
         if (dist2 >= radius2) {
             return result;
         }
-
+      
         result.hit = true;
 
         if (dist2 > 0.000001f) {
@@ -59,7 +59,7 @@ namespace {
 
         return result;
     }
-}
+
 
 void MoverSystem::Update(float dt) {
     for (auto [entity, velocity, transform] : registry.view<const Velocity, LocalTransform>().each()) {
@@ -84,12 +84,8 @@ void BobberSystem::Update(float dt) {
 }
 
 void CollisionSystem::Update(float dt) {
-    (void)dt;
-
     for (auto [ballEntity, ballTransform, velocity, ball] : registry.view<LocalTransform, Velocity, Ball>().each()) {
         for (auto [batEntity, batTransform, bat] : registry.view<LocalTransform, Bat>().each()) {
-            (void)batEntity;
-
             Rect localRect = bat.bounds;
             localRect.min += static_cast<glm::vec2>(batTransform.position);
             localRect.max += static_cast<glm::vec2>(batTransform.position);
@@ -109,4 +105,9 @@ void CollisionSystem::Update(float dt) {
         }
     }
 }
+
+
+
+
+
 

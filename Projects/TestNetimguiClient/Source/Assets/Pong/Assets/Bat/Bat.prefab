@@ -4,6 +4,27 @@
          "type": "LittleCore::LocalTransform",
          "components": [
             [
+               1048590,
+               {
+                  "position": {
+                     "x": -0.90919524,
+                     "y": 4.0564065,
+                     "z": 0
+                  },
+                  "rotation": {
+                     "x": 0,
+                     "y": 0,
+                     "z": 0,
+                     "w": 1
+                  },
+                  "scale": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1
+                  }
+               }
+            ],
+            [
                1048576,
                {
                   "position": {
@@ -30,6 +51,12 @@
          "type": "LittleCore::Hierarchy",
          "components": [
             [
+               1048590,
+               {
+                  "parent": 4294967295
+               }
+            ],
+            [
                1048576,
                {
                   "parent": 4294967295
@@ -45,6 +72,12 @@
          "type": "LittleCore::Texturable",
          "components": [
             [
+               1048590,
+               {
+                  "id": "990F2B3DACCE4336BAED15C6BE6C4AC5"
+               }
+            ],
+            [
                1048576,
                {
                   "id": "1C590D7690CC4BE0A20A580058F18C62"
@@ -55,6 +88,15 @@
       {
          "type": "LittleCore::Renderable",
          "components": [
+            [
+               1048590,
+               {
+                  "shader": {
+                     "id": "92339EB4C4FF4A4CB17B090D351FF1E2"
+                  },
+                  "blendMode": 1
+               }
+            ],
             [
                1048576,
                {
@@ -69,6 +111,12 @@
       {
          "type": "LittleCore::Mesh",
          "components": [
+            [
+               1048590,
+               {
+                  "id": ""
+               }
+            ],
             [
                1048576,
                {
@@ -93,6 +141,17 @@
          "type": "LittleCore::Colorable",
          "components": [
             [
+               1048590,
+               {
+                  "color": {
+                     "x": 1,
+                     "y": 1,
+                     "z": 1,
+                     "w": 0.65745854
+                  }
+               }
+            ],
+            [
                1048576,
                {
                   "color": {
@@ -109,6 +168,17 @@
          "type": "LittleCore::WorldTransform",
          "components": [
             [
+               1048590,
+               {
+                  "world": {
+                     
+                  },
+                  "worldInverse": {
+                     
+                  }
+               }
+            ],
+            [
                1048576,
                {
                   "world": {
@@ -124,6 +194,23 @@
       {
          "type": "LittleCore::LocalBoundingBox",
          "components": [
+            [
+               1048590,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
             [
                1048576,
                {
@@ -147,6 +234,23 @@
          "type": "LittleCore::WorldBoundingBox",
          "components": [
             [
+               1048590,
+               {
+                  "bounds": {
+                     "center": {
+                        "x": 0.09080452,
+                        "y": 5.056406,
+                        "z": 0
+                     },
+                     "extends": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 0
+                     }
+                  }
+               }
+            ],
+            [
                1048576,
                {
                   "bounds": {
@@ -160,6 +264,40 @@
                         "y": 4,
                         "z": 0
                      }
+                  }
+               }
+            ]
+         ]
+      },
+      {
+         "type": "Velocity",
+         "components": []
+      },
+      {
+         "type": "Rotater",
+         "components": []
+      },
+      {
+         "type": "Bobber",
+         "components": []
+      },
+      {
+         "type": "Bat",
+         "components": []
+      },
+      {
+         "type": "Ball",
+         "components": []
+      },
+      {
+         "type": "Sizable",
+         "components": [
+            [
+               1048590,
+               {
+                  "size": {
+                     "x": 2,
+                     "y": 2
                   }
                }
             ]

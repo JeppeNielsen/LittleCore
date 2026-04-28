@@ -9,10 +9,11 @@
 #include "PrefabWindow.hpp"
 #include "PrefabContext.hpp"
 #include "Types.hpp"
+#include "SizableSystem.hpp"
 
 struct PrefabEditor : public MainState {
     PrefabContext prefabContext;
-    LittleCore::CustomSimulation<> simulation;
+    LittleCore::CustomSimulation<SizableSystem> simulation;
     PrefabWindow prefabWindow;
 
     PrefabEditor() : prefabWindow(GetProject(), prefabContext, [this](const FileTreeNode& node, PrefabWindow::PrefabEvent event) {
@@ -155,3 +156,5 @@ struct PrefabEditor : public MainState {
     }
 
 };
+
+
