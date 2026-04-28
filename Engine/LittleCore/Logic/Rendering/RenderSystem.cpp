@@ -131,7 +131,7 @@ void RenderSystem::Render(uint16_t viewId, const WorldTransform &cameraTransform
     renderer->EndBatch(viewId, currentShaderResource, currentBlendMode);
     renderer->EndRender(viewId);
 
-    std::cout << "\n";
+    //std::cout << "\n";
 }
 
 void RenderSystem::Update() {
