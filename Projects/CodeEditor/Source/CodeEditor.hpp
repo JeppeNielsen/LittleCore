@@ -9,6 +9,7 @@
 #include "CodeEditorApp/CodeEditorBreakpointOverview.hpp"
 #include "CodeEditorApp/CodeEditorProjectWindow.hpp"
 #include "CodeEditorApp/CodeEditorAutocomplete.hpp"
+#include "CodeEditorApp/CodeEditorProgramOutputWindow.hpp"
 #include "CodeEditorApp/CodeEditorWorkspace.hpp"
 #include "../../EditorHub/Source/Project/TargetProject.hpp"
 #include <string>
@@ -26,6 +27,7 @@ private:
     CodeEditorBreakpointOverview breakpointOverview;
     CodeEditorProjectWindow projectWindow;
     CodeEditorAutocomplete autocomplete;
+    CodeEditorProgramOutputWindow programOutputWindow;
     CodeEditorWorkspace workspace;
     TargetProject targetProject;
     ImFont* codeFont = nullptr;

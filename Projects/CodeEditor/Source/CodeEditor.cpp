@@ -13,7 +13,6 @@ namespace {
         if (value.empty() || value.back() == '/' || value.back() == '\\') {
             return value;
         }
-
         return value + "/";
     }
 
@@ -249,6 +248,7 @@ void CodeEditor::ReloadTargetProject() {
     projectWindow.SetRootPath(settings.rootPath);
     workspace.SetDisplayRootPath(settings.rootPath);
     breakpointOverview.SetDisplayRootPath(settings.rootPath);
+    programOutputWindow.SetDisplayRootPath(settings.rootPath);
     projectWindow.Refresh();
     SyncProjectFiles();
     targetProject.Reload();
@@ -485,6 +485,7 @@ void CodeEditor::DrawGui() {
     }
 
     DrawProgramsWindow();
+    programOutputWindow.Draw(targetProject.GetPrograms());
     workspace.Draw(autocomplete, codeFont);
     const auto sourceBreakpoints = workspace.SourceBreakpoints();
     const auto breakpointResult = breakpointOverview.Draw(sourceBreakpoints, workspace.ActivePath());
@@ -496,3 +497,4 @@ void CodeEditor::DrawGui() {
         targetProject.SetSourceBreakpoints(sourceBreakpoints);
     }
 }
+

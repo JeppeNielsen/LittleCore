@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <cstddef>
 #include <future>
 #include <memory>
 #include <string>
@@ -61,6 +62,8 @@ public:
     bool HasExitCode() const;
     int LastExitCode() const;
     const std::string& RuntimeMessage() const;
+    const std::string& ProcessOutput() const;
+    void ClearProcessOutput();
 
 private:
     ProgramDefinition definition;
@@ -75,15 +78,20 @@ private:
     float lastBuildDuration = 0.0f;
 
     int processId = 0;
+    int processOutputReadFd = -1;
     bool isProcessRunning = false;
     bool hasExitCode = false;
     int lastExitCode = 0;
     std::string runtimeMessage;
+    std::string processOutput;
     std::vector<SourceBreakpoint> sourceBreakpoints;
     std::unique_ptr<LldbSession> debugger;
 
     void PollProcess();
+    void PollProcessOutput();
     void UpdateBuild();
     void SetExitStatus(int status);
     void SyncDebuggerState();
+    void AppendProcessOutput(const char* text, std::size_t length);
+    void CloseProcessOutputPipe();
 };

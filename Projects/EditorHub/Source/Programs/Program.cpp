@@ -4,14 +4,21 @@
 
 #include "Program.hpp"
 #include "LldbSession.hpp"
+#include <array>
 #include <cerrno>
 #include <chrono>
 #include <csignal>
 #include <cstring>
 #include <filesystem>
+#include <fcntl.h>
+#include <poll.h>
 #include <sstream>
 #include <sys/wait.h>
 #include <unistd.h>
+
+namespace {
+    constexpr std::size_t MaxProcessOutputSize = 128000;
+}
 
 Program::Program(ProgramDefinition definition, std::string workingDirectory) :
         definition(std::move(definition)),
@@ -20,6 +27,7 @@ Program::Program(ProgramDefinition definition, std::string workingDirectory) :
 
 Program::~Program() {
     StopProcess();
+    CloseProcessOutputPipe();
     if (isBuilding && buildFuture.valid()) {
         buildFuture.wait();
     }
@@ -89,27 +97,47 @@ void Program::StartProcess() {
     }
 
     const auto executablePath = definition.ExecutablePath();
+    int outputPipe[2] = {-1, -1};
+    if (pipe(outputPipe) != 0) {
+        runtimeMessage = "Failed to create process output pipe: " + std::string(std::strerror(errno));
+        return;
+    }
 
     const pid_t pid = fork();
     if (pid < 0) {
+        close(outputPipe[0]);
+        close(outputPipe[1]);
         runtimeMessage = "Failed to launch process: " + std::string(std::strerror(errno));
         return;
     }
 
     if (pid == 0) {
+        close(outputPipe[0]);
         setpgid(0, 0);
         if (!workingDirectory.empty()) {
             chdir(workingDirectory.c_str());
         }
+        dup2(outputPipe[1], STDOUT_FILENO);
+        dup2(outputPipe[1], STDERR_FILENO);
+        close(outputPipe[1]);
         execl(executablePath.c_str(), executablePath.c_str(), static_cast<char*>(nullptr));
         _exit(127);
     }
 
+    close(outputPipe[1]);
     setpgid(pid, pid);
 
+    const int flags = fcntl(outputPipe[0], F_GETFL, 0);
+    if (flags >= 0) {
+        (void)fcntl(outputPipe[0], F_SETFL, flags | O_NONBLOCK);
+    }
+
     processId = static_cast<int>(pid);
+    CloseProcessOutputPipe();
+    processOutputReadFd = outputPipe[0];
     isProcessRunning = true;
     hasExitCode = false;
+    processOutput.clear();
     runtimeMessage = "Running";
 }
 
@@ -143,6 +171,8 @@ void Program::StopProcess() {
         waitpid(processId, &status, 0);
     }
 
+    PollProcessOutput();
+    CloseProcessOutputPipe();
     isProcessRunning = false;
     processId = 0;
     SetExitStatus(status);
@@ -183,6 +213,8 @@ void Program::StartDebugging() {
         return;
     }
 
+    processOutput.clear();
+    CloseProcessOutputPipe();
     debugger = std::make_unique<LldbSession>(definition.ExecutablePath(), workingDirectory);
     debugger->SetSourceBreakpoints(sourceBreakpoints);
     hasExitCode = false;
@@ -200,6 +232,8 @@ void Program::AttachDebugger() {
         return;
     }
 
+    processOutput.clear();
+    CloseProcessOutputPipe();
     debugger = std::make_unique<LldbSession>(definition.ExecutablePath(), workingDirectory);
     debugger->SetSourceBreakpoints(sourceBreakpoints);
     hasExitCode = false;
@@ -305,10 +339,21 @@ const std::string& Program::RuntimeMessage() const {
     return runtimeMessage;
 }
 
+const std::string& Program::ProcessOutput() const {
+    return processOutput;
+}
+
+void Program::ClearProcessOutput() {
+    processOutput.clear();
+}
+
 void Program::PollProcess() {
     if (!isProcessRunning || processId == 0) {
+        PollProcessOutput();
         return;
     }
+
+    PollProcessOutput();
 
     int status = 0;
     const pid_t waitResult = waitpid(processId, &status, WNOHANG);
@@ -317,6 +362,8 @@ void Program::PollProcess() {
     }
 
     if (waitResult == static_cast<pid_t>(processId)) {
+        PollProcessOutput();
+        CloseProcessOutputPipe();
         isProcessRunning = false;
         processId = 0;
         SetExitStatus(status);
@@ -387,4 +434,57 @@ void Program::SyncDebuggerState() {
         hasExitCode = true;
         lastExitCode = debugger->ExitCode();
     }
+}
+
+void Program::PollProcessOutput() {
+    if (processOutputReadFd < 0) {
+        return;
+    }
+
+    std::array<char, 4096> buffer{};
+    while (true) {
+        pollfd pollDescriptor{};
+        pollDescriptor.fd = processOutputReadFd;
+        pollDescriptor.events = POLLIN | POLLHUP | POLLERR;
+        const int pollResult = poll(&pollDescriptor, 1, 0);
+        if (pollResult <= 0 || (pollDescriptor.revents & (POLLIN | POLLHUP | POLLERR)) == 0) {
+            return;
+        }
+
+        const auto bytesRead = read(processOutputReadFd, buffer.data(), buffer.size());
+        if (bytesRead > 0) {
+            AppendProcessOutput(buffer.data(), static_cast<std::size_t>(bytesRead));
+            continue;
+        }
+
+        if (bytesRead == 0) {
+            CloseProcessOutputPipe();
+            return;
+        }
+
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return;
+        }
+
+        CloseProcessOutputPipe();
+        return;
+    }
+}
+
+void Program::AppendProcessOutput(const char* text, std::size_t length) {
+    processOutput.append(text, length);
+    if (processOutput.size() <= MaxProcessOutputSize) {
+        return;
+    }
+
+    processOutput.erase(0, processOutput.size() - MaxProcessOutputSize);
+}
+
+void Program::CloseProcessOutputPipe() {
+    if (processOutputReadFd < 0) {
+        return;
+    }
+
+    close(processOutputReadFd);
+    processOutputReadFd = -1;
 }
