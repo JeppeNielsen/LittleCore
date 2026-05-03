@@ -90,6 +90,7 @@ void TargetProjectSettings::Populate(ProgramCompilerContext& sharedContext, std:
     AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Hierarchy");
     AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Input");
     AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Labels");
+    AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Layouting");
     AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Movement");
     AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Picking");
     AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Prefabs");

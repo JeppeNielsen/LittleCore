@@ -16,6 +16,7 @@
 #include "DefaultResourceManager.hpp"
 #include "Color.hpp"
 #include "BlendMode.hpp"
+#include "StackLayout.hpp"
 
 class GuiHelper {
 public:
@@ -112,6 +113,56 @@ public:
                 }
                 if (is_selected)
                     ImGui::SetItemDefaultFocus(); // nice UX
+            }
+            ImGui::EndCombo();
+        }
+    }
+
+    template<>
+    void Draw<LittleCore::StackLayout::Direction>(DrawOptions& options, const std::string& name, LittleCore::StackLayout::Direction& value) {
+
+        static const char* DirectionNames[] = {
+                "Horizontal", "Vertical"
+        };
+
+        int current = static_cast<int>(value);
+
+        if (ImGui::BeginCombo(name.c_str(), DirectionNames[current])) {
+            for (int i = 0; i < IM_ARRAYSIZE(DirectionNames); ++i) {
+                bool isSelected = (current == i);
+                if (ImGui::Selectable(DirectionNames[i], isSelected)) {
+                    current = i;
+                    value = static_cast<LittleCore::StackLayout::Direction>(i);
+                    options.didChange = true;
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+    }
+
+    template<>
+    void Draw<LittleCore::StackLayout::Align>(DrawOptions& options, const std::string& name, LittleCore::StackLayout::Align& value) {
+
+        static const char* AlignNames[] = {
+                "Start", "Center", "End", "Stretch"
+        };
+
+        int current = static_cast<int>(value);
+
+        if (ImGui::BeginCombo(name.c_str(), AlignNames[current])) {
+            for (int i = 0; i < IM_ARRAYSIZE(AlignNames); ++i) {
+                bool isSelected = (current == i);
+                if (ImGui::Selectable(AlignNames[i], isSelected)) {
+                    current = i;
+                    value = static_cast<LittleCore::StackLayout::Align>(i);
+                    options.didChange = true;
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus();
+                }
             }
             ImGui::EndCombo();
         }

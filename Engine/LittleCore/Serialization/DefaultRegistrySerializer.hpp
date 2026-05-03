@@ -18,6 +18,9 @@
 #include "Label.hpp"
 #include "Colorable.hpp"
 #include "Sizable.hpp"
+#include "StackLayout.hpp"
+#include "LayoutElement.hpp"
+#include "Anchors.hpp"
 #include "LocalBoundingBox.hpp"
 #include "WorldBoundingBox.hpp"
 
@@ -35,6 +38,9 @@ namespace LittleCore {
             Label,
             Colorable,
             Sizable,
+            StackLayout,
+            LayoutElement,
+            Anchors,
             WorldTransform,
             LocalBoundingBox,
             WorldBoundingBox

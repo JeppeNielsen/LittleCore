@@ -8,6 +8,10 @@ using namespace LittleCore;
 
 void LocalTransformSceneDrawer::Draw(SceneDrawerContext& context, LocalTransform& component) {
     (void)component;
+    if (context.gizmoDrawer.IsSizableBoundsActive(context.objectEntity)) {
+        return;
+    }
+
     context.gizmoDrawer.DrawGizmo(context.gizmoContext,
                                   context.cameraRegistry,
                                   context.cameraEntity,

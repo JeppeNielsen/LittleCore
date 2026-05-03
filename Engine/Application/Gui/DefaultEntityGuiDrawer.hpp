@@ -16,6 +16,9 @@
 #include "Label.hpp"
 #include "Colorable.hpp"
 #include "Sizable.hpp"
+#include "StackLayout.hpp"
+#include "LayoutElement.hpp"
+#include "Anchors.hpp"
 
 namespace LittleCore {
 
@@ -29,7 +32,10 @@ namespace LittleCore {
             PrefabExposedComponents,
             Label,
             Colorable,
-            Sizable
+            Sizable,
+            StackLayout,
+            LayoutElement,
+            Anchors
     >;
 
     template<typename ...T>

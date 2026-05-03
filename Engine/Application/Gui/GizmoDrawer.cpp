@@ -91,7 +91,7 @@ void GizmoDrawer::DrawSizableBounds(GizmoDrawerContext& context,
     auto& objectLocalTransform = objectRegistry.get<LocalTransform>(objectEntity);
     const bool isActiveEntity = activeSizableEntity == objectEntity;
     const glm::vec2 dragStartSize = isActiveEntity ? activeSizableSize : sizable.size;
-    const glm::vec3 dragStartScale = isActiveEntity ? activeSizableScale : objectLocalTransform.scale;
+    glm::mat4 manipulatedWorld = isActiveEntity ? activeSizableWorld : objectWorldTransform.world;
 
     const float localBounds[6] = {0.0f, 0.0f, 0.0f, dragStartSize.x, dragStartSize.y, 0.0f};
 
@@ -99,7 +99,7 @@ void GizmoDrawer::DrawSizableBounds(GizmoDrawerContext& context,
                          glm::value_ptr(camera.GetProjection(size.x / size.y)),
                          ImGuizmo::BOUNDS,
                          ImGuizmo::MODE::LOCAL,
-                         glm::value_ptr(objectWorldTransform.world),
+                         glm::value_ptr(manipulatedWorld),
                          nullptr,
                          nullptr,
                          localBounds,
@@ -115,13 +115,14 @@ void GizmoDrawer::DrawSizableBounds(GizmoDrawerContext& context,
             activeSizableSize = sizable.size;
             activeSizableScale = objectLocalTransform.scale;
             activeSizableRotation = objectLocalTransform.rotation;
+            activeSizableWorld = objectWorldTransform.world;
         }
 
-        glm::mat4 localMatrix = objectWorldTransform.world;
+        glm::mat4 localMatrix = manipulatedWorld;
 
         if (Hierarchy* hierarchy = objectRegistry.try_get<Hierarchy>(objectEntity); hierarchy && objectRegistry.valid(hierarchy->parent)) {
             const WorldTransform& parentWorld = objectRegistry.get<WorldTransform>(hierarchy->parent);
-            localMatrix = parentWorld.worldInverse * objectWorldTransform.world;
+            localMatrix = parentWorld.worldInverse * manipulatedWorld;
         }
 
         const glm::vec3 localOrigin = glm::vec3(localMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
@@ -132,41 +133,33 @@ void GizmoDrawer::DrawSizableBounds(GizmoDrawerContext& context,
         const glm::vec3 axisX = glm::normalize(glm::vec3(rotationMatrix[0]));
         const glm::vec3 axisY = glm::normalize(glm::vec3(rotationMatrix[1]));
 
-        float scaleX = activeSizableScale.x;
-        float scaleY = activeSizableScale.y;
-        if (dragStartSize.x > 0.0001f) {
-            scaleX = glm::dot(localX - localOrigin, axisX) / dragStartSize.x;
-        }
-        if (dragStartSize.y > 0.0001f) {
-            scaleY = glm::dot(localY - localOrigin, axisY) / dragStartSize.y;
-        }
-
-        objectLocalTransform.position = localOrigin;
-        objectLocalTransform.rotation = activeSizableRotation;
-        objectLocalTransform.scale = {scaleX, scaleY, activeSizableScale.z};
-        objectRegistry.patch<LocalTransform>(objectEntity);
-        objectWorldTransform.worldInverse = glm::inverse(objectWorldTransform.world);
-        objectRegistry.patch<WorldTransform>(objectEntity);
-    } else if (activeSizableEntity == objectEntity) {
         const float safeScaleX = std::abs(activeSizableScale.x) > 0.0001f ? std::abs(activeSizableScale.x) : 1.0f;
         const float safeScaleY = std::abs(activeSizableScale.y) > 0.0001f ? std::abs(activeSizableScale.y) : 1.0f;
 
-        sizable.size.x = std::max(0.001f, activeSizableSize.x * (objectLocalTransform.scale.x / safeScaleX));
-        sizable.size.y = std::max(0.001f, activeSizableSize.y * (objectLocalTransform.scale.y / safeScaleY));
-        objectRegistry.patch<Sizable>(objectEntity);
+        const float newWidth = std::max(0.001f, std::abs(glm::dot(localX - localOrigin, axisX)) / safeScaleX);
+        const float newHeight = std::max(0.001f, std::abs(glm::dot(localY - localOrigin, axisY)) / safeScaleY);
 
-        objectLocalTransform.scale = activeSizableScale;
+        objectLocalTransform.position = localOrigin;
         objectRegistry.patch<LocalTransform>(objectEntity);
-        objectWorldTransform.worldInverse = glm::inverse(objectWorldTransform.world);
-        objectRegistry.patch<WorldTransform>(objectEntity);
+        if (sizable.size.x != newWidth || sizable.size.y != newHeight) {
+            sizable.size = {newWidth, newHeight};
+            objectRegistry.patch<Sizable>(objectEntity);
+        }
+        activeSizableWorld = manipulatedWorld;
+    } else if (activeSizableEntity == objectEntity) {
 
         activeSizableEntity = entt::null;
         activeSizableSize = {0.0f, 0.0f};
         activeSizableScale = {1.0f, 1.0f, 1.0f};
         activeSizableRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+        activeSizableWorld = glm::mat4(1.0f);
     }
 
     ImGuizmo::PopID();
+}
+
+bool GizmoDrawer::IsSizableBoundsActive(entt::entity entity) const {
+    return activeSizableEntity == entity;
 }
 
 ImGuizmo::OPERATION GizmoDrawer::DrawOperationUI(ImGuizmo::OPERATION currentOperation) {

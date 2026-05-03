@@ -40,6 +40,8 @@ namespace LittleCore {
                                ImU32 color = IM_COL32(255,255,255,255),
                                float thickness = 1.0f,
                                bool depthZeroToOne = true);
+
+        bool IsSizableBoundsActive(entt::entity entity) const;
     private:
         ImVec2 min;
         ImVec2 max;
@@ -47,6 +49,7 @@ namespace LittleCore {
         glm::vec2 activeSizableSize = {0.0f, 0.0f};
         glm::vec3 activeSizableScale = {1.0f, 1.0f, 1.0f};
         glm::quat activeSizableRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+        glm::mat4 activeSizableWorld = glm::mat4(1.0f);
 
     };
 }

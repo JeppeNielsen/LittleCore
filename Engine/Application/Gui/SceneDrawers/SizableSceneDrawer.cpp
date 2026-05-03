@@ -7,6 +7,10 @@
 using namespace LittleCore;
 
 void SizableSceneDrawer::Draw(SceneDrawerContext& context, Sizable& component) {
+    if (context.gizmoContext.wasActive && !context.gizmoDrawer.IsSizableBoundsActive(context.objectEntity)) {
+        return;
+    }
+
     context.gizmoDrawer.DrawSizableBounds(context.gizmoContext,
                                           context.cameraRegistry,
                                           context.cameraEntity,

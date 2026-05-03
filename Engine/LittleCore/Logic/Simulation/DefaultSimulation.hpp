@@ -16,6 +16,8 @@
 #include "ColorableSystem.hpp"
 #include "LabelMeshSystem.hpp"
 #include "PrefabSystem.hpp"
+#include "AnchorLayoutSystem.hpp"
+#include "StackLayoutSystem.hpp"
 #include "SizableSystem.hpp"
 
 namespace LittleCore {
@@ -24,6 +26,8 @@ namespace LittleCore {
 
     using DefaultUpdateSystems = UpdateSystems<
             HierarchySystem,
+            AnchorLayoutSystem,
+            StackLayoutSystem,
             WorldTransformSystem,
             WorldBoundingBoxSystem,
             MeshBoundingBoxSystem,
