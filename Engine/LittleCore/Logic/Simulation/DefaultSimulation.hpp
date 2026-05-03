@@ -16,6 +16,7 @@
 #include "ColorableSystem.hpp"
 #include "LabelMeshSystem.hpp"
 #include "PrefabSystem.hpp"
+#include "SizableSystem.hpp"
 
 namespace LittleCore {
 
@@ -29,6 +30,7 @@ namespace LittleCore {
             TexturableSystem,
             ColorableSystem,
             LabelMeshSystem,
+            SizableSystem,
             PrefabSystem>;
 
     using DefaultRenderSystems = RenderSystems<RenderSystem>;
@@ -42,4 +44,3 @@ namespace LittleCore {
     using CustomSimulation = Simulation<DefaultInputSystems, CustomUpdateSystems<T...>, DefaultRenderSystems>;
 
 }
-
