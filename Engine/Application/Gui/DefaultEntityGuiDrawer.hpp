@@ -15,6 +15,7 @@
 #include "PrefabExposedComponents.hpp"
 #include "Label.hpp"
 #include "Colorable.hpp"
+#include "Sizable.hpp"
 
 namespace LittleCore {
 
@@ -27,7 +28,8 @@ namespace LittleCore {
             Prefab,
             PrefabExposedComponents,
             Label,
-            Colorable
+            Colorable,
+            Sizable
     >;
 
     template<typename ...T>

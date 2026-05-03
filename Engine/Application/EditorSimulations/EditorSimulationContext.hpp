@@ -6,6 +6,7 @@
 #pragma once
 
 #include "EntityGuiDrawer.hpp"
+#include "ComponentSceneDrawerCollection.hpp"
 #include "Renderer.hpp"
 #include "NetimguiClientController.hpp"
 
@@ -17,6 +18,7 @@ namespace LittleCore {
         Renderer& renderer;
         NetimguiClientController& netimguiClientController;
         EntityGuiDrawerBase* guiDrawer;
+        ComponentSceneDrawerBase* sceneDrawer;
         bool hierarchyChangedLastFrame;
     };
 }

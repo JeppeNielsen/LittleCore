@@ -13,6 +13,7 @@
 #include "CameraPicker.hpp"
 #include "RegistryHelper.hpp"
 #include "IgnoreSerialization.hpp"
+#include "SceneDrawerContext.hpp"
 
 using namespace LittleCore;
 
@@ -61,8 +62,6 @@ void SceneWindow::DrawCamera(EditorSimulation& simulation, EditorCamera& camera)
         ImGui::Image(static_cast<ImTextureID>(simgui_imtextureid(camera.frameBuffer.texture)), windowSize);
     }
 
-
-
     gizmoDrawer.Begin();
 
 
@@ -76,11 +75,17 @@ void SceneWindow::DrawCamera(EditorSimulation& simulation, EditorCamera& camera)
         if (!simulation.simulation.registry.valid(selectedEntity)) {
             continue;
         }
-        gizmoDrawer.DrawGizmo(gizmoDrawerContext, camera.simulation.registry, camera.cameraEntity, simulation.simulation.registry, selectedEntity, operation);
-
-        if (simulation.simulation.registry.all_of<Camera>(selectedEntity)) {
-            gizmoDrawer.DrawCameraFrustum(camera.simulation.registry, camera.cameraEntity, simulation.simulation.registry, selectedEntity, gameViewAspect);
-        }
+        SceneDrawerContext context {
+            .gizmoDrawer = gizmoDrawer,
+            .gizmoContext = gizmoDrawerContext,
+            .cameraRegistry = camera.simulation.registry,
+            .cameraEntity = camera.cameraEntity,
+            .objectRegistry = simulation.simulation.registry,
+            .objectEntity = selectedEntity,
+            .operation = operation,
+            .gameViewAspect = gameViewAspect
+        };
+        simulation.context.sceneDrawer->Draw(context);
     }
 
     bool gizmoClickStarted = gizmoDrawerContext.wasHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left);

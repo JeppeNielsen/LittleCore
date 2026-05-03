@@ -10,7 +10,10 @@ EditorSimulationContext::EditorSimulationContext(
         Renderer& renderer,
         NetimguiClientController& netimguiClientController)
  : renderer(renderer),
-   netimguiClientController(netimguiClientController)
+   netimguiClientController(netimguiClientController),
+   guiDrawer(nullptr),
+   sceneDrawer(nullptr),
+   hierarchyChangedLastFrame(false)
 {
 
 }

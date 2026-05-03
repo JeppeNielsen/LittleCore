@@ -6,8 +6,11 @@
 #include "Camera.hpp"
 #include "WorldTransform.hpp"
 #include "LocalTransform.hpp"
+#include <algorithm>
+#include <cmath>
 #include <glm/gtx/matrix_decompose.hpp>
 #include "Hierarchy.hpp"
+#include "Sizable.hpp"
 
 using namespace LittleCore;
 
@@ -65,6 +68,89 @@ void GizmoDrawer::DrawGizmo(GizmoDrawerContext& context,
                             quadLocalTransform.position, skew, perspective)) {
             objectRegistry.patch<LocalTransform>(objectEntity);
         }
+    }
+
+    ImGuizmo::PopID();
+}
+
+void GizmoDrawer::DrawSizableBounds(GizmoDrawerContext& context,
+                                    entt::registry& cameraRegistry, entt::entity cameraEntity,
+                                    entt::registry& objectRegistry, entt::entity objectEntity,
+                                    Sizable& sizable) {
+    if (!objectRegistry.all_of<WorldTransform, LocalTransform>(objectEntity)) {
+        return;
+    }
+
+    ImVec2 size = {max.x - min.x, max.y - min.y};
+
+    ImGuizmo::PushID((int)objectEntity);
+
+    auto& camera = cameraRegistry.get<Camera>(cameraEntity);
+    auto& cameraWorldTransform = cameraRegistry.get<WorldTransform>(cameraEntity);
+    auto& objectWorldTransform = objectRegistry.get<WorldTransform>(objectEntity);
+    auto& objectLocalTransform = objectRegistry.get<LocalTransform>(objectEntity);
+    const bool isActiveEntity = activeSizableEntity == objectEntity;
+    const glm::vec2 dragStartSize = isActiveEntity ? activeSizableSize : sizable.size;
+    const glm::vec3 dragStartScale = isActiveEntity ? activeSizableScale : objectLocalTransform.scale;
+
+    glm::mat4 manipulatedWorld = objectWorldTransform.world;
+    const float localBounds[6] = {0.0f, 0.0f, 0.0f, dragStartSize.x, dragStartSize.y, 0.0f};
+
+    ImGuizmo::Manipulate(glm::value_ptr(cameraWorldTransform.worldInverse),
+                         glm::value_ptr(camera.GetProjection(size.x / size.y)),
+                         ImGuizmo::BOUNDS,
+                         ImGuizmo::MODE::LOCAL,
+                         glm::value_ptr(manipulatedWorld),
+                         nullptr,
+                         nullptr,
+                         localBounds,
+                         nullptr);
+
+    const bool isUsing = ImGuizmo::IsUsing();
+    context.wasActive |= isUsing;
+    context.wasHovered |= ImGuizmo::IsOver();
+
+    if (isUsing) {
+        if (activeSizableEntity != objectEntity) {
+            activeSizableEntity = objectEntity;
+            activeSizableSize = sizable.size;
+            activeSizableScale = objectLocalTransform.scale;
+            activeSizableRotation = objectLocalTransform.rotation;
+        }
+
+        glm::mat4 localMatrix = manipulatedWorld;
+
+        if (Hierarchy* hierarchy = objectRegistry.try_get<Hierarchy>(objectEntity); hierarchy && objectRegistry.valid(hierarchy->parent)) {
+            const WorldTransform& parentWorld = objectRegistry.get<WorldTransform>(hierarchy->parent);
+            localMatrix = parentWorld.worldInverse * manipulatedWorld;
+        }
+
+        glm::vec3 translation;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::quat rotation;
+        glm::vec3 scale;
+        if (glm::decompose(localMatrix, scale, rotation, translation, skew, perspective)) {
+            objectLocalTransform.position = translation;
+            objectLocalTransform.rotation = rotation;
+            objectLocalTransform.scale = scale;
+            objectRegistry.patch<LocalTransform>(objectEntity);
+        }
+    } else if (activeSizableEntity == objectEntity) {
+        const float safeScaleX = std::abs(activeSizableScale.x) > 0.0001f ? std::abs(activeSizableScale.x) : 1.0f;
+        const float safeScaleY = std::abs(activeSizableScale.y) > 0.0001f ? std::abs(activeSizableScale.y) : 1.0f;
+
+        sizable.size.x = std::max(0.001f, activeSizableSize.x * (objectLocalTransform.scale.x / safeScaleX));
+        sizable.size.y = std::max(0.001f, activeSizableSize.y * (objectLocalTransform.scale.y / safeScaleY));
+        objectRegistry.patch<Sizable>(objectEntity);
+
+        objectLocalTransform.scale = activeSizableScale;
+        objectRegistry.patch<LocalTransform>(objectEntity);
+
+        activeSizableEntity = entt::null;
+        activeSizableSize = {0.0f, 0.0f};
+        activeSizableScale = {1.0f, 1.0f, 1.0f};
+        activeSizableRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     }
 
     ImGuizmo::PopID();

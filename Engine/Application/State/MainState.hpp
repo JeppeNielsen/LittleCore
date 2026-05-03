@@ -9,6 +9,7 @@
 #include "Simulation.hpp"
 #include "GuiResourceDrawers.hpp"
 #include "DefaultEntityGuiDrawer.hpp"
+#include "DefaultComponentSceneDrawers.hpp"
 #include "DefaultRegistrySerializer.hpp"
 #include "MainStateContext.hpp"
 #include "Project.hpp"
@@ -26,6 +27,7 @@ namespace LittleCore {
         void Render() override;
         void HandleEvent(void* event) override;
         void AddEntityGuiDrawer(EntityGuiDrawerBase* entityGuiDrawerBase);
+        void AddSceneDrawer(ComponentSceneDrawerBase* componentSceneDrawerBase);
         void AddRegistrySerializer(RegistrySerializerBase* registrySerializerBase);
         struct Parameters;
         Parameters* parameters;
@@ -39,13 +41,15 @@ namespace LittleCore {
         std::string Save(const entt::registry& registry) const;
         std::string Load(entt::registry& registry, const std::string& data) const;
 
-        template<typename TypeList>
+        template<typename TypeList, typename TSceneDrawers = DefaultComponentSceneDrawers<>>
         void SerializedTypes() {
             using GuiDrawer = Meta::Rebind<DefaultEntityGuiDrawer, TypeList>;
             using RegistrySerializer = Meta::Rebind<DefaultRegistrySerializer, TypeList>;
 
             GuiDrawer* entityGuiDrawer = new GuiDrawer();
+            TSceneDrawers* componentSceneDrawer = new TSceneDrawers();
             AddEntityGuiDrawer(entityGuiDrawer);
+            AddSceneDrawer(componentSceneDrawer);
 
             RegistrySerializer* registrySerializer = new RegistrySerializer();
             AddRegistrySerializer(registrySerializer);

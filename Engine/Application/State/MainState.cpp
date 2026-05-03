@@ -44,11 +44,13 @@ struct MainState::Parameters {
     DefaultResourceManager resourceManager;
     EntityGuiDrawerContext drawerContext;
     EntityGuiDrawerBase* entityGuiDrawer;
+    ComponentSceneDrawerBase* componentSceneDrawer;
     RegistrySerializerBase* registrySerializer;
     LittleCore::Project& project;
 
     ~Parameters() {
         delete entityGuiDrawer;
+        delete componentSceneDrawer;
         delete registrySerializer;
     }
 
@@ -56,7 +58,11 @@ struct MainState::Parameters {
             drawerContext(resourceManager),
             editorSimulationContext(renderer, netimguiClientController),
             editorSimulationRegistry(editorSimulationContext),
-            resourceManager(project.resourcePathMapper), project(project) {}
+            resourceManager(project.resourcePathMapper),
+            entityGuiDrawer(nullptr),
+            componentSceneDrawer(nullptr),
+            registrySerializer(nullptr),
+            project(project) {}
 
 
     void Initialize(void* mainWindow, const ImGuiController::RenderFunction& onGui, const MainStateContext& context) {
@@ -91,6 +97,11 @@ struct MainState::Parameters {
         this->entityGuiDrawer = entityGuiDrawer;
         editorSimulationContext.guiDrawer = entityGuiDrawer;
         entityGuiDrawer->Initialize(&drawerContext);
+    }
+
+    void SetSceneDrawer(ComponentSceneDrawerBase* componentSceneDrawer) {
+        this->componentSceneDrawer = componentSceneDrawer;
+        editorSimulationContext.sceneDrawer = componentSceneDrawer;
     }
 
     void SetRegistrySerializer(RegistrySerializerBase* registrySerializer) {
@@ -167,6 +178,10 @@ void MainState::AddSimulation(SimulationBase& simulation) {
 
 void MainState::AddEntityGuiDrawer(EntityGuiDrawerBase* entityGuiDrawerBase) {
     parameters->SetGuiDrawer(entityGuiDrawerBase);
+}
+
+void MainState::AddSceneDrawer(ComponentSceneDrawerBase* componentSceneDrawerBase) {
+    parameters->SetSceneDrawer(componentSceneDrawerBase);
 }
 
 void MainState::AddRegistrySerializer(RegistrySerializerBase* registrySerializerBase) {
