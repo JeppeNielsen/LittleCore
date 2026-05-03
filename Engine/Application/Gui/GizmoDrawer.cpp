@@ -93,14 +93,13 @@ void GizmoDrawer::DrawSizableBounds(GizmoDrawerContext& context,
     const glm::vec2 dragStartSize = isActiveEntity ? activeSizableSize : sizable.size;
     const glm::vec3 dragStartScale = isActiveEntity ? activeSizableScale : objectLocalTransform.scale;
 
-    glm::mat4 manipulatedWorld = objectWorldTransform.world;
     const float localBounds[6] = {0.0f, 0.0f, 0.0f, dragStartSize.x, dragStartSize.y, 0.0f};
 
     ImGuizmo::Manipulate(glm::value_ptr(cameraWorldTransform.worldInverse),
                          glm::value_ptr(camera.GetProjection(size.x / size.y)),
                          ImGuizmo::BOUNDS,
                          ImGuizmo::MODE::LOCAL,
-                         glm::value_ptr(manipulatedWorld),
+                         glm::value_ptr(objectWorldTransform.world),
                          nullptr,
                          nullptr,
                          localBounds,
@@ -118,24 +117,36 @@ void GizmoDrawer::DrawSizableBounds(GizmoDrawerContext& context,
             activeSizableRotation = objectLocalTransform.rotation;
         }
 
-        glm::mat4 localMatrix = manipulatedWorld;
+        glm::mat4 localMatrix = objectWorldTransform.world;
 
         if (Hierarchy* hierarchy = objectRegistry.try_get<Hierarchy>(objectEntity); hierarchy && objectRegistry.valid(hierarchy->parent)) {
             const WorldTransform& parentWorld = objectRegistry.get<WorldTransform>(hierarchy->parent);
-            localMatrix = parentWorld.worldInverse * manipulatedWorld;
+            localMatrix = parentWorld.worldInverse * objectWorldTransform.world;
         }
 
-        glm::vec3 translation;
-        glm::vec3 skew;
-        glm::vec4 perspective;
-        glm::quat rotation;
-        glm::vec3 scale;
-        if (glm::decompose(localMatrix, scale, rotation, translation, skew, perspective)) {
-            objectLocalTransform.position = translation;
-            objectLocalTransform.rotation = rotation;
-            objectLocalTransform.scale = scale;
-            objectRegistry.patch<LocalTransform>(objectEntity);
+        const glm::vec3 localOrigin = glm::vec3(localMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        const glm::vec3 localX = glm::vec3(localMatrix * glm::vec4(dragStartSize.x, 0.0f, 0.0f, 1.0f));
+        const glm::vec3 localY = glm::vec3(localMatrix * glm::vec4(0.0f, dragStartSize.y, 0.0f, 1.0f));
+
+        const glm::mat3 rotationMatrix = glm::mat3_cast(activeSizableRotation);
+        const glm::vec3 axisX = glm::normalize(glm::vec3(rotationMatrix[0]));
+        const glm::vec3 axisY = glm::normalize(glm::vec3(rotationMatrix[1]));
+
+        float scaleX = activeSizableScale.x;
+        float scaleY = activeSizableScale.y;
+        if (dragStartSize.x > 0.0001f) {
+            scaleX = glm::dot(localX - localOrigin, axisX) / dragStartSize.x;
         }
+        if (dragStartSize.y > 0.0001f) {
+            scaleY = glm::dot(localY - localOrigin, axisY) / dragStartSize.y;
+        }
+
+        objectLocalTransform.position = localOrigin;
+        objectLocalTransform.rotation = activeSizableRotation;
+        objectLocalTransform.scale = {scaleX, scaleY, activeSizableScale.z};
+        objectRegistry.patch<LocalTransform>(objectEntity);
+        objectWorldTransform.worldInverse = glm::inverse(objectWorldTransform.world);
+        objectRegistry.patch<WorldTransform>(objectEntity);
     } else if (activeSizableEntity == objectEntity) {
         const float safeScaleX = std::abs(activeSizableScale.x) > 0.0001f ? std::abs(activeSizableScale.x) : 1.0f;
         const float safeScaleY = std::abs(activeSizableScale.y) > 0.0001f ? std::abs(activeSizableScale.y) : 1.0f;
@@ -146,6 +157,8 @@ void GizmoDrawer::DrawSizableBounds(GizmoDrawerContext& context,
 
         objectLocalTransform.scale = activeSizableScale;
         objectRegistry.patch<LocalTransform>(objectEntity);
+        objectWorldTransform.worldInverse = glm::inverse(objectWorldTransform.world);
+        objectRegistry.patch<WorldTransform>(objectEntity);
 
         activeSizableEntity = entt::null;
         activeSizableSize = {0.0f, 0.0f};
