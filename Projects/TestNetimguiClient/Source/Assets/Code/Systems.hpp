@@ -6,7 +6,6 @@
 #include "LocalTransform.hpp"
 #include "SystemBase.hpp"
 #include "Types.hpp"
-#include "SizableSystem.hpp"
 
 using namespace LittleCore;
 

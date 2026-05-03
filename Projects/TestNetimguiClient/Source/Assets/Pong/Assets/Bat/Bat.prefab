@@ -290,7 +290,7 @@
          "components": []
       },
       {
-         "type": "Sizable",
+         "type": "LittleCore::Sizable",
          "components": [
             [
                1048590,

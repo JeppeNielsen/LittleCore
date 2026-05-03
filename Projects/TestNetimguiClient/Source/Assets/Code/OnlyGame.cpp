@@ -14,7 +14,7 @@ using namespace LittleCore;
 
 struct OnlyGame : public LittleCore::MainState {
 
-    LittleCore::CustomSimulation<MoverSystem, BobberSystem, CollisionSystem, SizableSystem> simulation;
+    LittleCore::CustomSimulation<MoverSystem, BobberSystem, CollisionSystem> simulation;
     
     virtual ~OnlyGame() {}
 
@@ -58,7 +58,6 @@ struct OnlyGame : public LittleCore::MainState {
 
     }
 };
-
 
 
 

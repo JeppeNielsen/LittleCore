@@ -193,7 +193,7 @@
          "components": []
       },
       {
-         "type": "Sizable",
+         "type": "LittleCore::Sizable",
          "components": []
       }
    ]

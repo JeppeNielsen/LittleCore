@@ -12,7 +12,7 @@ using namespace LittleCore;
 
 struct SimpleGame : public LittleCore::MainState {
 
-    LittleCore::CustomSimulation<MoverSystem, BobberSystem, CollisionSystem, SizableSystem> simulation;
+    LittleCore::CustomSimulation<MoverSystem, BobberSystem, CollisionSystem> simulation;
 
     virtual ~SimpleGame() {}
 
@@ -50,7 +50,6 @@ struct SimpleGame : public LittleCore::MainState {
     }
 
 };
-
 
 
 
