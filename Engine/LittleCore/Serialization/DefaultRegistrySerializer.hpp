@@ -17,6 +17,7 @@
 #include "PrefabExposedComponents.hpp"
 #include "Label.hpp"
 #include "Colorable.hpp"
+#include "Sizable.hpp"
 #include "LocalBoundingBox.hpp"
 #include "WorldBoundingBox.hpp"
 
@@ -33,6 +34,7 @@ namespace LittleCore {
             PrefabExposedComponents,
             Label,
             Colorable,
+            Sizable,
             WorldTransform,
             LocalBoundingBox,
             WorldBoundingBox
