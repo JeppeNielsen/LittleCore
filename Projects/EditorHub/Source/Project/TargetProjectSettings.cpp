@@ -96,6 +96,7 @@ void TargetProjectSettings::Populate(ProgramCompilerContext& sharedContext, std:
     AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Registry");
     AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Rendering");
     AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Simulation");
+    AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Sizable");
     AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Spatial");
     AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Systems");
     AddUnique(includePaths, workspace / "Engine/LittleCore/Logic/Transform");
