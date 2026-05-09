@@ -16,6 +16,7 @@
 #include "Label.hpp"
 #include "Colorable.hpp"
 #include "Sizable.hpp"
+#include "Layouter.hpp"
 #include "StackLayout.hpp"
 #include "LayoutElement.hpp"
 #include "Anchors.hpp"
@@ -33,6 +34,7 @@ namespace LittleCore {
             Label,
             Colorable,
             Sizable,
+            Layouter,
             StackLayout,
             LayoutElement,
             Anchors

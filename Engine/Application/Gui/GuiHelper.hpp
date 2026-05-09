@@ -16,6 +16,7 @@
 #include "DefaultResourceManager.hpp"
 #include "Color.hpp"
 #include "BlendMode.hpp"
+#include "Layouter.hpp"
 #include "StackLayout.hpp"
 
 class GuiHelper {
@@ -113,6 +114,31 @@ public:
                 }
                 if (is_selected)
                     ImGui::SetItemDefaultFocus(); // nice UX
+            }
+            ImGui::EndCombo();
+        }
+    }
+
+    template<>
+    void Draw<LittleCore::Layouter::LayoutMode>(DrawOptions& options, const std::string& name, LittleCore::Layouter::LayoutMode& value) {
+
+        static const char* LayoutModeNames[] = {
+                "None", "Horizontal", "Vertical"
+        };
+
+        int current = static_cast<int>(value);
+
+        if (ImGui::BeginCombo(name.c_str(), LayoutModeNames[current])) {
+            for (int i = 0; i < IM_ARRAYSIZE(LayoutModeNames); ++i) {
+                bool isSelected = (current == i);
+                if (ImGui::Selectable(LayoutModeNames[i], isSelected)) {
+                    current = i;
+                    value = static_cast<LittleCore::Layouter::LayoutMode>(i);
+                    options.didChange = true;
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus();
+                }
             }
             ImGui::EndCombo();
         }

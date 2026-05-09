@@ -6,6 +6,7 @@
 #include <glaze/glaze.hpp>
 #include "Anchors.hpp"
 #include "Hierarchy.hpp"
+#include "Layouter.hpp"
 #include "LayoutElement.hpp"
 #include "Prefab.hpp"
 #include "Renderable.hpp"
@@ -25,6 +26,17 @@ struct glz::meta<LittleCore::Renderable> {
     static constexpr auto value = glz::object(
             "shader", &T::shader,
             "blendMode", &T::blendMode
+    );
+};
+
+template<>
+struct glz::meta<LittleCore::Layouter> {
+    using T = LittleCore::Layouter;
+    static constexpr auto value = glz::object(
+            "childrenLayoutMode", &T::childrenLayoutMode,
+            "min", &T::min,
+            "desired", &T::desired,
+            "max", &T::max
     );
 };
 
