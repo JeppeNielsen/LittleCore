@@ -14,7 +14,7 @@
 using namespace LittleCore;
 
 
-GameWindow::GameWindow(NetimguiClientController& netimguiClientController) : netimguiClientController(netimguiClientController) {}
+GameWindow::GameWindow() {}
 
 void GameWindow::Draw(EditorSimulation& simulation) {
 
@@ -30,7 +30,6 @@ void GameWindow::Draw(EditorSimulation& simulation) {
         frameBuffer.Render((int) gameSize.x, (int) gameSize.y, [&]() {
             simulation.simulation.Render(simulation.context.renderer);
         });
-        netimguiClientController.SendTexture(frameBuffer.texture,  frameBuffer.width, frameBuffer.height);
     }
 
     if (lc_sg_valid(frameBuffer.texture)) {

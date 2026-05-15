@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <NetimguiClientController.hpp>
 #include <ResizableFrameBuffer.hpp>
 #include <GuiWindowInputController.hpp>
 
@@ -14,14 +13,13 @@ namespace LittleCore {
 
     class GameWindow {
     public:
-        GameWindow(NetimguiClientController& netimguiClientController);
+        GameWindow();
 
         void Draw(EditorSimulation& simulation);
 
         float Aspect();
 
     private:
-        NetimguiClientController& netimguiClientController;
         ResizableFrameBuffer frameBuffer;
         GuiWindowInputController guiWindowInputController;
     };

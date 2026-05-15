@@ -7,10 +7,8 @@
 using namespace LittleCore;
 
 EditorSimulationContext::EditorSimulationContext(
-        Renderer& renderer,
-        NetimguiClientController& netimguiClientController)
+        Renderer& renderer)
  : renderer(renderer),
-   netimguiClientController(netimguiClientController),
    guiDrawer(nullptr),
    sceneDrawer(nullptr),
    hierarchyChangedLastFrame(false)

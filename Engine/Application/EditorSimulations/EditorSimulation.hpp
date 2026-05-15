@@ -13,7 +13,6 @@
 #include "HierarchyWindow.hpp"
 #include "SceneWindow.hpp"
 #include "InspectorWindow.hpp"
-#include "NetimguiServerController.hpp"
 #include "GameWindow.hpp"
 #include "CameraPickerSystem.hpp"
 

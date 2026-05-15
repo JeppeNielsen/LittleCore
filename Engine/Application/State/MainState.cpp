@@ -38,7 +38,6 @@ struct MainState::Parameters {
     SokolRenderer renderer;
     EditorSimulationContext editorSimulationContext;
     EditorSimulationRegistry editorSimulationRegistry;
-    NetimguiClientController netimguiClientController;
     ImGuiController gui;
     ProjectWindow projectWindow;
     DefaultResourceManager resourceManager;
@@ -56,7 +55,7 @@ struct MainState::Parameters {
 
     Parameters(LittleCore::Project& project) :
             drawerContext(resourceManager),
-            editorSimulationContext(renderer, netimguiClientController),
+            editorSimulationContext(renderer),
             editorSimulationRegistry(editorSimulationContext),
             resourceManager(project.resourcePathMapper),
             entityGuiDrawer(nullptr),
@@ -71,16 +70,6 @@ struct MainState::Parameters {
 
         //gui.LoadFont("/Users/jeppe/Jeppes/LittleCore/Projects/TestImGui/Source/Fonts/LucidaG.ttf", 12);
         gui.LoadFont(context.engineRoot + "Fonts/LucidaG.ttf", 12);
-
-        netimguiClientController.Start();
-        netimguiClientController.Connect(context.name, "localhost");
-
-        while (netimguiClientController.IsConnectionPending()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds (16));
-        }
-        if (!netimguiClientController.IsConnected()) {
-            std::cout << "couldn't connect\n";
-        }
 
         project.rootPath = context.projectRoot;
         project.resourcePathMapper.RefreshFromRootPath(project.rootPath);

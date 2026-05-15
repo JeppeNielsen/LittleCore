@@ -6,7 +6,6 @@
 #pragma once
 
 #include "GizmoDrawer.hpp"
-#include "NetimguiClientController.hpp"
 #include "GameWindow.hpp"
 
 namespace LittleCore {
@@ -16,7 +15,7 @@ namespace LittleCore {
 
     class SceneWindow {
     public:
-        SceneWindow(NetimguiClientController& netimguiClientController, GameWindow& gameWindow);
+        SceneWindow(GameWindow& gameWindow);
 
         void Draw(EditorSimulation& simulation);
         void DrawCamera(EditorSimulation& simulation, EditorCamera& camera);
@@ -24,7 +23,6 @@ namespace LittleCore {
         GizmoDrawer gizmoDrawer;
 
     private:
-        NetimguiClientController& netimguiClientController;
         GameWindow& gameWindow;
         GuiWindowInputController guiWindowInputController;
     };

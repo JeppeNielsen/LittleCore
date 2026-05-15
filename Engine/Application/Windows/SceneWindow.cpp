@@ -17,8 +17,7 @@
 
 using namespace LittleCore;
 
-SceneWindow::SceneWindow(NetimguiClientController& netimguiClientController, GameWindow& gameWindow) :
-netimguiClientController(netimguiClientController),
+SceneWindow::SceneWindow(GameWindow& gameWindow) :
 gameWindow(gameWindow)
 {}
 
@@ -55,7 +54,6 @@ void SceneWindow::DrawCamera(EditorSimulation& simulation, EditorCamera& camera)
         camera.frameBuffer.Render((int) windowSize.x, (int) windowSize.y, [&]() {
             simulation.simulation.Render(0, cameraTransform, worldCamera, &simulation.context.renderer);
         });
-        netimguiClientController.SendTexture(camera.frameBuffer.texture,  camera.frameBuffer.width, camera.frameBuffer.height);
     }
 
     if (lc_sg_valid(camera.frameBuffer.texture)) {

@@ -10,8 +10,8 @@ EditorSimulation::EditorSimulation(EditorSimulationContext& context, SimulationB
 :
 context(context),
 simulation(simulation),
-gameWindow(context.netimguiClientController),
-sceneView(context.netimguiClientController, gameWindow),
+gameWindow(),
+sceneView(gameWindow),
 pickingSystem(simulation.registry){
     cameraController.CreateCamera(pickingSystem);
 }

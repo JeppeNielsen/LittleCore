@@ -8,15 +8,13 @@
 #include "EntityGuiDrawer.hpp"
 #include "ComponentSceneDrawerCollection.hpp"
 #include "Renderer.hpp"
-#include "NetimguiClientController.hpp"
 
 namespace LittleCore {
     struct EditorSimulationContext {
 
-        EditorSimulationContext(Renderer& renderer, NetimguiClientController& netimguiClientController);
+        EditorSimulationContext(Renderer& renderer);
 
         Renderer& renderer;
-        NetimguiClientController& netimguiClientController;
         EntityGuiDrawerBase* guiDrawer;
         ComponentSceneDrawerBase* sceneDrawer;
         bool hierarchyChangedLastFrame;
