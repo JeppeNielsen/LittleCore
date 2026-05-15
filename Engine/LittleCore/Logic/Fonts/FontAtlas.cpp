@@ -222,7 +222,8 @@ bool FontAtlas::createPage() {
     sg_image_desc desc{};
     desc.width = p.w;
     desc.height = p.h;
-    desc.usage = SG_USAGE_DYNAMIC;
+    desc.usage.immutable = false;
+    desc.usage.dynamic_update = true;
     desc.pixel_format = SG_PIXELFORMAT_R8;
     p.tex = sg_make_image(desc);
 
@@ -351,7 +352,7 @@ void LittleCore::FontAtlas::UploadTextures() {
 
         // Sokol updates full dynamic images; upload the full atlas bitmap.
         sg_image_data data{};
-        data.subimage[0][0] = {page.bitmap.data(), page.bitmap.size()};
+        data.mip_levels[0] = {page.bitmap.data(), page.bitmap.size()};
         sg_update_image(page.tex, data);
 
 /*        std::vector<uint8_t> output;

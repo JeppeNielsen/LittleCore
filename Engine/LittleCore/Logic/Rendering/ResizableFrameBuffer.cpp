@@ -12,7 +12,7 @@ void ResizableFrameBuffer::Render(uint16_t width, uint16_t height, const std::fu
         return;
     }
     EnsureResources(width, height);
-    if (!lc_sg_valid(frameBuffer)) {
+    if (!lc_sg_valid(colorView)) {
         return;
     }
     sg_pass_action passAction{};
@@ -25,7 +25,8 @@ void ResizableFrameBuffer::Render(uint16_t width, uint16_t height, const std::fu
 
     sg_pass pass{};
     pass.action = passAction;
-    pass.attachments = frameBuffer;
+    pass.attachments.colors[0] = colorView;
+    pass.attachments.depth_stencil = depthView;
     sg_begin_pass(pass);
     renderFunction();
     sg_end_pass();
@@ -33,7 +34,9 @@ void ResizableFrameBuffer::Render(uint16_t width, uint16_t height, const std::fu
 
 void ResizableFrameBuffer::EnsureResources(uint16_t width, uint16_t height) {
     if (width == 0 || height == 0) {
-        lc_sg_destroy(frameBuffer);
+        lc_sg_destroy(textureView);
+        lc_sg_destroy(colorView);
+        lc_sg_destroy(depthView);
         lc_sg_destroy(texture);
         lc_sg_destroy(depthTexture);
         this->width = 0;
@@ -48,32 +51,45 @@ void ResizableFrameBuffer::EnsureResources(uint16_t width, uint16_t height) {
     this->width = width;
     this->height = height;
 
-    lc_sg_destroy(frameBuffer);
+    lc_sg_destroy(textureView);
+    lc_sg_destroy(colorView);
+    lc_sg_destroy(depthView);
     lc_sg_destroy(texture);
     lc_sg_destroy(depthTexture);
 
     sg_image_desc imageDesc{};
-    imageDesc.render_target = true;
+    imageDesc.usage.color_attachment = true;
+    imageDesc.usage.immutable = false;
     imageDesc.width = this->width;
     imageDesc.height = this->height;
     imageDesc.pixel_format = SG_PIXELFORMAT_RGBA8;
     texture = sg_make_image(imageDesc);
 
     sg_image_desc depthDesc{};
-    depthDesc.render_target = true;
+    depthDesc.usage.depth_stencil_attachment = true;
+    depthDesc.usage.immutable = false;
     depthDesc.width = this->width;
     depthDesc.height = this->height;
-    depthDesc.pixel_format = static_cast<sg_pixel_format>(sapp_depth_format());
+    depthDesc.pixel_format = sg_query_desc().environment.defaults.depth_format;
     depthTexture = sg_make_image(depthDesc);
 
-    sg_attachments_desc attachmentsDesc{};
-    attachmentsDesc.colors[0].image = texture;
-    attachmentsDesc.depth_stencil.image = depthTexture;
-    frameBuffer = sg_make_attachments(attachmentsDesc);
+    sg_view_desc colorViewDesc{};
+    colorViewDesc.color_attachment.image = texture;
+    colorView = sg_make_view(colorViewDesc);
+
+    sg_view_desc depthViewDesc{};
+    depthViewDesc.depth_stencil_attachment.image = depthTexture;
+    depthView = sg_make_view(depthViewDesc);
+
+    sg_view_desc texViewDesc{};
+    texViewDesc.texture.image = texture;
+    textureView = sg_make_view(texViewDesc);
 }
 
 ResizableFrameBuffer::~ResizableFrameBuffer() {
-    lc_sg_destroy(frameBuffer);
+    lc_sg_destroy(textureView);
+    lc_sg_destroy(colorView);
+    lc_sg_destroy(depthView);
     lc_sg_destroy(texture);
     lc_sg_destroy(depthTexture);
 }

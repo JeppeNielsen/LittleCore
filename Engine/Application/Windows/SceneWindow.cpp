@@ -56,8 +56,8 @@ void SceneWindow::DrawCamera(EditorSimulation& simulation, EditorCamera& camera)
         });
     }
 
-    if (lc_sg_valid(camera.frameBuffer.texture)) {
-        ImGui::Image(static_cast<ImTextureID>(simgui_imtextureid(camera.frameBuffer.texture)), windowSize);
+    if (lc_sg_valid(camera.frameBuffer.textureView)) {
+        ImGui::Image(static_cast<ImTextureID>(simgui_imtextureid(camera.frameBuffer.textureView)), windowSize);
     }
 
     gizmoDrawer.Begin();

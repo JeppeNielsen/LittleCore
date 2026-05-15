@@ -123,8 +123,9 @@ namespace {
         sg_pipeline_desc pipelineDesc = {};
         pipelineDesc.shader = shaderProgram;
         pipelineDesc.index_type = SG_INDEXTYPE_UINT32;
-        pipelineDesc.sample_count = sapp_sample_count();
-        pipelineDesc.depth.pixel_format = static_cast<sg_pixel_format>(sapp_depth_format());
+        const sg_environment env = sg_query_desc().environment;
+        pipelineDesc.sample_count = env.defaults.sample_count;
+        pipelineDesc.depth.pixel_format = env.defaults.depth_format;
         pipelineDesc.depth.compare = SG_COMPAREFUNC_LESS_EQUAL;
         pipelineDesc.depth.write_enabled = blendMode == LittleCore::BlendMode::Off;
         pipelineDesc.colors[0].pixel_format = SG_PIXELFORMAT_RGBA8;
@@ -365,7 +366,7 @@ void SokolRenderer::BeginRender(uint16_t, glm::mat4x4 view, glm::mat4x4 projecti
     stats = {};
     viewProjection = projection * view;
 
-    const uint32_t frameIndex = sg_query_frame_stats().frame_index;
+    const uint32_t frameIndex = sg_query_stats().cur_frame.frame_index;
     if (!hasBatchBufferFrame || batchBufferFrameIndex != frameIndex) {
         hasBatchBufferFrame = true;
         batchBufferFrameIndex = frameIndex;
@@ -468,7 +469,7 @@ void SokolRenderer::EndBatch(uint16_t, const ShaderResource* shaderResource, Ble
 
     const sg_shader_desc shaderDesc = sg_query_shader_desc(shaderProgram);
     const bool shaderUsesTexture =
-        shaderDesc.images[0].stage != SG_SHADERSTAGE_NONE &&
+        shaderDesc.views[0].texture.stage != SG_SHADERSTAGE_NONE &&
         shaderDesc.samplers[0].stage != SG_SHADERSTAGE_NONE;
 
     if (shaderUsesTexture && defaultSampler.id == SG_INVALID_ID) {
@@ -489,11 +490,18 @@ void SokolRenderer::EndBatch(uint16_t, const ShaderResource* shaderResource, Ble
         textureToBind = defaultWhiteTexture;
     }
 
+    sg_view textureView = {SG_INVALID_ID};
+    if (shaderUsesTexture && textureToBind.id != SG_INVALID_ID && defaultSampler.id != SG_INVALID_ID) {
+        sg_view_desc viewDesc{};
+        viewDesc.texture.image = textureToBind;
+        textureView = sg_make_view(viewDesc);
+    }
+
     sg_bindings bindings = {};
     bindings.vertex_buffers[0] = batchBuffers->vertex;
     bindings.index_buffer = batchBuffers->index;
-    if (shaderUsesTexture && textureToBind.id != SG_INVALID_ID && defaultSampler.id != SG_INVALID_ID) {
-        bindings.images[0] = textureToBind;
+    if (textureView.id != SG_INVALID_ID) {
+        bindings.views[0] = textureView;
         bindings.samplers[0] = defaultSampler;
     }
 
@@ -513,6 +521,9 @@ void SokolRenderer::EndBatch(uint16_t, const ShaderResource* shaderResource, Ble
     sg_draw(0, static_cast<int>(batchedIndices.size()), 1);
     stats.numRenderCalls++;
 
+    if (textureView.id != SG_INVALID_ID) {
+        sg_destroy_view(textureView);
+    }
     sg_destroy_pipeline(pipeline);
 
     batchedVertices.clear();
@@ -521,7 +532,7 @@ void SokolRenderer::EndBatch(uint16_t, const ShaderResource* shaderResource, Ble
     currentUniforms = nullptr;
 }
 
-bool SokolRenderer::EnsureBuffer(sg_buffer& buffer, std::size_t& capacityBytes, sg_buffer_type type, std::size_t requiredBytes) {
+bool SokolRenderer::EnsureBuffer(sg_buffer& buffer, std::size_t& capacityBytes, bool isIndexBuffer, std::size_t requiredBytes) {
     if (lc_sg_valid(buffer) && capacityBytes >= requiredBytes) {
         return true;
     }
@@ -530,8 +541,10 @@ bool SokolRenderer::EnsureBuffer(sg_buffer& buffer, std::size_t& capacityBytes, 
     capacityBytes = 0;
 
     sg_buffer_desc bufferDesc{};
-    bufferDesc.type = type;
-    bufferDesc.usage = SG_USAGE_STREAM;
+    bufferDesc.usage.vertex_buffer = !isIndexBuffer;
+    bufferDesc.usage.index_buffer = isIndexBuffer;
+    bufferDesc.usage.immutable = false;
+    bufferDesc.usage.stream_update = true;
     bufferDesc.size = CalculateBufferCapacity(requiredBytes);
     buffer = sg_make_buffer(bufferDesc);
     if (!lc_sg_valid(buffer)) {
@@ -553,8 +566,7 @@ bool SokolRenderer::EnsureDefaultWhiteTexture() {
     imageDesc.width = 1;
     imageDesc.height = 1;
     imageDesc.pixel_format = SG_PIXELFORMAT_RGBA8;
-    imageDesc.usage = SG_USAGE_IMMUTABLE;
-    imageDesc.data.subimage[0][0] = {whitePixel, sizeof(whitePixel)};
+    imageDesc.data.mip_levels[0] = {whitePixel, sizeof(whitePixel)};
     defaultWhiteTexture = sg_make_image(imageDesc);
     return lc_sg_valid(defaultWhiteTexture);
 }
@@ -567,11 +579,11 @@ SokolRenderer::BatchBuffers* SokolRenderer::AcquireBatchBuffers(std::size_t requ
     BatchBuffers& buffers = reusableBatchBuffers[nextBatchBufferIndex];
     nextBatchBufferIndex++;
 
-    if (!EnsureBuffer(buffers.vertex, buffers.vertexCapacityBytes, SG_BUFFERTYPE_VERTEXBUFFER, requiredVertexBytes)) {
+    if (!EnsureBuffer(buffers.vertex, buffers.vertexCapacityBytes, false, requiredVertexBytes)) {
         return nullptr;
     }
 
-    if (!EnsureBuffer(buffers.index, buffers.indexCapacityBytes, SG_BUFFERTYPE_INDEXBUFFER, requiredIndexBytes)) {
+    if (!EnsureBuffer(buffers.index, buffers.indexCapacityBytes, true, requiredIndexBytes)) {
         return nullptr;
     }
 

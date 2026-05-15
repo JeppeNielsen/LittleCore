@@ -32,8 +32,8 @@ void GameWindow::Draw(EditorSimulation& simulation) {
         });
     }
 
-    if (lc_sg_valid(frameBuffer.texture)) {
-        ImGui::Image(static_cast<ImTextureID>(simgui_imtextureid(frameBuffer.texture)), gameSize);
+    if (lc_sg_valid(frameBuffer.textureView)) {
+        ImGui::Image(static_cast<ImTextureID>(simgui_imtextureid(frameBuffer.textureView)), gameSize);
     }
 
     ImGui::End();

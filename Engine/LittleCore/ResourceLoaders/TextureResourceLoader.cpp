@@ -13,8 +13,8 @@ void TextureResourceLoader::Load(Texturable& texturable) {
         desc.width = width;
         desc.height = height;
         desc.pixel_format = SG_PIXELFORMAT_RGBA8;
-        desc.usage = SG_USAGE_IMMUTABLE;
-        desc.data.subimage[0][0] = {data, sizeof(unsigned char) * width * height * 4};
+        desc.usage.immutable = true;
+        desc.data.mip_levels[0] = {data, sizeof(unsigned char) * width * height * 4};
         texturable.texture = sg_make_image(&desc);
     });
 }

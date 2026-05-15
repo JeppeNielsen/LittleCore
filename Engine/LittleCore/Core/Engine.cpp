@@ -88,8 +88,8 @@ void Engine::MainLoop(const std::function<void()>& onInitialize, const std::func
     desc.height = 600;
     desc.high_dpi = true;
     desc.sample_count = 1;
-    desc.gl_major_version = 4;
-    desc.gl_minor_version = 1;
+    desc.gl.major_version = 4;
+    desc.gl.minor_version = 1;
     desc.enable_clipboard = true;
     desc.window_title = settings.mainWindowTitle.c_str();
 

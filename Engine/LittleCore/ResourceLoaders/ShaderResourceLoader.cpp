@@ -166,12 +166,12 @@ namespace {
             }
         }
 
-        sg_shader_image* image = &desc.images[0];
-        image->stage = SG_SHADERSTAGE_FRAGMENT;
-        image->image_type = SG_IMAGETYPE_2D;
-        image->sample_type = SG_IMAGESAMPLETYPE_FLOAT;
-        image->hlsl_register_t_n = 0;
-        image->msl_texture_n = 0;
+        sg_shader_texture_view* texView = &desc.views[0].texture;
+        texView->stage = SG_SHADERSTAGE_FRAGMENT;
+        texView->image_type = SG_IMAGETYPE_2D;
+        texView->sample_type = SG_IMAGESAMPLETYPE_FLOAT;
+        texView->hlsl_register_t_n = 0;
+        texView->msl_texture_n = 0;
 
         sg_shader_sampler* sampler = &desc.samplers[0];
         sampler->stage = SG_SHADERSTAGE_FRAGMENT;
@@ -179,9 +179,9 @@ namespace {
         sampler->hlsl_register_s_n = 0;
         sampler->msl_sampler_n = 0;
 
-        sg_shader_image_sampler_pair* pair = &desc.image_sampler_pairs[0];
+        sg_shader_texture_sampler_pair* pair = &desc.texture_sampler_pairs[0];
         pair->stage = SG_SHADERSTAGE_FRAGMENT;
-        pair->image_slot = 0;
+        pair->view_slot = 0;
         pair->sampler_slot = 0;
         pair->glsl_name = kDefaultTextureName;
 

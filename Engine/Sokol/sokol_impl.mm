@@ -6,7 +6,7 @@
 #include <cstdio>
 
 static sg_image g_lc_dummy_color = {SG_INVALID_ID};
-static sg_attachments g_lc_dummy_attachments = {SG_INVALID_ID};
+static sg_view g_lc_dummy_color_view = {SG_INVALID_ID};
 static bool g_lc_has_window_pass = false;
 
 static void lc_sg_log(const char* tag,
@@ -44,7 +44,8 @@ bool lc_sg_setup() {
     }
 
     sg_image_desc color_desc{};
-    color_desc.render_target = true;
+    color_desc.usage.color_attachment = true;
+    color_desc.usage.immutable = false;
     color_desc.width = 1;
     color_desc.height = 1;
     color_desc.pixel_format = SG_PIXELFORMAT_RGBA8;
@@ -54,10 +55,10 @@ bool lc_sg_setup() {
         return false;
     }
 
-    sg_attachments_desc attachments_desc{};
-    attachments_desc.colors[0].image = g_lc_dummy_color;
-    g_lc_dummy_attachments = sg_make_attachments(attachments_desc);
-    if (g_lc_dummy_attachments.id == SG_INVALID_ID) {
+    sg_view_desc view_desc{};
+    view_desc.color_attachment.image = g_lc_dummy_color;
+    g_lc_dummy_color_view = sg_make_view(view_desc);
+    if (g_lc_dummy_color_view.id == SG_INVALID_ID) {
         sg_destroy_image(g_lc_dummy_color);
         g_lc_dummy_color = {SG_INVALID_ID};
         sg_shutdown();
@@ -70,9 +71,9 @@ bool lc_sg_setup() {
 void lc_sg_shutdown() {
     g_lc_has_window_pass = false;
 
-    if (g_lc_dummy_attachments.id != SG_INVALID_ID) {
-        sg_destroy_attachments(g_lc_dummy_attachments);
-        g_lc_dummy_attachments = {SG_INVALID_ID};
+    if (g_lc_dummy_color_view.id != SG_INVALID_ID) {
+        sg_destroy_view(g_lc_dummy_color_view);
+        g_lc_dummy_color_view = {SG_INVALID_ID};
     }
     if (g_lc_dummy_color.id != SG_INVALID_ID) {
         sg_destroy_image(g_lc_dummy_color);
@@ -82,13 +83,13 @@ void lc_sg_shutdown() {
 }
 
 void lc_sg_commit_frame() {
-    if (!g_lc_has_window_pass && g_lc_dummy_attachments.id != SG_INVALID_ID) {
+    if (!g_lc_has_window_pass && g_lc_dummy_color_view.id != SG_INVALID_ID) {
         sg_pass_action pass_action{};
         pass_action.colors[0].load_action = SG_LOADACTION_DONTCARE;
         pass_action.colors[0].store_action = SG_STOREACTION_DONTCARE;
         sg_pass pass{};
         pass.action = pass_action;
-        pass.attachments = g_lc_dummy_attachments;
+        pass.attachments.colors[0] = g_lc_dummy_color_view;
         sg_begin_pass(pass);
         sg_end_pass();
     }

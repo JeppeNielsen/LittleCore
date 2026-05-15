@@ -38,10 +38,11 @@ void ImGuiController::Initialize(void* mainWindow, const ImGuiController::Render
     (void)mainWindow;
     this->renderFunction = renderFunction;
 
+    const sg_environment env = sg_query_desc().environment;
     simgui_setup({
-        .color_format = static_cast<sg_pixel_format>(sapp_color_format()),
-        .depth_format = static_cast<sg_pixel_format>(sapp_depth_format()),
-        .sample_count = sapp_sample_count(),
+        .color_format = env.defaults.color_format,
+        .depth_format = env.defaults.depth_format,
+        .sample_count = env.defaults.sample_count,
         .ini_filename = "imgui.ini"
     });
 

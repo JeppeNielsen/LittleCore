@@ -12,7 +12,7 @@ inline bool lc_sg_valid(sg_image h) { return h.id != SG_INVALID_ID; }
 inline bool lc_sg_valid(sg_shader h) { return h.id != SG_INVALID_ID; }
 inline bool lc_sg_valid(sg_pipeline h) { return h.id != SG_INVALID_ID; }
 inline bool lc_sg_valid(sg_buffer h) { return h.id != SG_INVALID_ID; }
-inline bool lc_sg_valid(sg_attachments h) { return h.id != SG_INVALID_ID; }
+inline bool lc_sg_valid(sg_view h) { return h.id != SG_INVALID_ID; }
 
 inline void lc_sg_destroy(sg_image& h) {
     if (lc_sg_valid(h)) {
@@ -42,9 +42,9 @@ inline void lc_sg_destroy(sg_buffer& h) {
     }
 }
 
-inline void lc_sg_destroy(sg_attachments& h) {
+inline void lc_sg_destroy(sg_view& h) {
     if (lc_sg_valid(h)) {
-        sg_destroy_attachments(h);
+        sg_destroy_view(h);
         h = {SG_INVALID_ID};
     }
 }

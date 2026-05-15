@@ -29,7 +29,7 @@ namespace LittleCore {
             std::size_t indexCapacityBytes = 0;
         };
 
-        bool EnsureBuffer(sg_buffer& buffer, std::size_t& capacityBytes, sg_buffer_type type, std::size_t requiredBytes);
+        bool EnsureBuffer(sg_buffer& buffer, std::size_t& capacityBytes, bool isIndexBuffer, std::size_t requiredBytes);
         bool EnsureDefaultWhiteTexture();
         BatchBuffers* AcquireBatchBuffers(std::size_t requiredVertexBytes, std::size_t requiredIndexBytes);
 
