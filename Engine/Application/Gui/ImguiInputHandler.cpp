@@ -28,7 +28,7 @@ void ImguiInputHandler::HandleInput(void* event, Input& input) {
 
     ImGuiIO& io = ImGui::GetIO();
 
-    for (int i = 0; i < ImGuiKey_KeysData_SIZE; ++i) {
+    for (int i = 0; i < ImGuiKey_COUNT; ++i) {
         if (ImGui::IsKeyPressed((ImGuiKey)i, false)) {
             input.keysDown.push_back((InputKey)i);
         }
