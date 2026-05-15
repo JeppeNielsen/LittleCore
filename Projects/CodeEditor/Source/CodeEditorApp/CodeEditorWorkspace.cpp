@@ -354,7 +354,7 @@ namespace {
         const bool primaryModifier = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
         const bool shift = io.KeyShift;
         const bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
-        return primaryModifier && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(key));
+        return primaryModifier && !shift && !alt && ImGui::IsKeyPressed(key);
     }
 
     bool IsCompletionShortcutPressed() {
@@ -363,10 +363,10 @@ namespace {
         const bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
         if (io.ConfigMacOSXBehaviors) {
-            return io.KeySuper && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_J));
+            return io.KeySuper && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_J);
         }
 
-        return io.KeyCtrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space));
+        return io.KeyCtrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Space);
     }
 
     ImVec2 CalculateCompletionPopupSize(std::size_t candidateCount) {
@@ -1005,11 +1005,11 @@ void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditor
     }
 
     const bool completionConsumesKeyboard = document.completion.isOpen &&
-                                            (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow)) ||
-                                             ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)) ||
-                                             ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter)) ||
-                                             ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab)) ||
-                                             ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)));
+                                            (ImGui::IsKeyPressed(ImGuiKey_DownArrow) ||
+                                             ImGui::IsKeyPressed(ImGuiKey_UpArrow) ||
+                                             ImGui::IsKeyPressed(ImGuiKey_Enter) ||
+                                             ImGui::IsKeyPressed(ImGuiKey_Tab) ||
+                                             ImGui::IsKeyPressed(ImGuiKey_Escape));
 
     document.editor.SetHandleKeyboardInputs(!completionConsumesKeyboard);
     document.editor.Render(("##CodeEditor" + std::to_string(index)).c_str(), ImVec2(0.0f, editorHeight), true);
@@ -1029,7 +1029,7 @@ void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditor
         SaveDocument(document);
     }
 
-    if (editorFocused && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_F9))) {
+    if (editorFocused && ImGui::IsKeyPressed(ImGuiKey_F9)) {
         ToggleBreakpoint(document, document.editor.GetCursorPosition().mLine + 1);
     }
 
@@ -1060,14 +1060,14 @@ void CodeEditorWorkspace::DrawDocument(Document& document, int index, CodeEditor
     }
 
     if (document.completion.isOpen) {
-        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow)) && !document.completion.candidates.empty()) {
+        if (ImGui::IsKeyPressed(ImGuiKey_DownArrow) && !document.completion.candidates.empty()) {
             document.completion.selectedIndex = (document.completion.selectedIndex + 1) % static_cast<int>(document.completion.candidates.size());
-        } else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)) && !document.completion.candidates.empty()) {
+        } else if (ImGui::IsKeyPressed(ImGuiKey_UpArrow) && !document.completion.candidates.empty()) {
             const int count = static_cast<int>(document.completion.candidates.size());
             document.completion.selectedIndex = (document.completion.selectedIndex - 1 + count) % count;
-        } else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter)) || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab))) {
+        } else if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_Tab)) {
             ApplySelectedCompletion(document);
-        } else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape))) {
+        } else if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
             CloseCompletion(document);
         }
     }

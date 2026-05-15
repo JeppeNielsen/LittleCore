@@ -6,7 +6,7 @@ project "Application"
    files { 
       "../Engine/Application/**.hpp",
       "../Engine/Application/**.cpp",
-      "../External/ImGuizmo/ImGuizmo.cpp"
+      "../External/ImGuizmo/src/ImGuizmo.cpp"
    }
 
    includedirs {
@@ -24,7 +24,7 @@ project "Application"
         "../External/msdfgen",
         "../External/freetype/include",
         "../External/imgui",
-        "../External/ImGuizmo",
+        "../External/ImGuizmo/src",
         "../Engine/Netimgui"
    }
 

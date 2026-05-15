@@ -73,7 +73,7 @@ void TargetProjectSettings::Populate(ProgramCompilerContext& sharedContext, std:
     AddUnique(includePaths, workspace / "External/glm");
     AddUnique(includePaths, workspace / "External/glaze/include");
     AddUnique(includePaths, workspace / "External/stb");
-    AddUnique(includePaths, workspace / "External/ImGuizmo");
+    AddUnique(includePaths, workspace / "External/ImGuizmo/src");
     AddUnique(includePaths, "/Users/jeppe/Jeppes/Scripting/clang18/include");
     AddUnique(includePaths, workspace / "Engine/Application/EditorSimulations");
     AddUnique(includePaths, workspace / "Engine/Application/Gui");
