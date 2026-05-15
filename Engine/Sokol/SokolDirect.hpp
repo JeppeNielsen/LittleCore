@@ -7,6 +7,7 @@ void lc_sg_shutdown();
 void lc_sg_commit_frame();
 bool lc_sg_begin_window_pass();
 void lc_sg_end_pass();
+uint32_t lc_sg_frame_index();
 
 inline bool lc_sg_valid(sg_image h) { return h.id != SG_INVALID_ID; }
 inline bool lc_sg_valid(sg_shader h) { return h.id != SG_INVALID_ID; }

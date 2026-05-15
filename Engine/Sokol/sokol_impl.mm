@@ -8,6 +8,7 @@
 static sg_image g_lc_dummy_color = {SG_INVALID_ID};
 static sg_view g_lc_dummy_color_view = {SG_INVALID_ID};
 static bool g_lc_has_window_pass = false;
+static uint32_t g_lc_frame_index = 0;
 
 static void lc_sg_log(const char* tag,
                       uint32_t log_level,
@@ -38,6 +39,11 @@ bool lc_sg_setup() {
     sg_desc desc{};
     desc.environment = sglue_environment();
     desc.logger.func = lc_sg_log;
+    desc.buffer_pool_size = 512;
+    desc.image_pool_size = 512;
+    desc.pipeline_pool_size = 256;
+    desc.sampler_pool_size = 128;
+    desc.view_pool_size = 512;
     sg_setup(desc);
     if (!sg_isvalid()) {
         return false;
@@ -94,6 +100,11 @@ void lc_sg_commit_frame() {
         sg_end_pass();
     }
     sg_commit();
+    g_lc_frame_index++;
+}
+
+uint32_t lc_sg_frame_index() {
+    return g_lc_frame_index;
 }
 
 bool lc_sg_begin_window_pass() {
