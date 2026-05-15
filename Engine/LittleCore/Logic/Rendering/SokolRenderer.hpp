@@ -5,8 +5,10 @@
 #pragma once
 #include "Renderer.hpp"
 #include <vector>
+#include <unordered_map>
 #include <cstddef>
 #include <cstdint>
+#include <tuple>
 
 namespace LittleCore {
     class SokolRenderer : public Renderer {
@@ -31,6 +33,8 @@ namespace LittleCore {
 
         bool EnsureBuffer(sg_buffer& buffer, std::size_t& capacityBytes, bool isIndexBuffer, std::size_t requiredBytes);
         bool EnsureDefaultWhiteTexture();
+        sg_view GetOrCreateTextureView(sg_image image);
+        sg_pipeline GetOrCreatePipeline(sg_shader shaderProgram, BlendMode blendMode);
         BatchBuffers* AcquireBatchBuffers(std::size_t requiredVertexBytes, std::size_t requiredIndexBytes);
 
         glm::mat4x4 viewProjection = glm::mat4x4(1.0f);
@@ -43,6 +47,20 @@ namespace LittleCore {
         sg_image currentTexture = {SG_INVALID_ID};
         sg_image defaultWhiteTexture = {SG_INVALID_ID};
         sg_sampler defaultSampler = {SG_INVALID_ID};
+        std::unordered_map<uint32_t, sg_view> textureViewCache;
+        struct PipelineKey {
+            uint32_t shaderId;
+            BlendMode blendMode;
+            bool operator==(const PipelineKey& other) const {
+                return shaderId == other.shaderId && blendMode == other.blendMode;
+            }
+        };
+        struct PipelineKeyHash {
+            std::size_t operator()(const PipelineKey& k) const {
+                return std::hash<uint32_t>()(k.shaderId) ^ (std::hash<int>()(static_cast<int>(k.blendMode)) << 16);
+            }
+        };
+        std::unordered_map<PipelineKey, sg_pipeline, PipelineKeyHash> pipelineCache;
         const RenderableUniforms* currentUniforms = nullptr;
     };
 

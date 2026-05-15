@@ -3,6 +3,7 @@
 //
 
 #include "SokolRenderer.hpp"
+#include "SokolDirect.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -354,6 +355,18 @@ SokolRenderer::~SokolRenderer() {
         lc_sg_destroy(buffers.index);
     }
 
+    for (auto& [id, view] : textureViewCache) {
+        lc_sg_destroy(view);
+    }
+    textureViewCache.clear();
+
+    for (auto& [key, pip] : pipelineCache) {
+        if (pip.id != SG_INVALID_ID) {
+            sg_destroy_pipeline(pip);
+        }
+    }
+    pipelineCache.clear();
+
     lc_sg_destroy(defaultWhiteTexture);
 
     if (defaultSampler.id != SG_INVALID_ID) {
@@ -366,7 +379,7 @@ void SokolRenderer::BeginRender(uint16_t, glm::mat4x4 view, glm::mat4x4 projecti
     stats = {};
     viewProjection = projection * view;
 
-    const uint32_t frameIndex = sg_query_stats().cur_frame.frame_index;
+    const uint32_t frameIndex = lc_sg_frame_index();
     if (!hasBatchBufferFrame || batchBufferFrameIndex != frameIndex) {
         hasBatchBufferFrame = true;
         batchBufferFrameIndex = frameIndex;
@@ -447,7 +460,7 @@ void SokolRenderer::EndBatch(uint16_t, const ShaderResource* shaderResource, Ble
         return;
     }
 
-    sg_pipeline pipeline = CreatePipeline(shaderProgram, blendMode);
+    sg_pipeline pipeline = GetOrCreatePipeline(shaderProgram, blendMode);
     if (pipeline.id == SG_INVALID_ID) {
         currentUniforms = nullptr;
         return;
@@ -457,7 +470,6 @@ void SokolRenderer::EndBatch(uint16_t, const ShaderResource* shaderResource, Ble
     const std::size_t indexBufferSize = batchedIndices.size() * sizeof(std::uint32_t);
     BatchBuffers* batchBuffers = AcquireBatchBuffers(vertexBufferSize, indexBufferSize);
     if (batchBuffers == nullptr) {
-        sg_destroy_pipeline(pipeline);
         currentUniforms = nullptr;
         return;
     }
@@ -483,25 +495,17 @@ void SokolRenderer::EndBatch(uint16_t, const ShaderResource* shaderResource, Ble
     sg_image textureToBind = currentTexture;
     if (shaderUsesTexture && textureToBind.id == SG_INVALID_ID) {
         if (!EnsureDefaultWhiteTexture()) {
-            sg_destroy_pipeline(pipeline);
             currentUniforms = nullptr;
             return;
         }
         textureToBind = defaultWhiteTexture;
     }
 
-    sg_view textureView = {SG_INVALID_ID};
-    if (shaderUsesTexture && textureToBind.id != SG_INVALID_ID && defaultSampler.id != SG_INVALID_ID) {
-        sg_view_desc viewDesc{};
-        viewDesc.texture.image = textureToBind;
-        textureView = sg_make_view(viewDesc);
-    }
-
     sg_bindings bindings = {};
     bindings.vertex_buffers[0] = batchBuffers->vertex;
     bindings.index_buffer = batchBuffers->index;
-    if (textureView.id != SG_INVALID_ID) {
-        bindings.views[0] = textureView;
+    if (shaderUsesTexture && textureToBind.id != SG_INVALID_ID && defaultSampler.id != SG_INVALID_ID) {
+        bindings.views[0] = GetOrCreateTextureView(textureToBind);
         bindings.samplers[0] = defaultSampler;
     }
 
@@ -520,11 +524,6 @@ void SokolRenderer::EndBatch(uint16_t, const ShaderResource* shaderResource, Ble
 
     sg_draw(0, static_cast<int>(batchedIndices.size()), 1);
     stats.numRenderCalls++;
-
-    if (textureView.id != SG_INVALID_ID) {
-        sg_destroy_view(textureView);
-    }
-    sg_destroy_pipeline(pipeline);
 
     batchedVertices.clear();
     batchedIndices.clear();
@@ -569,6 +568,29 @@ bool SokolRenderer::EnsureDefaultWhiteTexture() {
     imageDesc.data.mip_levels[0] = {whitePixel, sizeof(whitePixel)};
     defaultWhiteTexture = sg_make_image(imageDesc);
     return lc_sg_valid(defaultWhiteTexture);
+}
+
+sg_view SokolRenderer::GetOrCreateTextureView(sg_image image) {
+    auto it = textureViewCache.find(image.id);
+    if (it != textureViewCache.end()) {
+        return it->second;
+    }
+    sg_view_desc viewDesc{};
+    viewDesc.texture.image = image;
+    sg_view view = sg_make_view(viewDesc);
+    textureViewCache[image.id] = view;
+    return view;
+}
+
+sg_pipeline SokolRenderer::GetOrCreatePipeline(sg_shader shaderProgram, BlendMode blendMode) {
+    PipelineKey key{shaderProgram.id, blendMode};
+    auto it = pipelineCache.find(key);
+    if (it != pipelineCache.end()) {
+        return it->second;
+    }
+    sg_pipeline pipeline = CreatePipeline(shaderProgram, blendMode);
+    pipelineCache[key] = pipeline;
+    return pipeline;
 }
 
 SokolRenderer::BatchBuffers* SokolRenderer::AcquireBatchBuffers(std::size_t requiredVertexBytes, std::size_t requiredIndexBytes) {
