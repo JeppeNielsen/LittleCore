@@ -199,7 +199,7 @@ namespace LittleCore {
 
             auto& obj = json.get_object();
             if (!obj.contains("components")) {
-                error = glz::error_ctx(glz::error_code::missing_key, "Missing components key");
+                error = glz::error_ctx(0, glz::error_code::missing_key, "Missing components key");
                 return glz::format_error(error, jsonString);
             }
 
@@ -219,7 +219,7 @@ namespace LittleCore {
                 }
 
                 if (!componentType.contains("components")) {
-                    error = glz::error_ctx(glz::error_code::missing_key, componentTypeId + ": Missing components key");
+                    error = glz::error_ctx(0, glz::error_code::missing_key, componentTypeId + ": Missing components key");
                     return glz::format_error(error, jsonString);
                 }
 
@@ -245,7 +245,7 @@ namespace LittleCore {
         glz::error_ctx DeserializeComponent(entt::registry& registry, entt::entity entity, const std::string& componentTypeId, const std::string& json, glz::context& context) override {
             const auto& deserializer = deserializers.find(componentTypeId);
             if (deserializer == deserializers.end()) {
-                return {glz::error_code::none};
+                return {0, glz::error_code::none};
             }
             return deserializer->second->DeserializeComponent(registry, entity, json, context);
         }
