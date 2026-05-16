@@ -14,7 +14,7 @@ project "Application"
         "../Engine/LittleCore/**",
         "../Engine/ImGui/",
         "../External/sokol",
-      "../Engine/Sokol",
+        "../Engine/Sokol",
         "../External/entt/src",
         "../External/glaze/include",
         "../External/glm",
