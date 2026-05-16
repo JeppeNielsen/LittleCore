@@ -38,7 +38,7 @@ void Project::Reset() {
     moduleSettings.context.hppFiles.push_back(engineRoot + "External/glaze/include");
 
     //
-    moduleSettings.context.hppFiles.push_back(engineRoot + "External/ImGuizmo/");
+    moduleSettings.context.hppFiles.push_back(engineRoot + "External/ImGuizmo/src/");
 
     //Application
 
