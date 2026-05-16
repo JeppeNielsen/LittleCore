@@ -19,7 +19,7 @@
 	branch = docking
 [submodule "External/glaze"]
 	path = External/glaze
-	url = https://github.com/stephenberry/glaze.git
+	url = https://github.com/JeppeNielsen/glaze.git
 [submodule "External/ImGuizmo"]
 	path = External/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
