@@ -9,6 +9,15 @@ include "../Libs/Build_sokol.lua"
 include "../Libs/Build_ShaderCompiler.lua"
 include "../Libs/Build_LittleCore.lua"
 
+local missingLittleCoreIncludeDirs = {
+   "../../Engine/LittleCore/Logic/Layouting",
+   "../../Engine/LittleCore/Logic/Sizable"
+}
+
+project "LittleCore"
+   includedirs(missingLittleCoreIncludeDirs)
+   externalincludedirs(missingLittleCoreIncludeDirs)
+
 solution "LittleCore"
    configurations { "Release", "Debug" }
    if os.is64bit() and not os.istarget("windows") then
@@ -57,6 +66,8 @@ project "UnitTests"
 
    includedirs {
       "../../Engine/LittleCore/**",
+      "../../Engine/LittleCore/Logic/Layouting",
+      "../../Engine/LittleCore/Logic/Sizable",
       "../../External/sokol",
       "../../Engine/Sokol",
       "../../External/entt/src",

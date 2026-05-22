@@ -3,6 +3,7 @@
 //
 
 #include "gtest/gtest.h"
+#include "Hierarchy.hpp"
 #include "RegistrySerializer.hpp"
 
 using namespace LittleCore;
@@ -18,6 +19,7 @@ struct Velocity {
 };
 
 using Serializer = RegistrySerializer<Transform, Velocity>;
+using HierarchySerializer = RegistrySerializer<Hierarchy>;
 
 namespace {
 
@@ -46,8 +48,45 @@ namespace {
 
     }
 
+    TEST(RegistrySerializer, HierarchyChildrenOrderShouldRoundTrip) {
+        entt::registry registry;
 
+        const auto parent = registry.create();
+        const auto childA = registry.create();
+        const auto childB = registry.create();
+        const auto childC = registry.create();
 
+        auto& parentHierarchy = registry.emplace<Hierarchy>(parent);
+        parentHierarchy.children = {childB, childA, childC};
 
+        auto& childAHierarchy = registry.emplace<Hierarchy>(childA);
+        childAHierarchy.parent = parent;
+        childAHierarchy.previousParent = parent;
+
+        auto& childBHierarchy = registry.emplace<Hierarchy>(childB);
+        childBHierarchy.parent = parent;
+        childBHierarchy.previousParent = parent;
+
+        auto& childCHierarchy = registry.emplace<Hierarchy>(childC);
+        childCHierarchy.parent = parent;
+        childCHierarchy.previousParent = parent;
+
+        HierarchySerializer serializer;
+        const auto serializedString = serializer.Serialize(registry);
+        EXPECT_EQ(serializedString.find("previousParent"), std::string::npos);
+
+        entt::registry deserializedRegistry;
+        ASSERT_TRUE(serializer.Deserialize(deserializedRegistry, serializedString).empty());
+
+        const auto& deserializedHierarchy = deserializedRegistry.get<Hierarchy>(parent);
+        ASSERT_EQ(deserializedHierarchy.children.size(), 3);
+        EXPECT_EQ(deserializedHierarchy.children[0], childB);
+        EXPECT_EQ(deserializedHierarchy.children[1], childA);
+        EXPECT_EQ(deserializedHierarchy.children[2], childC);
+
+        const auto& deserializedChildHierarchy = deserializedRegistry.get<Hierarchy>(childA);
+        EXPECT_EQ(deserializedChildHierarchy.parent, parent);
+        EXPECT_EQ(deserializedChildHierarchy.previousParent, parent);
+    }
 
 }

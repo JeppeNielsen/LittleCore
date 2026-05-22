@@ -57,7 +57,7 @@ namespace {
                 renderCount++;
             }
 
-            void EndBatch(uint16_t viewId, sg_shader shaderProgram, BlendMode blendMode) override {
+            void EndBatch(uint16_t viewId, const ShaderResource* shaderResource, BlendMode blendMode) override {
 
             }
 

@@ -6,6 +6,7 @@
 #include "HierarchySystem.hpp"
 #include "PrefabSystem.hpp"
 #include "ResourceManager.hpp"
+#include "DefaultResourceManager.hpp"
 #include "PrefabResourceLoaderFactory.hpp"
 #include "RegistrySerializer.hpp"
 #include "LocalTransform.hpp"
@@ -16,7 +17,7 @@ using namespace LittleCore;
 
 namespace {
 
-    using ResourcesManager = ResourceManager<PrefabResourceLoaderFactory>;
+    using ResourcesManager = DefaultResourceManager;
 
     struct PrefabSerializer : ComponentSerializerBase<Prefab, std::string> {
 
@@ -42,12 +43,12 @@ namespace {
 
         ResourcePathMapper resourcePathMapper;
         resourcePathMapper.RefreshFromRootPath(rootPath);
-        ResourceManager<PrefabResourceLoaderFactory> resourceManager(resourcePathMapper);
+        ResourcesManager resourceManager(resourcePathMapper);
 
         RegistrySerializer<LocalTransform, Hierarchy, PrefabSerializer> serializer;
         serializer.GetSerializer<PrefabSerializer>().SetResourceManager(resourceManager);
 
-        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(serializer);
+        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(serializer, &resourceManager);
 
         entt::registry registry;
         HierarchySystem hierarchySystem(registry);
@@ -75,12 +76,12 @@ namespace {
 
         ResourcePathMapper resourcePathMapper;
         resourcePathMapper.RefreshFromRootPath(rootPath);
-        ResourceManager<PrefabResourceLoaderFactory> resourceManager(resourcePathMapper);
+        ResourcesManager resourceManager(resourcePathMapper);
 
         RegistrySerializer<LocalTransform, Hierarchy, PrefabSerializer> serializer;
         serializer.GetSerializer<PrefabSerializer>().SetResourceManager(resourceManager);
 
-        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(serializer);
+        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(serializer, &resourceManager);
 
 
         entt::registry registry;
@@ -113,18 +114,18 @@ namespace {
 
         ResourcePathMapper resourcePathMapper;
         resourcePathMapper.RefreshFromRootPath(rootPath);
-        ResourceManager<PrefabResourceLoaderFactory> resourceManager(resourcePathMapper);
+        ResourcesManager resourceManager(resourcePathMapper);
 
         RegistrySerializer<LocalTransform, Hierarchy, PrefabSerializer, PrefabExposedComponents> serializer;
         serializer.GetSerializer<PrefabSerializer>().SetResourceManager(resourceManager);
 
-        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(serializer);
+        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(serializer, &resourceManager);
 
 
         entt::registry registry;
         HierarchySystem hierarchySystem(registry);
         PrefabSystem prefabSystem(registry);
-        prefabSystem.SetSerializer(serializer);
+        prefabSystem.SetResources(serializer, resourceManager);
 
         auto instanceEntity = registry.create();
         auto& instanceHierarchy = registry.emplace<Hierarchy>(instanceEntity);
@@ -168,7 +169,7 @@ namespace {
 
     }
 
-    entt::entity CreatePrefab(entt::entity parent, entt::registry& registry, ResourceManager<PrefabResourceLoaderFactory>& resourceManager) {
+    entt::entity CreatePrefab(entt::entity parent, entt::registry& registry, ResourcesManager& resourceManager) {
         auto instanceEntity = registry.create();
         auto& instanceHierarchy = registry.emplace<Hierarchy>(instanceEntity);
         instanceHierarchy.parent = parent;
@@ -184,12 +185,12 @@ namespace {
 
         ResourcePathMapper resourcePathMapper;
         resourcePathMapper.RefreshFromRootPath(rootPath);
-        ResourceManager<PrefabResourceLoaderFactory> resourceManager(resourcePathMapper);
+        ResourcesManager resourceManager(resourcePathMapper);
 
         RegistrySerializer<LocalTransform, Hierarchy, PrefabSerializer> serializer;
         serializer.GetSerializer<PrefabSerializer>().SetResourceManager(resourceManager);
 
-        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(serializer);
+        resourceManager.CreateLoaderFactory<PrefabResourceLoaderFactory>(serializer, &resourceManager);
 
 
         entt::registry registry;
