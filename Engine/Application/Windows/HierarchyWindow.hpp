@@ -16,14 +16,19 @@ namespace LittleCore {
         void Draw(EditorSimulation& simulation);
 
     private:
-        void DrawEntity(EditorSimulation& simulation, entt::entity entity, entt::entity parent);
-
-        struct ReparentedEntity {
+        struct EntityMove {
             entt::entity entity;
             entt::entity newParent;
+            entt::entity anchorSibling = entt::null;
+            bool insertAfterAnchor = false;
         };
 
-        std::vector<ReparentedEntity> reparentedEntities;
+        void DrawEntity(EditorSimulation& simulation, entt::entity entity, entt::entity parent);
+        void QueueEntityMove(entt::registry& registry, entt::entity entity, entt::entity newParent,
+                             entt::entity anchorSibling = entt::null, bool insertAfterAnchor = false);
+        bool ApplyEntityMove(entt::registry& registry, const EntityMove& move);
+
+        std::vector<EntityMove> entityMoves;
         std::vector<entt::entity> entitiesToCreate;
         std::vector<entt::entity> entitiesToDelete;
         std::vector<entt::entity> entitiesToDuplicate;

@@ -108,6 +108,16 @@ namespace LittleCore {
             });
         }
 
+        std::string Serialize(const entt::registry& registry) {
+            SerializationContext context{};
+            return Serialize(registry, context);
+        }
+
+        std::string Deserialize(entt::registry& registry, const std::string& jsonString) {
+            SerializationContext context{};
+            return Deserialize(registry, jsonString, context);
+        }
+
 
         template <typename Tuple>
         struct ToRegistry;

@@ -15,8 +15,19 @@
 template<>
 struct glz::meta<LittleCore::Hierarchy> {
     using T = LittleCore::Hierarchy;
+
+    static constexpr auto read_parent = [](T& self, const entt::entity& parent) {
+        self.parent = parent;
+        self.previousParent = parent;
+    };
+
+    static constexpr auto write_parent = [](const T& self) {
+        return self.parent;
+    };
+
     static constexpr auto value = glz::object(
-            "parent", &T::parent
+            "parent", glz::custom<read_parent, write_parent>,
+            "children", &T::children
     );
 };
 

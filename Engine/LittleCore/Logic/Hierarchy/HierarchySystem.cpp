@@ -18,6 +18,10 @@ HierarchySystem::HierarchySystem(entt::registry& registry) :
 void HierarchySystem::Update() {
     for (auto entity : observer) {
         auto& hierarchy = registry.get<Hierarchy>(entity);
+
+        if (hierarchy.previousParent == hierarchy.parent) {
+            continue;
+        }
         if (hierarchy.previousParent != entt::null) {
             auto& oldParentHierarchy = registry.get<Hierarchy>(hierarchy.previousParent);
             auto& parentChildren = oldParentHierarchy.children;
