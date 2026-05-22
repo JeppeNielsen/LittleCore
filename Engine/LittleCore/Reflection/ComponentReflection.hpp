@@ -4,7 +4,6 @@
 
 #pragma once
 #include <glaze/glaze.hpp>
-#include "Anchors.hpp"
 #include "Hierarchy.hpp"
 #include "Layouter.hpp"
 #include "LayoutElement.hpp"
@@ -44,10 +43,11 @@ template<>
 struct glz::meta<LittleCore::Layouter> {
     using T = LittleCore::Layouter;
     static constexpr auto value = glz::object(
-            "childrenLayoutMode", &T::childrenLayoutMode,
-            "min", &T::min,
-            "desired", &T::desired,
-            "max", &T::max
+            "anchorMin", &T::anchorMin,
+            "anchorMax", &T::anchorMax,
+            "anchoredPosition", &T::anchoredPosition,
+            "sizeDelta", &T::sizeDelta,
+            "pivot", &T::pivot
     );
 };
 
@@ -73,16 +73,5 @@ struct glz::meta<LittleCore::LayoutElement> {
             "grow", &T::grow,
             "shrink", &T::shrink,
             "ignoreLayout", &T::ignoreLayout
-    );
-};
-
-template<>
-struct glz::meta<LittleCore::Anchors> {
-    using T = LittleCore::Anchors;
-    static constexpr auto value = glz::object(
-            "min", &T::min,
-            "max", &T::max,
-            "offsetMin", &T::offsetMin,
-            "offsetMax", &T::offsetMax
     );
 };

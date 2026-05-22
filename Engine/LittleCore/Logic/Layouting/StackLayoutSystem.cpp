@@ -3,7 +3,6 @@
 //
 
 #include "StackLayoutSystem.hpp"
-#include "Anchors.hpp"
 #include "Hierarchy.hpp"
 #include "LayoutElement.hpp"
 #include "LocalTransform.hpp"

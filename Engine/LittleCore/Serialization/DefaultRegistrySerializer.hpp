@@ -21,7 +21,6 @@
 #include "Layouter.hpp"
 #include "StackLayout.hpp"
 #include "LayoutElement.hpp"
-#include "Anchors.hpp"
 #include "LocalBoundingBox.hpp"
 #include "WorldBoundingBox.hpp"
 
@@ -42,7 +41,6 @@ namespace LittleCore {
             Layouter,
             StackLayout,
             LayoutElement,
-            Anchors,
             WorldTransform,
             LocalBoundingBox,
             WorldBoundingBox

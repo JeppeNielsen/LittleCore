@@ -15,10 +15,10 @@ namespace LittleCore {
         void Update();
 
     private:
+        void InitializeLayouter(entt::entity entity);
         void MarkDirty(entt::registry& registry, entt::entity entity);
         void MarkDirtyOnDestroy(entt::registry& registry, entt::entity entity);
-        bool HasLayoutParent(entt::entity entity) const;
-        void ApplyLayout(entt::entity entity);
+        void ApplyRectLayout(entt::entity entity);
 
         entt::observer observer;
         bool isDirty;

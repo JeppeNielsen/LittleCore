@@ -19,7 +19,6 @@
 #include "Layouter.hpp"
 #include "StackLayout.hpp"
 #include "LayoutElement.hpp"
-#include "Anchors.hpp"
 
 namespace LittleCore {
 
@@ -36,8 +35,7 @@ namespace LittleCore {
             Sizable,
             Layouter,
             StackLayout,
-            LayoutElement,
-            Anchors
+            LayoutElement
     >;
 
     template<typename ...T>

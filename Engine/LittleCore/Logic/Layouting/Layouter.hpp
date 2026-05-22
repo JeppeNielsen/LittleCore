@@ -8,15 +8,11 @@
 
 namespace LittleCore {
     struct Layouter {
-        enum class LayoutMode {
-            None,
-            Horizontal,
-            Vertical,
-        };
-
-        LayoutMode childrenLayoutMode = LayoutMode::None;
-        vec2 min = {0.0f, 0.0f};
-        vec2 desired = {0.0f, 0.0f};
-        vec2 max = {0.0f, 0.0f};
+        // RectTransform-style self layout.
+        vec2 anchorMin = {0.0f, 0.0f};
+        vec2 anchorMax = {0.0f, 0.0f};
+        vec2 anchoredPosition = {0.0f, 0.0f};
+        vec2 sizeDelta = {0.0f, 0.0f};
+        vec2 pivot = {0.5f, 0.5f};
     };
 }

@@ -15,53 +15,36 @@
 using namespace LittleCore;
 
 namespace {
-    struct LayoutChild {
+    struct LayoutEntity {
         entt::entity entity;
-        LittleCore::Layouter* layouter;
-        LittleCore::Sizable* sizable;
-        LittleCore::LocalTransform* transform;
+        int depth;
     };
 
-    struct LayoutRange {
-        float min;
-        float desired;
-        float max;
-    };
-
-    LayoutRange SanitizeRange(float minValue, float desiredValue, float maxValue) {
-        desiredValue = std::max(desiredValue, minValue);
-        maxValue = std::max(maxValue, desiredValue);
-        return {minValue, desiredValue, maxValue};
+    bool HasDefaultRectLayout(const Layouter& layouter) {
+        return layouter.anchorMin == vec2(0.0f, 0.0f) &&
+               layouter.anchorMax == vec2(0.0f, 0.0f) &&
+               layouter.anchoredPosition == vec2(0.0f, 0.0f) &&
+               layouter.sizeDelta == vec2(0.0f, 0.0f) &&
+               layouter.pivot == vec2(0.5f, 0.5f);
     }
 
-    float ResolveAlongAxis(float available, float totalMin, float totalDesired, float totalMax, LayoutRange range) {
-        if (available <= totalMin || totalDesired <= totalMin) {
-            return range.min;
+    int CalculateDepth(const entt::registry& registry, const entt::entity entity) {
+        int depth = 0;
+        const Hierarchy* hierarchy = registry.try_get<Hierarchy>(entity);
+        while (hierarchy && registry.valid(hierarchy->parent)) {
+            ++depth;
+            hierarchy = registry.try_get<Hierarchy>(hierarchy->parent);
         }
-
-        if (available <= totalDesired) {
-            const float t = (available - totalMin) / (totalDesired - totalMin);
-            return glm::mix(range.min, range.desired, t);
-        }
-
-        if (available <= totalMax && totalMax > totalDesired) {
-            const float t = (available - totalDesired) / (totalMax - totalDesired);
-            return glm::mix(range.desired, range.max, t);
-        }
-
-        return range.max;
-    }
-
-    float ResolveStandaloneAxis(float available, LayoutRange range) {
-        return ResolveAlongAxis(available, range.min, range.desired, range.max, range);
+        return depth;
     }
 }
 
 LayoutSystem::LayoutSystem(entt::registry& registry) :
         SystemBase(registry),
         observer(registry, entt::collector
-                .update<Layouter>().group<Layouter, Sizable, Hierarchy>()
-                .update<Sizable>().where<Layouter>()
+                .update<Layouter>().group<Layouter, Sizable, LocalTransform, Hierarchy>()
+                .update<Sizable>().where<Layouter, LocalTransform, Hierarchy>()
+                .update<LocalTransform>().where<Layouter, Sizable, Hierarchy>()
                 .update<Hierarchy>().group<Hierarchy>()),
         isDirty(true) {
     registry.on_construct<Layouter>().connect<&LayoutSystem::MarkDirty>(this);
@@ -75,6 +58,32 @@ LayoutSystem::LayoutSystem(entt::registry& registry) :
     registry.on_destroy<Hierarchy>().connect<&LayoutSystem::MarkDirtyOnDestroy>(this);
 }
 
+void LayoutSystem::InitializeLayouter(entt::entity entity) {
+    if (!registry.all_of<Layouter, Sizable, LocalTransform>(entity)) {
+        return;
+    }
+
+    auto& layouter = registry.get<Layouter>(entity);
+    if (!HasDefaultRectLayout(layouter)) {
+        return;
+    }
+
+    const auto& sizable = registry.get<Sizable>(entity);
+    const auto& transform = registry.get<LocalTransform>(entity);
+
+    if (sizable.size == vec2(0.0f, 0.0f) &&
+        transform.position.x == 0.0f &&
+        transform.position.y == 0.0f) {
+        return;
+    }
+
+    layouter.anchorMin = {0.0f, 0.0f};
+    layouter.anchorMax = {0.0f, 0.0f};
+    layouter.sizeDelta = sizable.size;
+    layouter.pivot = {0.5f, 0.5f};
+    layouter.anchoredPosition = vec2(transform.position) + sizable.size * 0.5f;
+}
+
 void LayoutSystem::Update() {
     if (!observer.empty()) {
         isDirty = true;
@@ -85,16 +94,20 @@ void LayoutSystem::Update() {
         return;
     }
 
-    auto view = registry.view<Layouter, Sizable, Hierarchy>();
-    for (auto entity : view) {
-        auto& layouter = view.template get<Layouter>(entity);
-        if (layouter.childrenLayoutMode == Layouter::LayoutMode::None) {
-            continue;
-        }
-        if (HasLayoutParent(entity)) {
-            continue;
-        }
-        ApplyLayout(entity);
+    std::vector<LayoutEntity> layoutEntities;
+    auto layouterView = registry.view<Layouter, Sizable, LocalTransform, Hierarchy>();
+    layoutEntities.reserve(layouterView.size_hint());
+    for (auto entity : layouterView) {
+        InitializeLayouter(entity);
+        layoutEntities.push_back({entity, CalculateDepth(registry, entity)});
+    }
+
+    std::sort(layoutEntities.begin(), layoutEntities.end(), [](const LayoutEntity& a, const LayoutEntity& b) {
+        return a.depth < b.depth;
+    });
+
+    for (const auto& layoutEntity : layoutEntities) {
+        ApplyRectLayout(layoutEntity.entity);
     }
 
     isDirty = false;
@@ -112,119 +125,34 @@ void LayoutSystem::MarkDirtyOnDestroy(entt::registry& registry, entt::entity ent
     isDirty = true;
 }
 
-bool LayoutSystem::HasLayoutParent(entt::entity entity) const {
-    const auto* hierarchy = registry.try_get<Hierarchy>(entity);
-    if (!hierarchy || !registry.valid(hierarchy->parent)) {
-        return false;
-    }
-
-    const auto* parentLayouter = registry.try_get<Layouter>(hierarchy->parent);
-    return parentLayouter &&
-           parentLayouter->childrenLayoutMode != Layouter::LayoutMode::None &&
-           registry.all_of<Sizable, Hierarchy>(hierarchy->parent);
-}
-
-void LayoutSystem::ApplyLayout(entt::entity entity) {
+void LayoutSystem::ApplyRectLayout(entt::entity entity) {
     auto& layouter = registry.get<Layouter>(entity);
-    const vec2 parentSize = registry.get<Sizable>(entity).size;
     const auto& hierarchy = registry.get<Hierarchy>(entity);
-
-    std::vector<LayoutChild> children;
-    children.reserve(hierarchy.children.size());
-    for (auto child : hierarchy.children) {
-        auto* childLayouter = registry.try_get<Layouter>(child);
-        auto* childSizable = registry.try_get<Sizable>(child);
-        auto* childTransform = registry.try_get<LocalTransform>(child);
-        if (!childLayouter || !childSizable || !childTransform) {
-            continue;
-        }
-        children.push_back({child, childLayouter, childSizable, childTransform});
-    }
-
-    if (children.empty()) {
+    if (!registry.valid(hierarchy.parent) || !registry.all_of<Sizable>(hierarchy.parent)) {
         return;
     }
 
-    if (layouter.childrenLayoutMode == Layouter::LayoutMode::Horizontal) {
-        float totalMin = 0.0f;
-        float totalDesired = 0.0f;
-        float totalMax = 0.0f;
-        std::vector<LayoutRange> ranges(children.size());
-        std::vector<LayoutRange> crossRanges(children.size());
+    auto& sizable = registry.get<Sizable>(entity);
+    auto& transform = registry.get<LocalTransform>(entity);
+    const vec2 parentSize = registry.get<Sizable>(hierarchy.parent).size;
+    const vec2 anchorRectMin = layouter.anchorMin * parentSize;
+    const vec2 anchorRectMax = layouter.anchorMax * parentSize;
+    const vec2 anchorSpan = anchorRectMax - anchorRectMin;
+    const vec2 newSize = glm::max(anchorSpan + layouter.sizeDelta, vec2(0.0f, 0.0f));
+    const vec2 anchorReference = anchorRectMin + anchorSpan * layouter.pivot;
+    const vec2 rectMin = anchorReference + layouter.anchoredPosition - layouter.pivot * newSize;
 
-        for (size_t i = 0; i < children.size(); ++i) {
-            ranges[i] = SanitizeRange(children[i].layouter->min.x, children[i].layouter->desired.x, children[i].layouter->max.x);
-            crossRanges[i] = SanitizeRange(children[i].layouter->min.y, children[i].layouter->desired.y, children[i].layouter->max.y);
-            totalMin += ranges[i].min;
-            totalDesired += ranges[i].desired;
-            totalMax += ranges[i].max;
-        }
-
-        float cursor = 0.0f;
-        for (size_t i = 0; i < children.size(); ++i) {
-            const float width = ResolveAlongAxis(parentSize.x, totalMin, totalDesired, totalMax, ranges[i]);
-            const float height = ResolveStandaloneAxis(parentSize.y, crossRanges[i]);
-            const vec2 newSize = {width, height};
-            vec3 newPosition = children[i].transform->position;
-            newPosition.x = cursor;
-            newPosition.y = (parentSize.y - height) * 0.5f;
-
-            if (children[i].sizable->size != newSize) {
-                children[i].sizable->size = newSize;
-                registry.patch<Sizable>(children[i].entity);
-            }
-
-            if (children[i].transform->position != newPosition) {
-                children[i].transform->position = newPosition;
-                registry.patch<LocalTransform>(children[i].entity);
-            }
-
-            cursor += width;
-
-            if (children[i].layouter->childrenLayoutMode != Layouter::LayoutMode::None && registry.all_of<Hierarchy>(children[i].entity)) {
-                ApplyLayout(children[i].entity);
-            }
-        }
-        return;
+    if (sizable.size != newSize) {
+        sizable.size = newSize;
+        registry.patch<Sizable>(entity);
     }
 
-    float totalMin = 0.0f;
-    float totalDesired = 0.0f;
-    float totalMax = 0.0f;
-    std::vector<LayoutRange> ranges(children.size());
-    std::vector<LayoutRange> crossRanges(children.size());
+    vec3 newPosition = transform.position;
+    newPosition.x = rectMin.x;
+    newPosition.y = rectMin.y;
 
-    for (size_t i = 0; i < children.size(); ++i) {
-        ranges[i] = SanitizeRange(children[i].layouter->min.y, children[i].layouter->desired.y, children[i].layouter->max.y);
-        crossRanges[i] = SanitizeRange(children[i].layouter->min.x, children[i].layouter->desired.x, children[i].layouter->max.x);
-        totalMin += ranges[i].min;
-        totalDesired += ranges[i].desired;
-        totalMax += ranges[i].max;
-    }
-
-    float cursor = parentSize.y;
-    for (size_t i = 0; i < children.size(); ++i) {
-        const float height = ResolveAlongAxis(parentSize.y, totalMin, totalDesired, totalMax, ranges[i]);
-        const float width = ResolveStandaloneAxis(parentSize.x, crossRanges[i]);
-        const vec2 newSize = {width, height};
-        cursor -= height;
-
-        vec3 newPosition = children[i].transform->position;
-        newPosition.x = (parentSize.x - width) * 0.5f;
-        newPosition.y = cursor;
-
-        if (children[i].sizable->size != newSize) {
-            children[i].sizable->size = newSize;
-            registry.patch<Sizable>(children[i].entity);
-        }
-
-        if (children[i].transform->position != newPosition) {
-            children[i].transform->position = newPosition;
-            registry.patch<LocalTransform>(children[i].entity);
-        }
-
-        if (children[i].layouter->childrenLayoutMode != Layouter::LayoutMode::None && registry.all_of<Hierarchy>(children[i].entity)) {
-            ApplyLayout(children[i].entity);
-        }
+    if (transform.position != newPosition) {
+        transform.position = newPosition;
+        registry.patch<LocalTransform>(entity);
     }
 }
