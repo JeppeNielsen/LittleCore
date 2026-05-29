@@ -43,7 +43,8 @@ namespace LittleCore {
             LayoutElement,
             WorldTransform,
             LocalBoundingBox,
-            WorldBoundingBox
+            WorldBoundingBox,
+            Sprite
     >;
 
     template<typename ...T>

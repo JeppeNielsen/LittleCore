@@ -17,7 +17,7 @@
 #include "LabelMeshSystem.hpp"
 #include "PrefabSystem.hpp"
 #include "LayoutSystem.hpp"
-#include "SizableSystem.hpp"
+#include "SpriteMeshSystem.hpp"
 
 namespace LittleCore {
 
@@ -32,7 +32,7 @@ namespace LittleCore {
             TexturableSystem,
             ColorableSystem,
             LabelMeshSystem,
-            SizableSystem,
+            SpriteMeshSystem,
             PrefabSystem>;
 
     using DefaultRenderSystems = RenderSystems<RenderSystem>;

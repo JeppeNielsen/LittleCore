@@ -8,14 +8,15 @@
 #include "SystemBase.hpp"
 
 namespace LittleCore {
-    struct SizableSystem : SystemBase {
-        SizableSystem(entt::registry& registry);
+    struct SpriteMeshSystem : SystemBase {
+        SpriteMeshSystem(entt::registry& registry);
 
         void Update();
 
     private:
         void SizableAdded(entt::registry& registry, entt::entity entity);
         void MeshAdded(entt::registry& registry, entt::entity entity);
+        void SpriteAdded(entt::registry& registry, entt::entity entity);
         entt::observer observer;
     };
 }

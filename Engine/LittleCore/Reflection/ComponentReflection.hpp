@@ -9,6 +9,7 @@
 #include "LayoutElement.hpp"
 #include "Prefab.hpp"
 #include "Renderable.hpp"
+#include "Sprite.hpp"
 #include "StackLayout.hpp"
 
 template<>
@@ -24,9 +25,26 @@ struct glz::meta<LittleCore::Hierarchy> {
         return self.parent;
     };
 
+    static constexpr auto readChildren = [](T& self, const LittleCore::Hierarchy::Children& children, glz::context& context) {
+        self.children = children;
+    };
+
+    static constexpr auto writeChildren = [](const T& self, glz::context& context) -> LittleCore::Hierarchy::Children {
+        LittleCore::SerializationContext* c = static_cast<LittleCore::SerializationContext*>(context.userData);
+
+        LittleCore::Hierarchy::Children children;
+
+        for (auto child : self.children) {
+            if (!c->registry->all_of<LittleCore::IgnoreSerialization>(child)) {
+                children.emplace_back(child);
+            }
+        }
+        return children;
+    };
+
     static constexpr auto value = glz::object(
             "parent", glz::custom<read_parent, write_parent>,
-            "children", &T::children
+            "children", glz::custom<readChildren, writeChildren>
     );
 };
 
@@ -60,6 +78,18 @@ struct glz::meta<LittleCore::StackLayout> {
             "paddingMin", &T::paddingMin,
             "paddingMax", &T::paddingMax,
             "spacing", &T::spacing
+    );
+};
+
+template<>
+struct glz::meta<LittleCore::Sprite> {
+    using T = LittleCore::Sprite;
+    static constexpr auto value = glz::object(
+            "slicingLeft", &T::slicingLeft,
+            "slicingRight", &T::slicingRight,
+            "slicingTop", &T::slicingTop,
+            "slicingBottom", &T::slicingBottom,
+            "cornerSize", &T::cornerSize
     );
 };
 
