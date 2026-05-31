@@ -55,7 +55,7 @@ project "TestNetimguiClient"
    files { 
       "Source/**.cpp",
       "Source/**.hpp",
-      "../../External/ImGuizmo/ImGuizmo.cpp"
+      "../../External/ImGuizmo/src/ImGuizmo.cpp"
    }
 
    includedirs {
@@ -71,7 +71,7 @@ project "TestNetimguiClient"
       "../../External/glaze/include",
       "../../Engine/Netimgui",
       "../../Engine/Application/**",
-      "../../External/ImGuizmo"
+      "../../External/ImGuizmo/src"
    }
 
    links { 
