@@ -18,6 +18,8 @@
 #include "PrefabSystem.hpp"
 #include "LayoutSystem.hpp"
 #include "SpriteMeshSystem.hpp"
+#include "ClickableBoundingBoxSystem.hpp"
+#include "ClickableRayCasterSystem.hpp"
 
 namespace LittleCore {
 
@@ -33,7 +35,9 @@ namespace LittleCore {
             ColorableSystem,
             LabelMeshSystem,
             SpriteMeshSystem,
-            PrefabSystem>;
+            PrefabSystem,
+            ClickableBoundingBoxSystem,
+            ClickableRayCasterSystem>;
 
     using DefaultRenderSystems = RenderSystems<RenderSystem>;
 

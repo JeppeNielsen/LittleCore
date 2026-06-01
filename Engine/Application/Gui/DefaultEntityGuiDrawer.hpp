@@ -20,6 +20,9 @@
 #include "StackLayout.hpp"
 #include "LayoutElement.hpp"
 #include "Sprite.hpp"
+#include "Clickable.hpp"
+#include "ClickableRaycaster.hpp"
+#include "Input.hpp"
 
 namespace LittleCore {
 
@@ -37,7 +40,10 @@ namespace LittleCore {
             Layouter,
             StackLayout,
             LayoutElement,
-            Sprite
+            Sprite,
+            Clickable,
+            ClickableRaycaster,
+            Input
     >;
 
     template<typename ...T>

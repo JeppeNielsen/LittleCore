@@ -7,58 +7,62 @@
 #include <cmath>
 #include <glm/vec2.hpp>
 #include <iostream>
+#include "Clickable.hpp"
+#include "Colorable.hpp"
+#include "Clicking/Clickable.hpp"
+#include "Colorable.hpp"
 
-    using vec2 = glm::vec2;
+using vec2 = glm::vec2;
 
-    struct CollisionResult {
-        bool hit = false;
-        vec2 response = vec2(0.0f);
-    };
+struct CollisionResult {
+    bool hit = false;
+    vec2 response = vec2(0.0f);
+};
 
-    CollisionResult circleVsRect(const vec2& circleCenter, float radius, const Rect& rect) {
-        CollisionResult result;
+CollisionResult circleVsRect(const vec2& circleCenter, float radius, const Rect& rect) {
+    CollisionResult result;
 
-        vec2 closest;
-        closest.x = std::clamp(circleCenter.x, rect.min.x, rect.max.x);
-        closest.y = std::clamp(circleCenter.y, rect.min.y, rect.max.y);
+    vec2 closest;
+    closest.x = std::clamp(circleCenter.x, rect.min.x, rect.max.x);
+    closest.y = std::clamp(circleCenter.y, rect.min.y, rect.max.y);
 
-        vec2 delta = circleCenter - closest;
-        float dist2 = glm::dot(delta, delta);
-        float radius2 = radius * radius;
+    vec2 delta = circleCenter - closest;
+    float dist2 = glm::dot(delta, delta);
+    float radius2 = radius * radius;
 
-        if (dist2 >= radius2) {
-            return result;
-        }
-      
-        result.hit = true;
-
-        if (dist2 > 0.000001f) {
-            float dist = std::sqrt(dist2);
-            vec2 normal = delta / dist;
-            float penetration = radius - dist;
-            result.response = normal * penetration;
-            return result;
-        }
-
-        float toLeft = circleCenter.x - rect.min.x;
-        float toRight = rect.max.x - circleCenter.x;
-        float toTop = circleCenter.y - rect.min.y;
-        float toBottom = rect.max.y - circleCenter.y;
-
-        float minDist = std::min(std::min(toLeft, toRight), std::min(toTop, toBottom));
-
-        if (minDist == toLeft) {
-            result.response = vec2(radius - toLeft, 0.0f);
-        } else if (minDist == toRight) {
-            result.response = vec2(-(radius - toRight), 0.0f);
-        } else if (minDist == toTop) {
-            result.response = vec2(0.0f, radius - toTop);
-        } else {
-            result.response = vec2(0.0f, -(radius - toBottom));
-        }
-
+    if (dist2 >= radius2) {
         return result;
     }
+
+    result.hit = true;
+
+    if (dist2 > 0.000001f) {
+        float dist = std::sqrt(dist2);
+        vec2 normal = delta / dist;
+        float penetration = radius - dist;
+        result.response = normal * penetration;
+        return result;
+    }
+
+    float toLeft = circleCenter.x - rect.min.x;
+    float toRight = rect.max.x - circleCenter.x;
+    float toTop = circleCenter.y - rect.min.y;
+    float toBottom = rect.max.y - circleCenter.y;
+
+    float minDist = std::min(std::min(toLeft, toRight), std::min(toTop, toBottom));
+
+    if (minDist == toLeft) {
+        result.response = vec2(radius - toLeft, 0.0f);
+    } else if (minDist == toRight) {
+        result.response = vec2(-(radius - toRight), 0.0f);
+    } else if (minDist == toTop) {
+        result.response = vec2(0.0f, radius - toTop);
+    } else {
+        result.response = vec2(0.0f, -(radius - toBottom));
+    }
+
+    return result;
+}
 
 
 void MoverSystem::Update(float dt) {
@@ -104,6 +108,22 @@ void CollisionSystem::Update(float dt) {
             registry.patch<Velocity>(ballEntity);
         }
     }
+}
+
+void ClickColorerSystem::Update(float dt) {
+    for (auto [clickEntity, clickable, colorable, clickColorer] : registry.view<const Clickable, Colorable, const ClickColorer>().each()) {
+
+        if (clickable.down) {
+            colorable.color = clickColorer.downColor;
+            registry.patch<Colorable>(clickEntity);
+        }
+
+        if (clickable.up) {
+            colorable.color = clickColorer.upColor;
+            registry.patch<Colorable>(clickEntity);
+        }
+    }
+
 }
 
 

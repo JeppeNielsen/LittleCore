@@ -25,3 +25,6 @@ struct CollisionSystem : LittleCore::SystemBase {
     void Update(float dt);
 };
 
+struct ClickColorerSystem : LittleCore::SystemBase {
+    void Update(float dt);
+};

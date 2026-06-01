@@ -30,7 +30,7 @@ bool ClickableRayCasterSystem::TryGetClosestEntityFromRay(Ray ray, entt::entity&
         const WorldTransform& worldTransformB = registry.get<WorldTransform>(entityB);
         const float distanceB = camera.GetDistance(worldTransform.worldInverse, worldTransformB.world);
 
-        return distanceA > distanceB;
+        return distanceA < distanceB;
     });
 
     closest = entities[0];
@@ -56,30 +56,43 @@ void ClickableRayCasterSystem::Update() {
                 clickable.down = true;
                 registry.patch<Clickable>(closest);
             }
-        } else if (input.IsTouchUp({clickableRayCaster.buttonId})) {
-            ivec2 screenPos = input.touchPosition[0].position;
-            auto ray = camera.GetRay(worldTransform, input.screenSize, screenPos);
-
-            auto downEntity = clickableRayCaster.downEntity;
-            auto& clickable = registry.get<Clickable>(downEntity);
-
-            bool didChange = false;
-            entt::entity closest;
-            if (TryGetClosestEntityFromRay(ray, closest, camera, worldTransform) && closest == downEntity) {
-                clickable.clicked = true;
-                didChange = true;
-            }
-
-            clickable.up = true;
-            registry.patch<Clickable>(downEntity);
         } else {
+
             auto downEntity = clickableRayCaster.downEntity;
             auto& clickable = registry.get<Clickable>(downEntity);
+            bool wasChanged = false;
 
             if (clickable.down || clickable.up || clickable.clicked) {
+
+                if (clickable.up) {
+                    clickableRayCaster.downEntity = entt::null;
+                }
+
                 clickable.down = false;
                 clickable.up = false;
                 clickable.clicked = false;
+                wasChanged = true;
+            }
+
+            if (input.IsTouchUp({clickableRayCaster.buttonId})) {
+                ivec2 screenPos = input.touchPosition[0].position;
+                auto ray = camera.GetRay(worldTransform, input.screenSize, screenPos);
+
+                auto downEntity = clickableRayCaster.downEntity;
+                auto& clickable = registry.get<Clickable>(downEntity);
+
+                bool didChange = false;
+                entt::entity closest;
+                if (TryGetClosestEntityFromRay(ray, closest, camera, worldTransform) && closest == downEntity) {
+                    clickable.clicked = true;
+                    didChange = true;
+                }
+
+                clickable.up = true;
+                wasChanged = true;
+            }
+
+            if (wasChanged) {
                 registry.patch<Clickable>(downEntity);
             }
 

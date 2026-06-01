@@ -23,6 +23,9 @@
 #include "LayoutElement.hpp"
 #include "LocalBoundingBox.hpp"
 #include "WorldBoundingBox.hpp"
+#include "Clickable.hpp"
+#include "ClickableRaycaster.hpp"
+#include "Input.hpp"
 
 namespace LittleCore {
 
@@ -44,7 +47,10 @@ namespace LittleCore {
             WorldTransform,
             LocalBoundingBox,
             WorldBoundingBox,
-            Sprite
+            Sprite,
+            Clickable,
+            ClickableRaycaster,
+            Input
     >;
 
     template<typename ...T>
