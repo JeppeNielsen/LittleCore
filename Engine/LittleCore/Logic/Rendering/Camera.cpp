@@ -10,6 +10,8 @@
 #include "Math.hpp"
 #include "SokolDirect.hpp"
 
+#include <algorithm>
+
 using namespace LittleCore;
 
 bool gethomogeneousDepth() {
@@ -53,11 +55,21 @@ Ray Camera::GetRay(const WorldTransform& transform,
                    const ivec2& screenSize,
                    const ivec2& screenPos) const
 {
-    float ndcX = ((screenPos.x + 0.5f) / (float)screenSize.x) * 2.0f - 1.0f;
-    float ndcY = ((screenPos.y + 0.5f) / (float)screenSize.y) * 2.0f - 1.0f;
+    const float minX = std::clamp(viewRect.min.x, 0.0f, 1.0f);
+    const float minY = std::clamp(viewRect.min.y, 0.0f, 1.0f);
+    const float maxX = std::clamp(viewRect.max.x, 0.0f, 1.0f);
+    const float maxY = std::clamp(viewRect.max.y, 0.0f, 1.0f);
+
+    const int viewportX = static_cast<int>(minX * screenSize.x);
+    const int viewportY = static_cast<int>(minY * screenSize.y);
+    const int viewportW = std::max(1, static_cast<int>((maxX - minX) * screenSize.x));
+    const int viewportH = std::max(1, static_cast<int>((maxY - minY) * screenSize.y));
+
+    float ndcX = ((screenPos.x - viewportX + 0.5f) / (float)viewportW) * 2.0f - 1.0f;
+    float ndcY = ((screenPos.y - viewportY + 0.5f) / (float)viewportH) * 2.0f - 1.0f;
     ndcY = -ndcY;
 
-    mat4 viewProjection = GetProjection((float)screenSize.x / (float)screenSize.y) * transform.worldInverse;
+    mat4 viewProjection = GetProjection((float)viewportW / (float)viewportH) * transform.worldInverse;
     mat4 inverseViewProjection = inverse(viewProjection);
 
     vec4 pNear = vec4(ndcX, ndcY, -1.0f, 1.0f);

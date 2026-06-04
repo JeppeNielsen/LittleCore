@@ -9,7 +9,7 @@
 using namespace LittleCore;
 
 void GuiWindowInputController::Begin() {
-    auto gameViewMin = ImGui::GetItemRectMin();
+    auto gameViewMin = ImGui::GetCursorScreenPos();
 
     ImVec2 windowSize = ImGui::GetContentRegionAvail();
 
@@ -33,8 +33,11 @@ void GuiWindowInputController::RunforSimulation(LittleCore::SimulationBase& simu
     inputHandler.width = width;
     inputHandler.height = height;
 
-    inputHandler.isMouseInWindow = ImGui::IsWindowHovered(ImGuiFocusedFlags_RootAndChildWindows);
+    inputHandler.isMouseInWindow =
+            mousePosition.x >= gameViewMinX &&
+            mousePosition.x <= gameViewMinX + width &&
+            mousePosition.y >= gameViewMinY &&
+            mousePosition.y <= gameViewMinY + height;
     simulation.HandleEvent(nullptr, inputHandler);
 
 }
-
