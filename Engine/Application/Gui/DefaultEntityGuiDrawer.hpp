@@ -23,6 +23,8 @@
 #include "Clickable.hpp"
 #include "ClickableRaycaster.hpp"
 #include "Input.hpp"
+#include "PrefabDrawer.hpp"
+#include "PrefabExposedComponentsDrawer.hpp"
 
 namespace LittleCore {
 
